@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --ink: #1a1a2e;
+  --inkl: #4a4a6a;
+  --paper: #faf9f6;
+  --warm: #f4f1eb;
+  --rule: #d8d4c8;
+  --accent: #2d6a4f;
+  --al: #52b788;
+  --warn: #e76f51;
+  --warns: #fdf3ef;
+  --info: #2d6a9f;
+  --infos: #eef4fa;
+  --ok: #2d6a4f;
+  --oks: #eef7f2;
+  --gold: #b5853a;
+  --golds: #fdf6e9;
+  --purp: #6a2d9f;
+  --purps: #f5f0ff;
+  --bg: #fff;
+  --sh: 0 2px 12px rgba(26, 26, 46, .07)
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh
+}
+
+/* MISC */
+.divider {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 13px 0
+}
+
+.slabel {
+  font-size: .69rem;
+  font-weight: 600;
+  color: var(--inkl);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 7px;
+  margin-top: 3px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--rule)
+}
+
+.hidden {
+  display: none !important
+}
+
+/* IBOX */
+.ibox {
+  background: var(--warm);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: .77rem;
+  line-height: 1.7;
+  margin-bottom: 11px
+}
+
+.ibox strong {
+  color: var(--ink);
+  font-size: .79rem
+}
+
+.ibox table {
+  width: 100%;
+  font-size: .76rem
+}
+
+.ibox td {
+  padding: 1px 5px
+}
+
+.ibox td:first-child {
+  color: var(--inkl)
+}
+
+.ibox td:last-child {
+  font-weight: 600
+}
+
+@media(max-width:600px) {
+  .fr,
+  .fr.t,
+  .fr.q,
+  .sg,
+  .tg,
+  .bvvg {
+    grid-template-columns: 1fr
+  }
+}
