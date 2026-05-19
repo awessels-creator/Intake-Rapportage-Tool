@@ -1,6 +1,7 @@
 import { FormProvider, useForm } from './context'
 import TopBar from './components/TopBar'
 import ProgressBar from './components/ProgressBar'
+import Changelog from './components/Changelog'
 import Page0Client from './components/pages/Page0Client'
 import Page1Persoonlijk from './components/pages/Page1Persoonlijk'
 import Page2Crisis from './components/pages/Page2Crisis'
@@ -28,6 +29,7 @@ function AppInner() {
         <ProgressBar />
         <PageComponent />
       </div>
+      <Changelog />
     </div>
   )
 }

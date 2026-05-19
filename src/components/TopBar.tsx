@@ -7,9 +7,10 @@ export default function TopBar() {
 
   return (
     <div className="sticky top-0 z-200 flex items-center justify-between px-[22px] py-[10px] bg-accent text-white">
+      {/* version: 2.0.1 */}
       <div className="flex items-center gap-[10px]">
-        <div className="font-family-display text-[1.1rem]">Intakerapportage Geldzorgen</div>
-        <div className="text-[0.7rem] text-white/45">Meppel 2026 · v5</div>
+        <div className="font-semibold text-[1.1rem]">Intakerapportage</div>
+        <div className="text-[0.7rem] text-white/60">2026</div>
       </div>
       <div className="flex gap-1.5">
         <button
