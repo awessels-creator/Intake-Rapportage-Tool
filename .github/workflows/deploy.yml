@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: write
@@ -18,13 +19,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare Prod Folder
+        run: |
+          mkdir prod_build
+          cp index.html prod_build/
+          cp -r public prod_build/ || true
+
       - name: Deploy to Root
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: . # Copy everything from the root of the main branch
+          folder: prod_build
           branch: gh-pages
           target-folder: .
-          clean: false # Do not delete the /beta folder if it exists
+          clean: false
 
   # JOB 2: Deploy Dev Branch (Modern 2.x) to /beta
   deploy-beta:
