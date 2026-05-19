@@ -1,6 +1,190 @@
 {
   "versions": [
     {
+      "version": "2.0.14",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Adviezen & Actiepunten",
+          "items": [
+            "Uitgevinkte adviezen worden nu bewaard als u naar een andere pagina navigeert en terugkomt",
+            "Eigen actiepunten hebben nu een bewerkbare naam in plaats van de vaste tekst 'Eigen actiepunt'"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.13",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Nieuw: samenvatting financiële situatie in het rapport met inkomen, lasten, besteedbaar en schulden",
+            "Aanvraag type dienstverlening staat nu in een eigen overzichtelijke sectie in het rapport",
+            "De crisisgegevens en aanvraag zijn beter van elkaar gescheiden"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.12",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Inkomen",
+          "items": [
+            "Weekinkomen invoeren is nu mogelijk: selecteer 'Per week' per inkomstenbron",
+            "Optie om aan te geven of het weekbedrag inclusief 8% vakantiegeld is — het maandbedrag wordt automatisch berekend",
+            "Het berekende maandbedrag wordt live naast het weekbedrag getoond"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.11",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Berekeningen",
+          "items": [
+            "Toeslagen (huurtoeslag, zorgtoeslag, WKB, KOT, overige inkomsten) worden nu meegeteld in het totale inkomen",
+            "Kinderbijslag telt bewust niet mee, omdat dit een kwartaalbedrag is",
+            "Het besteedbaar inkomen op tabblad 7 en in het rapport is hierdoor nauwkeuriger"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.10",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Toeslagen",
+          "items": [
+            "Bijzondere bijstand en AIO zijn verwijderd uit de toeslagenlijst",
+            "Nieuw: 'Overige inkomsten' toegevoegd met een vrij in te vullen omschrijving",
+            "Overige inkomsten worden meegeteld als inkomen"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.9",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vermogen & Verzekeringen",
+          "items": [
+            "Wanbetalersregeling (CAK) is toegevoegd als apart veld naast de aanvullende zorgverzekering",
+            "Waarschuwing bij actieve wanbetalersregeling",
+            "Toelichting op vermogen en verzekeringen verschijnt nu ook in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.8",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Bankrekeningen",
+          "items": [
+            "De 'Bank'-kolom is verwijderd uit de tabel — de bank is al af te lezen uit de IBAN",
+            "Nieuw: gezamenlijk toelichting-veld onderaan de bankkaart voor afspraken en bijzonderheden",
+            "De toelichting verschijnt in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.7",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Aanvraag & Crisis",
+          "items": [
+            "Reden aanmelding / hulpvraag staat nu in een eigen sectie, los van de crisisgegevens",
+            "De aanvraag voor dienstverlening is prominenter weergegeven in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.6",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Cliëntgegevens in het rapport tonen nu een overzichtelijke 2-kolomstabel",
+            "Persoonsgegevens en contactgegevens zijn visueel gescheiden",
+            "Cliëntnummer is als eerste rij toegevoegd aan het overzicht"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.5",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Minder lege ruimte tussen secties in het gedownloade Word-rapport",
+            "Sectieheaders staan dichter bij de bijbehorende inhoud"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.4",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Bijstandsnormen",
+          "items": [
+            "Normen gecorrigeerd naar excl. vakantietoeslag (alleenstaand €1.331,42, samenwonend €1.902,09)",
+            "De tool selecteert automatisch de juiste normen bij toekomstige halfjaarlijkse wijzigingen",
+            "Referentietabel en automatisch ingevulde hint zijn bijgewerkt"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.3",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vaste Lasten",
+          "items": [
+            "Label 'Levensonderhoud (NIBUD-richtlijn)' gewijzigd naar 'Kosten levensonderhoud/huishoudgeld'",
+            "De NIBUD-richtlijn blijft zichtbaar als hint in het opmerking-invulveld"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.2",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vaste Lasten Overzicht",
+          "items": [
+            "Het totaal inkomen wordt nu zichtbaar getoond boven de vaste lasten, zodat de volledige berekening leesbaar is",
+            "De driestappe weergave toont: totaal inkomen → totaal lasten → besteedbaar inkomen",
+            "Een scheidingslijn maakt het verschil tussen lasten en besteedbaar inkomen visueel duidelijker"
+          ]
+        },
+        {
+          "title": "Rapport",
+          "items": [
+            "Het gedownloade Word-rapport bevat nu ook de inkomenregel in de lastentabel"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.1",
       "date": "2024-05-22",
       "categories": [

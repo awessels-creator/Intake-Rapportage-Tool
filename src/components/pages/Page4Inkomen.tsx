@@ -32,13 +32,13 @@ export default function Page4Inkomen() {
     <div>
       <Card icon={<BsCashStack />} title="Inkomen">
         <div className="bg-warm border border-rule rounded-lg p-3 text-[0.77rem] mb-3">
-          <strong className="text-[0.79rem]">Bijstandsnormen 1 januari 2026 (netto incl. 5% vakantietoeslag)</strong>
+          <strong className="text-[0.79rem]">Bijstandsnormen 1 januari 2026 (netto excl. vakantietoeslag)</strong>
           <table className="w-full mt-1 text-[0.76rem]">
             <tbody>
-              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande / Alleenstaande ouder (21+)</td><td className="font-semibold">€ 1.401,50/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Samenwonend / Gehuwd</td><td className="font-semibold">€ 2.002,13/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — alleenstaand (AIO SVB)</td><td className="font-semibold">€ 1.501,80/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — beiden AOW-gerechtigd</td><td className="font-semibold">€ 2.144,16/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande / Alleenstaande ouder (21+)</td><td className="font-semibold">€ 1.331,42/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Samenwonend / Gehuwd</td><td className="font-semibold">€ 1.902,09/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — alleenstaand (AIO SVB)</td><td className="font-semibold">€ 1.430,29/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — beiden AOW-gerechtigd</td><td className="font-semibold">€ 2.041,11/mnd</td></tr>
             </tbody>
           </table>
         </div>
@@ -48,7 +48,7 @@ export default function Page4Inkomen() {
             <label className={L}>Bijstandsnorm (netto/mnd)</label>
             <EuroInput value={state.bijstandsnorm} onChange={v => set({ bijstandsnorm: v })} placeholder="1401.50" />
             {state.leefsituatie && NORM[state.leefsituatie] && (
-              <div className="text-[0.7rem] text-accent mt-0.5">Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} (aanpasbaar)</div>
+              <div className="text-[0.7rem] text-accent mt-0.5">Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} excl. vakantietoeslag (aanpasbaar)</div>
             )}
           </div>
           <div>
@@ -78,9 +78,16 @@ export default function Page4Inkomen() {
 
         <div className="overflow-x-auto">
           <table className="tbl">
-            <thead><tr><th>Bron / Werkgever / Instantie</th><th>Type inkomen</th><th>Netto/mnd</th><th>Dienstverband / uren</th><th>Beslag?</th><th></th></tr></thead>
+            <thead><tr><th>Bron / Werkgever / Instantie</th><th>Type inkomen</th><th>Invoer per</th><th>Netto/mnd</th><th>Dienstverband / uren</th><th>Beslag?</th><th></th></tr></thead>
             <tbody>
-              {state.inkomenData.map((d, i) => (
+              {state.inkomenData.map((d, i) => {
+                const berekenMnd = (): number => {
+                  if (d.invoerPer === 'mnd') return parseFloat(d.netto) || 0
+                  const week = parseFloat(d.weekBedrag) || 0
+                  return (d.inclVak ? week / 1.08 : week) * 52 / 12
+                }
+                const mndBedrag = berekenMnd()
+                return (
                 <tr key={i}>
                   <td><input className="inp" value={d.bron} placeholder="Naam werkgever / instantie" onChange={e => set({ inkomenData: updArr(state.inkomenData, i, { bron: e.target.value }) })} /></td>
                   <td>
@@ -96,11 +103,39 @@ export default function Page4Inkomen() {
                       <option value="anders">Anders</option>
                     </select>
                   </td>
+                  <td style={{ minWidth: 80 }}>
+                    <select className="inp" value={d.invoerPer} onChange={e => set({ inkomenData: updArr(state.inkomenData, i, { invoerPer: e.target.value as 'mnd' | 'week' }) })}>
+                      <option value="mnd">Per maand</option>
+                      <option value="week">Per week</option>
+                    </select>
+                  </td>
                   <td>
-                    <div className="relative" style={{ minWidth: 90 }}>
-                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-inkl text-[0.76rem] pointer-events-none">€</span>
-                      <input type="number" className="inp" style={{ paddingLeft: 16 }} value={d.netto} placeholder="0" onChange={e => set({ inkomenData: updArr(state.inkomenData, i, { netto: e.target.value }) })} />
-                    </div>
+                    {d.invoerPer === 'mnd' ? (
+                      <div className="relative" style={{ minWidth: 90 }}>
+                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-inkl text-[0.76rem] pointer-events-none">€</span>
+                        <input type="number" className="inp" style={{ paddingLeft: 16 }} value={d.netto} placeholder="0" onChange={e => set({ inkomenData: updArr(state.inkomenData, i, { netto: e.target.value }) })} />
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="relative" style={{ minWidth: 90 }}>
+                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-inkl text-[0.76rem] pointer-events-none">€</span>
+                          <input type="number" className="inp" style={{ paddingLeft: 16 }} value={d.weekBedrag} placeholder="weekbedrag" onChange={e => {
+                            const week = parseFloat(e.target.value) || 0
+                            const netto = ((d.inclVak ? week / 1.08 : week) * 52 / 12).toFixed(2)
+                            set({ inkomenData: updArr(state.inkomenData, i, { weekBedrag: e.target.value, netto }) })
+                          }} />
+                        </div>
+                        <label className="flex items-center gap-1 mt-1 text-[0.69rem] text-inkl cursor-pointer">
+                          <input type="checkbox" checked={d.inclVak} className="accent-accent w-3 h-3" onChange={e => {
+                            const week = parseFloat(d.weekBedrag) || 0
+                            const netto = ((e.target.checked ? week / 1.08 : week) * 52 / 12).toFixed(2)
+                            set({ inkomenData: updArr(state.inkomenData, i, { inclVak: e.target.checked, netto }) })
+                          }} />
+                          incl. 8% vakantiegeld
+                        </label>
+                        {mndBedrag > 0 && <div className="text-[0.69rem] text-accent mt-0.5">→ €{mndBedrag.toFixed(2)}/mnd excl. vak.</div>}
+                      </div>
+                    )}
                   </td>
                   <td><input className="inp" value={d.uren} placeholder="Bijv. 32u / vast" onChange={e => set({ inkomenData: updArr(state.inkomenData, i, { uren: e.target.value }) })} /></td>
                   <td className="text-center">
@@ -111,7 +146,7 @@ export default function Page4Inkomen() {
                   </td>
                   <td><button type="button" className="text-warn border border-warn-border hover:bg-warns rounded px-1.5 py-0.5 text-[0.73rem] cursor-pointer" onClick={() => set({ inkomenData: rmArr(state.inkomenData, i) })}><HiXMark /></button></td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

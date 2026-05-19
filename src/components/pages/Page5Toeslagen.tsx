@@ -49,7 +49,6 @@ export default function Page5Toeslagen() {
   const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)
   const hK = state.kinderen === 'ja'
-  const isPensioen = state.leefsituatie.startsWith('pensioen')
   const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
 
   const toggle = (naam: string, checked: boolean) => {
@@ -85,9 +84,8 @@ export default function Page5Toeslagen() {
       if (norm && ink > norm * 1.6) return { ok: false, icon: <HiExclamationTriangle />, msg: 'Inkomen lijkt te hoog voor WKB' }
       return { ok: true, icon: <HiCheck />, msg: 'Geregistreerd' }
     }
-    if (id === 'aio') {
+    if (id === 'overig_ink') {
       if (!v) return null
-      if (!isPensioen) return { ok: false, icon: <HiExclamationTriangle />, msg: 'AIO alleen voor pensioengerechtigden (SVB)' }
       return { ok: true, icon: <HiCheck />, msg: 'Geregistreerd' }
     }
     return null
@@ -118,6 +116,14 @@ export default function Page5Toeslagen() {
 
                 {actief && (
                   <div className="mt-2">
+                    {naam === 'overig_ink' && (
+                      <input
+                        className="inp mb-1.5"
+                        placeholder="Omschrijving (bijv. Toeslag UWV)"
+                        value={state.toeslagenNaam['overig_ink'] || ''}
+                        onChange={e => set({ toeslagenNaam: { ...state.toeslagenNaam, overig_ink: e.target.value } })}
+                      />
+                    )}
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-inkl text-[0.76rem] pointer-events-none">€</span>
                       <input
@@ -129,7 +135,7 @@ export default function Page5Toeslagen() {
                         onChange={e => set({ toeslagenBedrag: { ...state.toeslagenBedrag, [naam]: e.target.value } })}
                       />
                     </div>
-                    {naam !== 'bijzondere' && naam !== 'aio' && (
+                    {naam !== 'kinderbijslag' && (
                       <label className="flex items-center gap-1.5 mt-1.5 text-[0.7rem] text-inkl cursor-pointer">
                         <input
                           type="checkbox"

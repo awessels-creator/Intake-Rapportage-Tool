@@ -5,7 +5,7 @@ import Page9Advies from '../../components/pages/Page9Advies'
 import { renderWithState } from '../helpers'
 import type { AdviesItem } from '../../types'
 
-const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false })
+const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false, invoerPer: 'mnd' as const, inclVak: false, weekBedrag: '' })
 
 const adviesItem = (t: string, p: AdviesItem['p'] = 'med', on = true): AdviesItem => ({
   p, t, b: `Beschrijving van ${t}`, on, custom: false,
@@ -114,7 +114,39 @@ describe('Page9Advies', () => {
     const user = userEvent.setup()
     renderWithState(<Page9Advies />, { advItems: [] })
     await user.click(screen.getByText('Eigen actiepunt toevoegen'))
-    expect(screen.getByText('Eigen actiepunt')).toBeInTheDocument()
+    // Custom items now have an editable title input instead of fixed "Eigen actiepunt"
+    expect(screen.getByPlaceholderText(/naam actiepunt/i)).toBeInTheDocument()
+  })
+
+  // ── Issue #14A: unchecked items stay unchecked ────────────────────────────
+
+  test('unchecked advice item retains its unchecked state', () => {
+    renderWithState(<Page9Advies />, {
+      advItems: [adviesItem('Voedselbank Meppel', 'med', false)],
+    })
+    const titleEl = screen.getByText('Voedselbank Meppel')
+    const flexRow = titleEl.parentElement?.parentElement
+    const checkbox = flexRow?.querySelector('input[type="checkbox"]') as HTMLInputElement
+    expect(checkbox?.checked).toBe(false)
+  })
+
+  // ── Issue #14B: custom advice has editable title ──────────────────────────
+
+  test('custom advice item shows an editable title input', async () => {
+    const user = userEvent.setup()
+    renderWithState(<Page9Advies />, { advItems: [] })
+    await user.click(screen.getByText('Eigen actiepunt toevoegen'))
+    const titleInput = screen.getByPlaceholderText(/naam actiepunt/i)
+    expect(titleInput).toBeInTheDocument()
+    await user.type(titleInput, 'Toeslag UWV aanvragen')
+    expect(titleInput).toHaveValue('Toeslag UWV aanvragen')
+  })
+
+  test('non-custom advice item does not show an editable title input', () => {
+    renderWithState(<Page9Advies />, {
+      advItems: [adviesItem('AVP aanvragen', 'low')],
+    })
+    expect(screen.queryByPlaceholderText(/naam actiepunt/i)).not.toBeInTheDocument()
   })
 
   // ── Service type checkboxes ───────────────────────────────────────────────

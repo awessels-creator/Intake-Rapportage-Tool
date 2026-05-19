@@ -1,7 +1,22 @@
-export const NORM: Record<string, number> = {
-  alleenstaand: 1401.50, alleenstaande_ouder: 1401.50, samenwonend: 2002.13,
-  pensioen_alleen: 1501.80, pensioen_paar: 2144.16, pensioen_gemengd: 2002.13,
+const NORM_PERIODES: { vanaf: string; normen: Record<string, number> }[] = [
+  {
+    vanaf: '2026-01-01',
+    normen: {
+      alleenstaand: 1331.42, alleenstaande_ouder: 1331.42, samenwonend: 1902.09,
+      pensioen_alleen: 1430.29, pensioen_paar: 2041.11, pensioen_gemengd: 1902.09,
+    },
+  },
+]
+
+export function getNormen(): Record<string, number> {
+  const nu = new Date().toISOString().split('T')[0]
+  const geldig = NORM_PERIODES
+    .filter(p => p.vanaf <= nu)
+    .sort((a, b) => b.vanaf.localeCompare(a.vanaf))
+  return geldig[0]?.normen ?? NORM_PERIODES[0].normen
 }
+
+export const NORM = getNormen()
 
 export const VGRENS: Record<string, number> = {
   alleenstaand: 8000, alleenstaande_ouder: 16000, samenwonend: 16000,
@@ -58,7 +73,7 @@ export const LASTEN_DEF: LastenDef[] = [
   { id: 'ko', post: 'Kinderopvang (eigen bijdrage)', per: 'mnd', vast: false, kinderOnly: true },
   { id: 'alim_betaald', post: 'Alimentatie (betaald)', per: 'mnd', vast: true },
   { id: 'betreg', post: 'Betalingsregelingen schulden', per: 'mnd', vast: true },
-  { id: 'leef', post: 'Levensonderhoud (NIBUD-richtlijn)', per: 'mnd', vast: true },
+  { id: 'leef', post: 'Kosten levensonderhoud/huishoudgeld', per: 'mnd', vast: true },
   { id: 'overig', post: 'Abonnementen / overig', per: 'mnd', vast: true },
 ]
 
@@ -78,8 +93,7 @@ export const TOESLAG_NAMEN: Record<string, string> = {
   kinderbijslag: 'Kinderbijslag (AKW)',
   kinderopvang: 'Kinderopvangtoeslag (KOT)',
   kindgebonden: 'Kindgebonden budget (WKB/KGB)',
-  bijzondere: 'Bijzondere bijstand',
-  aio: 'AIO — aanv. inkomensvoorziening ouderen (SVB)',
+  overig_ink: 'Overige inkomsten',
 }
 
-export const TOESLAGEN = ['huur', 'zorg', 'kinderbijslag', 'kinderopvang', 'kindgebonden', 'bijzondere', 'aio']
+export const TOESLAGEN = ['huur', 'zorg', 'kinderbijslag', 'kinderopvang', 'kindgebonden', 'overig_ink']

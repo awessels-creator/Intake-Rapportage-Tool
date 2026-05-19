@@ -5,7 +5,7 @@ import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
 import Alert from '../shared/Alert'
-import { HiBellAlert, HiOutlineBuildingLibrary, HiOutlineLightBulb, HiOutlineBuildingOffice, HiXMark, HiArrowLeft, HiArrowRight, HiPlus } from 'react-icons/hi2'
+import { HiBellAlert, HiOutlineBuildingLibrary, HiOutlineLightBulb, HiOutlineBuildingOffice, HiOutlineDocumentText, HiXMark, HiArrowLeft, HiArrowRight, HiPlus } from 'react-icons/hi2'
 
 const L = 'block text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em]'
 const row2 = 'grid grid-cols-2 gap-[11px] mb-[11px]'
@@ -52,6 +52,9 @@ export default function Page2Crisis() {
           </div>
         )}
 
+      </Card>
+
+      <Card icon={<HiOutlineDocumentText />} title="Reden aanmelding">
         <div className="mb-[11px]">
           <label className={L}>Reden aanmelding / hulpvraag</label>
           <textarea className="inp" rows={3} value={state.hulpvraag} onChange={e => set({ hulpvraag: e.target.value })} placeholder="Wat is de hulpvraag en het financiële probleem? Hoe is cliënt bij ons terechtgekomen?" />
@@ -72,9 +75,9 @@ export default function Page2Crisis() {
           <table className="tbl">
             <thead>
               <tr>
-                <th>IBAN</th><th>Tenaamstelling</th><th>Bank</th><th>Type</th>
+                <th>IBAN</th><th>Tenaamstelling</th><th>Type</th>
                 <th>Saldo</th><th>Roodstand</th><th>Nieuwe rek. besproken?</th>
-                <th>Afspraken / opmerking</th><th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +85,6 @@ export default function Page2Crisis() {
                 <tr key={i}>
                   <td><input className="inp uppercase" style={{ minWidth: 140 }} value={b.iban} placeholder="NL00 BANK..." onChange={e => set({ bankData: updArr(state.bankData, i, { iban: e.target.value }) })} /></td>
                   <td><input className="inp" style={{ minWidth: 100 }} value={b.naam} placeholder="T.n.v. ..." onChange={e => set({ bankData: updArr(state.bankData, i, { naam: e.target.value }) })} /></td>
-                  <td><input className="inp" style={{ minWidth: 70 }} value={b.bank} placeholder="ING..." onChange={e => set({ bankData: updArr(state.bankData, i, { bank: e.target.value }) })} /></td>
                   <td>
                     <select className="inp" style={{ minWidth: 75 }} value={b.type} onChange={e => set({ bankData: updArr(state.bankData, i, { type: e.target.value as BankItem['type'] }) })}>
                       <option value="betaal">Betaal</option>
@@ -111,7 +113,6 @@ export default function Page2Crisis() {
                       <option value="nee">Niet nodig</option>
                     </select>
                   </td>
-                  <td><input className="inp" style={{ minWidth: 110 }} value={b.opm} placeholder="Afspraken..." onChange={e => set({ bankData: updArr(state.bankData, i, { opm: e.target.value }) })} /></td>
                   <td><button type="button" className="bg-none border-none text-warn text-[0.88rem] px-1 py-0.5 cursor-pointer" onClick={() => set({ bankData: rmArr(state.bankData, i) })}><HiXMark /></button></td>
                 </tr>
               ))}
@@ -126,9 +127,13 @@ export default function Page2Crisis() {
           <HiPlus />
           Rekening toevoegen
         </button>
+        <div className="mt-3">
+          <label className={L}>Toelichting bankrekening(en)</label>
+          <textarea className="inp" rows={2} value={state.bank_toelichting} onChange={e => set({ bank_toelichting: e.target.value })} placeholder="Toelichting bankrekeningen: afspraken, bijzonderheden, achterstanden..." />
+        </div>
         {hasRood && (
           <Alert variant="gold" icon={<HiOutlineLightBulb />} title="Roodstand aanwezig">
-            Adviseer nieuwe (gratis basis)bankrekening te openen. Noteer afspraken per rekening hierboven.
+            Adviseer nieuwe (gratis basis)bankrekening te openen. Noteer afspraken in de toelichting hieronder.
           </Alert>
         )}
       </Card>

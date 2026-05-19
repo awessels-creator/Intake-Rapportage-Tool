@@ -168,18 +168,28 @@ export default function Page6Lasten() {
           Eigen post toevoegen
         </button>
 
-        <div className="flex justify-between items-center mt-3 p-2.5 bg-warm rounded-lg border border-rule">
+        {ink > 0 && (
+          <div className="flex justify-between items-center mt-3 p-2.5 bg-warm rounded-lg border border-rule">
+            <span className="font-semibold text-[0.88rem]">Totaal inkomen (incl. toeslagen)</span>
+            <span className="font-bold text-[0.97rem]">€ {ink.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+          </div>
+        )}
+
+        <div className={`flex justify-between items-center ${ink > 0 ? 'mt-1' : 'mt-3'} p-2.5 bg-warm rounded-lg border border-rule`}>
           <span className="font-semibold text-[0.88rem]">Totaal vaste lasten / maand</span>
           <span className="font-bold text-[0.97rem]">€ {tot.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
         </div>
 
         {ink > 0 && tot > 0 && (
-          <div className={`flex justify-between items-center mt-1.5 p-2.5 rounded-lg border ${best < 0 ? 'bg-warns border-warn-border' : 'bg-accents border-accent-border'}`}>
-            <span className="font-semibold text-[0.88rem]">Besteedbaar (inkomen − lasten)</span>
-            <span className={`font-bold text-[0.97rem] ${best < 0 ? 'text-warn-dark' : 'text-accent-dark'}`}>
-              € {best.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
+          <>
+            <div className="border-t border-rule mt-1"></div>
+            <div className={`flex justify-between items-center mt-1 p-2.5 rounded-lg border ${best < 0 ? 'bg-warns border-warn-border' : 'bg-accents border-accent-border'}`}>
+              <span className="font-semibold text-[0.88rem]">Besteedbaar (inkomen − lasten)</span>
+              <span className={`font-bold text-[0.97rem] ${best < 0 ? 'text-warn-dark' : 'text-accent-dark'}`}>
+                € {best.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </>
         )}
 
         {pct > 0 && pct < 120 && (

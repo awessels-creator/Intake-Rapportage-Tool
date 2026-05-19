@@ -21,8 +21,14 @@ export function FormProvider({ children }: { children: ReactNode }) {
     setState(prev => {
       let extra: Partial<FormState> = {}
       if (n === 9) {
-        const custom = prev.advItems.filter(a => a.custom)
-        extra = { advItems: [...buildSystemAdvItems(prev), ...custom] }
+        const newSystemItems = buildSystemAdvItems(prev)
+        const existing = prev.advItems
+        const merged = newSystemItems.map(newItem => {
+          const found = existing.find(e => !e.custom && e.t === newItem.t)
+          return found ? { ...newItem, on: found.on, b: found.b } : newItem
+        })
+        const customItems = existing.filter(e => e.custom)
+        extra = { advItems: [...merged, ...customItems] }
       }
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return { ...prev, currentPage: n, ...extra }

@@ -165,20 +165,29 @@ export default function Page3Vermogen() {
             </div>
           )}
         </div>
-        <div className={row2}>
+        <div className={row3}>
           <div>
             <label className={L}>Uitvaartverzekering</label>
             <ToggleWidget value={state.tw_uitvaart} options={TW_VERZ} onChange={v => set({ tw_uitvaart: v })} />
           </div>
           <div>
-            <label className={L}>Zorgverzekering (aanvullend)</label>
+            <label className={L}>Aanvullende zorgverzekering</label>
             <ToggleWidget value={state.tw_zorgaanv} options={TW_VERZ_NVT} onChange={v => set({ tw_zorgaanv: v })} />
+          </div>
+          <div>
+            <label className={L}>Wanbetalersregeling (CAK)</label>
+            <ToggleWidget value={state.tw_wanbet} options={[{ v: 'ja', l: <div className="flex items-center gap-1"><HiCheck /> Ja</div> }, { v: 'nee', l: <div className="flex items-center gap-1"><HiXMark /> Nee</div> }]} onChange={v => set({ tw_wanbet: v })} />
+            {state.tw_wanbet === 'ja' && (
+              <Alert variant="warn" icon={<HiExclamationTriangle />} title="Wanbetalersregeling actief" className="mt-1">
+                CAK-regeling actief. Noteer details in toelichting.
+              </Alert>
+            )}
           </div>
         </div>
         {verzSignalen.map((s, i) => <Alert key={i} variant={s.variant} icon={s.icon} title={s.title}>{s.msg}</Alert>)}
 
         <hr className="border-rule my-3" />
-        <label className={L}>Toelichting vermogen</label>
+        <label className={L}>Toelichting op vermogen en verzekeringen</label>
         <textarea className="inp" rows={2} value={state.vermogen_toel} onChange={e => set({ vermogen_toel: e.target.value })} placeholder="Bijzonderheden: erfenis, geschillen, overig vermogen..." />
       </Card>
 

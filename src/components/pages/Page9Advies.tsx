@@ -16,10 +16,11 @@ const pCls: Record<string, string> = {
   low: 'border-l-4 border-accent bg-accents',
 }
 
-function AdviesCard({ item, idx, onToggle, onEdit }: {
+function AdviesCard({ item, idx, onToggle, onEdit, onEditTitle }: {
   item: AdviesItem; idx: number
   onToggle: (i: number) => void
   onEdit: (i: number, text: string) => void
+  onEditTitle?: (i: number, title: string) => void
 }) {
   const [editing, setEditing] = useState(false)
 
@@ -33,7 +34,16 @@ function AdviesCard({ item, idx, onToggle, onEdit }: {
           onChange={() => onToggle(idx)}
         />
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[0.82rem]">{item.t}</div>
+          {item.custom && onEditTitle ? (
+            <input
+              className="inp font-semibold text-[0.82rem] mb-1"
+              value={item.t}
+              placeholder="Naam actiepunt (bijv. Toeslag UWV aanvragen)"
+              onChange={e => onEditTitle(idx, e.target.value)}
+            />
+          ) : (
+            <div className="font-semibold text-[0.82rem]">{item.t}</div>
+          )}
           {!editing && <div className="text-[0.77rem] mt-0.5 text-inkl">{item.b}</div>}
           {editing && (
             <textarea
@@ -72,8 +82,12 @@ export default function Page9Advies() {
     set({ advItems: state.advItems.map((a, j) => j === i ? { ...a, b: text } : a) })
   }
 
+  const editAdvTitle = (i: number, title: string) => {
+    set({ advItems: state.advItems.map((a, j) => j === i ? { ...a, t: title } : a) })
+  }
+
   const addCustom = () => {
-    const newItem: AdviesItem = { p: 'low', t: 'Eigen actiepunt', b: 'Beschrijf hier het actiepunt...', on: true, custom: true }
+    const newItem: AdviesItem = { p: 'low', t: '', b: '', on: true, custom: true }
     set({ advItems: [...state.advItems, newItem] })
   }
 
@@ -137,7 +151,7 @@ export default function Page9Advies() {
       <Card icon={<HiOutlineCheckCircle />} title="Adviezen & Actiepunten">
         <p className="text-[0.77rem] text-inkl mb-3">Vink aan welke adviezen van toepassing zijn. Klik op het icoon om tekst te bewerken.</p>
         {state.advItems.map((item, i) => (
-          <AdviesCard key={i} item={item} idx={i} onToggle={toggleAdv} onEdit={editAdv} />
+          <AdviesCard key={i} item={item} idx={i} onToggle={toggleAdv} onEdit={editAdv} onEditTitle={editAdvTitle} />
         ))}
         <button
           type="button"

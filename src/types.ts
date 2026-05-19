@@ -7,7 +7,6 @@ export interface KindItem {
 export interface BankItem {
   iban: string
   naam: string
-  bank: string
   type: 'betaal' | 'spaar' | 'kind' | 'anders'
   saldo: string
   rood: boolean
@@ -21,6 +20,9 @@ export interface InkomenItem {
   netto: string
   uren: string
   beslag: boolean
+  invoerPer: 'mnd' | 'week'
+  inclVak: boolean
+  weekBedrag: string
 }
 
 export interface BeslagItem {
@@ -97,6 +99,7 @@ export interface FormState {
   eerder_aanvr: string
   eerder_aanvr_toel: string
   bankData: BankItem[]
+  bank_toelichting: string
   ondernemer: string
   kvk_naam: string
   kvk_nr: string
@@ -123,6 +126,7 @@ export interface FormState {
   tw_opstal: string
   tw_uitvaart: string
   tw_zorgaanv: string
+  tw_wanbet: string
   // Page 4
   bijstandsnorm: string
   inkomenData: InkomenItem[]
@@ -138,6 +142,7 @@ export interface FormState {
   toeslagenActief: Record<string, boolean>
   toeslagenBedrag: Record<string, string>
   toeslagenBeslag: Record<string, boolean>
+  toeslagenNaam: Record<string, string>
   // Page 6
   lastenWaarden: Record<string, LastenWaarde>
   lastenExtra: { post: string; per: string }[]

@@ -6,8 +6,8 @@ export const nl = (n: number, dec = 0) =>
 
 export const today = () => new Date().toISOString().split('T')[0]
 
-export const mkBank = (): BankItem => ({ iban: '', naam: '', bank: '', type: 'betaal', saldo: '', rood: false, nieuw: '', opm: '' })
-export const mkInk = (): InkomenItem => ({ bron: '', type: '', netto: '', uren: '', beslag: false })
+export const mkBank = (): BankItem => ({ iban: '', naam: '', type: 'betaal', saldo: '', rood: false, nieuw: '', opm: '' })
+export const mkInk = (): InkomenItem => ({ bron: '', type: '', netto: '', uren: '', beslag: false, invoerPer: 'mnd', inclVak: false, weekBedrag: '' })
 export const mkSchuld = (): SchuldItem => ({ s: '', t: '', subt: '', b: '', afl: '', st: '' })
 export const mkBeslag = (): BeslagItem => ({ wie: '', soort: '', bedrag: '' })
 
@@ -31,18 +31,18 @@ export function mkInitial(): FormState {
     naam_consulent: '', crisis: '', cr_water: false, cr_energie: false,
     cr_ontruiming: false, cr_anders: false, crisis_toelichting: '', hulpvraag: '',
     eerder_aanvr: '', eerder_aanvr_toel: '',
-    bankData: [mkBank()],
+    bankData: [mkBank()], bank_toelichting: '',
     ondernemer: '', kvk_naam: '', kvk_nr: '', kvk_datum: '', boekhouding: '',
     aangifte: '', kvk_toel: '',
     spaargeld: '', overig_verm: '', beleggingen: '', eigen_woning: 'nee',
     overwaarde: '', heeft_auto: '', auto_kenteken: '', auto_merk: '',
     auto_bouwjaar: '', auto_waarde: '', auto_reden: '', auto_verm: '',
     vermogen_toel: '', tw_avp: '', tw_inboedel: '', tw_opstal: '',
-    tw_uitvaart: '', tw_zorgaanv: '',
+    tw_uitvaart: '', tw_zorgaanv: '', tw_wanbet: '',
     bijstandsnorm: '', inkomenData: [mkInk()],
     alim_ontvangen: '', alim_partner: '', alim_kind: '', alim_lbio: '',
     iit: '', iit_datum: '', beslagData: [], inkomen_toel: '',
-    toeslagenActief: {}, toeslagenBedrag: {}, toeslagenBeslag: {},
+    toeslagenActief: {}, toeslagenBedrag: {}, toeslagenBeslag: {}, toeslagenNaam: {},
     lastenWaarden: {}, lastenExtra: [],
     schuldenData: [mkSchuld()],
     ach_huur: 'nee', ach_energie: 'nee', sch_exparter: 'nvt', schulden_opm: '',
@@ -106,7 +106,11 @@ export function getTotaalInkomen(state: FormState): number {
   const bronnen = state.inkomenData.reduce((s, d) => s + (parseFloat(d.netto) || 0), 0)
   const alimPart = state.alim_ontvangen === 'ja' ? (parseFloat(state.alim_partner) || 0) : 0
   const alimKind = state.alim_ontvangen === 'ja' ? (parseFloat(state.alim_kind) || 0) : 0
-  return bronnen + alimPart + alimKind
+  const TOESLAGEN_EXCL = ['kinderbijslag']
+  const toeslagenInk = Object.entries(state.toeslagenActief)
+    .filter(([key, actief]) => actief && !TOESLAGEN_EXCL.includes(key))
+    .reduce((s, [key]) => s + (parseFloat(state.toeslagenBedrag[key] || '0') || 0), 0)
+  return bronnen + alimPart + alimKind + toeslagenInk
 }
 
 export function getTotaalLasten(state: FormState): number {
