@@ -1,0 +1,40 @@
+{
+  "versions": [
+    {
+      "version": "2.0.1",
+      "date": "2024-05-22",
+      "categories": [
+        {
+          "title": "Gebruikerservaring",
+          "items": [
+            "De bovenbalk is opgeschoond voor een rustiger en moderner beeld",
+            "Informatie die niet langer relevant was is verwijderd uit de interface",
+            "Teksten in de navigatie zijn beter leesbaar gemaakt"
+          ]
+        },
+        {
+          "title": "Algemeen",
+          "items": [
+            "De applicatie is bijgewerkt naar de nieuwste standaarden",
+            "Kleine verbeteringen in de stabiliteit van de tool"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2024-05-21",
+      "categories": [
+        {
+          "title": "Nieuwe Basis",
+          "items": [
+            "De volledige techniek achter de tool is vernieuwd voor een snellere ervaring",
+            "Het uiterlijk is gemoderniseerd met een nieuw kleurenpalet en betere indeling",
+            "Verbeterde ondersteuning voor het invullen van gegevens op verschillende schermen",
+            "De tool reageert sneller en soepeler tijdens het navigeren door de pagina's"
+          ]
+        }
+      ]
+    }
+  ]
+}
