@@ -5,7 +5,7 @@ import Page4Inkomen from '../../components/pages/Page4Inkomen'
 import { renderWithState } from '../helpers'
 
 // Reusable income item shape
-const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false })
+const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false, invoerPer: 'mnd' as const, inclVak: false, weekBedrag: '' })
 
 describe('Page4Inkomen', () => {
   // ── Basic render ─────────────────────────────────────────────────────────
@@ -98,6 +98,29 @@ describe('Page4Inkomen', () => {
     expect(screen.queryByText(/FDMA/)).not.toBeInTheDocument()
   })
 
+  // ── Bijstandsnormen excl. vakantietoeslag (issue #13) ────────────────────
+
+  test('reference table header says excl. vakantietoeslag', () => {
+    renderWithState(<Page4Inkomen />)
+    expect(screen.getByText(/excl\. vakantietoeslag/)).toBeInTheDocument()
+    expect(screen.queryByText(/incl\. 5% vakantietoeslag/)).not.toBeInTheDocument()
+  })
+
+  test('reference table shows alleenstaand norm excl. vakantietoeslag (€ 1.331,42)', () => {
+    renderWithState(<Page4Inkomen />)
+    expect(screen.getByText(/1\.331,42/)).toBeInTheDocument()
+  })
+
+  test('reference table shows samenwonend norm excl. vakantietoeslag (€ 1.902,09)', () => {
+    renderWithState(<Page4Inkomen />)
+    expect(screen.getByText(/1\.902,09/)).toBeInTheDocument()
+  })
+
+  test('auto-ingevuld hint says excl. vakantietoeslag', () => {
+    renderWithState(<Page4Inkomen />, { leefsituatie: 'alleenstaand' })
+    expect(screen.getAllByText(/excl\. vakantietoeslag/).length).toBeGreaterThan(0)
+  })
+
   // ── Alimentatie section ───────────────────────────────────────────────────
 
   test('hides alimony amount fields by default', () => {
@@ -125,6 +148,26 @@ describe('Page4Inkomen', () => {
       inkomenData: [{ ...ink('1000'), beslag: true }],
     })
     expect(screen.getByText('Beslagleggende schuldeiser')).toBeInTheDocument()
+  })
+
+  // ── Issue #7: Weekinkomen + vakantiegeld ──────────────────────────────────
+
+  test('renders a period selector for each income row', () => {
+    renderWithState(<Page4Inkomen />)
+    // Default should be per month
+    expect(screen.getAllByRole('option', { name: /Per maand/i }).length).toBeGreaterThan(0)
+  })
+
+  test('shows week input field when "Per week" is selected', async () => {
+    const user = userEvent.setup()
+    renderWithState(<Page4Inkomen />)
+    const selects = screen.getAllByRole('combobox')
+    const periodSelect = selects.find(s =>
+      Array.from(s.querySelectorAll('option')).some(o => o.textContent?.includes('Per week'))
+    )
+    expect(periodSelect).toBeDefined()
+    await user.selectOptions(periodSelect!, 'week')
+    expect(screen.getByPlaceholderText(/weekbedrag/i)).toBeInTheDocument()
   })
 
   // ── Interactivity ─────────────────────────────────────────────────────────

@@ -13,13 +13,34 @@ import {
   mkBeslag,
   yearsSince,
 } from '../utils'
+import { NORM } from '../constants'
 import type { FormState } from '../types'
 
 // Convenience helper: merge a partial state on top of a blank initial state
 const s = (patch: Partial<FormState> = {}): FormState => ({ ...mkInitial(), ...patch })
 
 // Reusable income item factory
-const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false })
+const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false, invoerPer: 'mnd' as const, inclVak: false, weekBedrag: '' })
+
+// ─── NORM (issue #13) ────────────────────────────────────────────────────────
+
+describe('NORM', () => {
+  test('alleenstaand is 1331.42 (excl. vakantietoeslag)', () => {
+    expect(NORM['alleenstaand']).toBeCloseTo(1331.42, 2)
+  })
+
+  test('samenwonend is 1902.09 (excl. vakantietoeslag)', () => {
+    expect(NORM['samenwonend']).toBeCloseTo(1902.09, 2)
+  })
+
+  test('pensioen_alleen is 1430.29 (excl. vakantietoeslag)', () => {
+    expect(NORM['pensioen_alleen']).toBeCloseTo(1430.29, 2)
+  })
+
+  test('pensioen_paar is 2041.11 (excl. vakantietoeslag)', () => {
+    expect(NORM['pensioen_paar']).toBeCloseTo(2041.11, 2)
+  })
+})
 
 // ─── getMndBedrag ────────────────────────────────────────────────────────────
 
@@ -79,6 +100,34 @@ describe('getTotaalInkomen', () => {
 
   test('treats non-numeric netto as 0', () => {
     expect(getTotaalInkomen(s({ inkomenData: [ink('onbekend')] }))).toBe(0)
+  })
+
+  // Issue #9: toeslagen meetellen als inkomen (excl. kinderbijslag)
+  test('includes active toeslagen (excl. kinderbijslag) in total', () => {
+    const result = getTotaalInkomen(s({
+      inkomenData: [ink('1400')],
+      toeslagenActief: { zorg: true, huur: true, kinderbijslag: true },
+      toeslagenBedrag: { zorg: '120', huur: '300', kinderbijslag: '260' },
+    }))
+    // 1400 + 120 + 300 = 1820 (kinderbijslag 260 excluded)
+    expect(result).toBeCloseTo(1820)
+  })
+
+  test('excludes kinderbijslag from total', () => {
+    const result = getTotaalInkomen(s({
+      toeslagenActief: { kinderbijslag: true },
+      toeslagenBedrag: { kinderbijslag: '260' },
+    }))
+    expect(result).toBe(0)
+  })
+
+  test('does not include inactive toeslagen', () => {
+    const result = getTotaalInkomen(s({
+      inkomenData: [ink('1000')],
+      toeslagenActief: { zorg: false },
+      toeslagenBedrag: { zorg: '120' },
+    }))
+    expect(result).toBe(1000)
   })
 })
 
@@ -458,7 +507,7 @@ describe('mkInitial', () => {
   test('returns independent objects on each call (no shared references)', () => {
     const a = mkInitial()
     const b = mkInitial()
-    a.inkomenData.push({ bron: 'x', type: '', netto: '', uren: '', beslag: false })
+    a.inkomenData.push({ bron: 'x', type: '', netto: '', uren: '', beslag: false, invoerPer: 'mnd', inclVak: false, weekBedrag: '' })
     expect(b.inkomenData).toHaveLength(1)
   })
 })
