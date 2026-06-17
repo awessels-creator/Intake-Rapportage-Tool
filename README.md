@@ -4,7 +4,7 @@ Een professionele, interactieve tool voor de intake van schuldhulpverlening en g
 
 ## Direct Gebruiken
 De tool is direct toegankelijk via de browser op:
-👉 [http://itzjoris03.github.io/Intake-Rapportage-Tool/](http://itzjoris03.github.io/Intake-Rapportage-Tool/)
+👉 [https://awessels-creator.github.io/Intake-Rapportage-Tool/](https://awessels-creator.github.io/Intake-Rapportage-Tool/)
 
 ## Over het project
 Dit instrument is ontworpen om consulenten geldzorgen te ondersteunen bij het systematisch in kaart brengen van de financiële situatie van cliënten. Het automatiseert complexe berekeningen zoals bijstandsnormen, beslagvrije voet (indicatief) en recht op inkomensverruimende voorzieningen.
