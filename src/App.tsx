@@ -30,6 +30,7 @@ function AppInner() {
         <PageComponent />
       </div>
       <Changelog />
+      <div className="dev-badge">🧪 Dev Build</div>
     </div>
   )
 }

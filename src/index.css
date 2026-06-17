@@ -1,35 +1,68 @@
 @import "tailwindcss";
 
+:root {
+  --color-ink: #e8edf2;
+  --color-inkl: #8899aa;
+  --color-paper: #0d1b2a;
+  --color-warm: #1a2d42;
+  --color-rule: #2a3f55;
+  --color-ok: #4ecdc4;
+  --color-ok-dark: #2a9d8f;
+  --color-oks: #1a3a3a;
+  --color-warn: #ff6b6b;
+  --color-warn-dark: #c0392b;
+  --color-warn-border: #5a2a2a;
+  --color-warns: #2a1a1a;
+  --color-info: #74b9ff;
+  --color-info-dark: #0984e3;
+  --color-info-text: #6c5ce7;
+  --color-info-border: #2a3a5a;
+  --color-infos: #1a1a2e;
+  --color-accent: #a29bfe;
+  --color-accent-dark: #6c5ce7;
+  --color-accent-border: #3a3a6a;
+  --color-accents: #1e1e3a;
+  --color-gold: #fdcb6e;
+  --color-gold-dark: #e17055;
+  --color-gold-border: #5a4a2a;
+  --color-golds: #2a2a1a;
+  --color-purp: #fd79a8;
+  --color-purp-dark: #e84393;
+  --color-purp-border: #5a2a4a;
+  --color-purps: #2a1a2e;
+  --font-family-sans: Arial, sans-serif;
+}
+
 @theme {
-  --color-ink: #111111;
-  --color-inkl: #555555;
-  --color-paper: #ffffff;
-  --color-warm: #f2f2f2;
-  --color-rule: #e0e0e0;
-  --color-ok: #ea5403;
-  --color-ok-dark: #a43b02;
-  --color-oks: #fef0e6;
-  --color-warn: #e76f51;
-  --color-warn-dark: #9d3d1d;
-  --color-warn-border: #f4c7b8;
-  --color-warns: #fdf3ef;
-  --color-info: #2d6a9f;
-  --color-info-dark: #235580;
-  --color-info-text: #1a4b7a;
-  --color-info-border: #b8d4f0;
-  --color-infos: #eef4fa;
-  --color-accent: #02706d;
-  --color-accent-dark: #013837;
-  --color-accent-border: #a0c4c4;
-  --color-accents: #e8eeee;
-  --color-gold: #b5853a;
-  --color-gold-dark: #7a5010;
-  --color-gold-border: #e8d0a0;
-  --color-golds: #fdf6e9;
-  --color-purp: #6a2d9f;
-  --color-purp-dark: #4a1a8a;
-  --color-purp-border: #c8b0f0;
-  --color-purps: #f5f0ff;
+  --color-ink: #e8edf2;
+  --color-inkl: #8899aa;
+  --color-paper: #0d1b2a;
+  --color-warm: #1a2d42;
+  --color-rule: #2a3f55;
+  --color-ok: #4ecdc4;
+  --color-ok-dark: #2a9d8f;
+  --color-oks: #1a3a3a;
+  --color-warn: #ff6b6b;
+  --color-warn-dark: #c0392b;
+  --color-warn-border: #5a2a2a;
+  --color-warns: #2a1a1a;
+  --color-info: #74b9ff;
+  --color-info-dark: #0984e3;
+  --color-info-text: #6c5ce7;
+  --color-info-border: #2a3a5a;
+  --color-infos: #1a1a2e;
+  --color-accent: #a29bfe;
+  --color-accent-dark: #6c5ce7;
+  --color-accent-border: #3a3a6a;
+  --color-accents: #1e1e3a;
+  --color-gold: #fdcb6e;
+  --color-gold-dark: #e17055;
+  --color-gold-border: #5a4a2a;
+  --color-golds: #2a2a1a;
+  --color-purp: #fd79a8;
+  --color-purp-dark: #e84393;
+  --color-purp-border: #5a2a4a;
+  --color-purps: #2a1a2e;
   --font-family-sans: Arial, sans-serif;
 }
 
@@ -38,6 +71,23 @@ body {
   background-color: var(--color-paper);
   color: var(--color-ink);
   min-height: 100vh;
+}
+
+/* Dev badge */
+.dev-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 @layer components {

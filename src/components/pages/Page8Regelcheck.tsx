@@ -47,10 +47,10 @@ export default function Page8Regelcheck() {
     },
     {
       n: 'Individuele Inkomenstoeslag (IIT)',
-      norm: '3 jr ≤120% norm; niet voor pensioengerechtigden',
+      norm: '3 jr ≤105% norm; niet voor pensioengerechtigden',
       sit: isPensioen ? 'Pensioengerechtigde' : `${pct.toFixed(0)}%`,
-      r: isPensioen ? 'nvt' : !norm || !ink ? 'twijfel' : pct >= 120 ? 'nee' : iitJr >= 3 ? 'ja' : 'twijfel',
-      t: isPensioen ? 'N.v.t.' : pct >= 120 ? 'Inkomen boven 120%' : iitJr >= 3 ? <div className="flex items-center gap-1"><HiCheck className="text-ok" /> 3 jaar bereikt — aanvragen!</div> : iitJr > 0 ? `${iitJr.toFixed(1)} jr — nog ${(3 - iitJr).toFixed(1)} jr te gaan` : 'Startdatum niet ingevuld bij Inkomen',
+      r: isPensioen ? 'nvt' : !norm || !ink ? 'twijfel' : pct >= 105 ? 'nee' : iitJr >= 3 ? 'ja' : 'twijfel',
+      t: isPensioen ? 'N.v.t.' : pct >= 105 ? 'Inkomen boven 105%' : iitJr >= 3 ? <div className="flex items-center gap-1"><HiCheck className="text-ok" /> 3 jaar bereikt — aanvragen!</div> : iitJr > 0 ? `${iitJr.toFixed(1)} jr — nog ${(3 - iitJr).toFixed(1)} jr te gaan` : 'Startdatum niet ingevuld bij Inkomen',
     },
     {
       n: 'Kwijtschelding GBLT',
