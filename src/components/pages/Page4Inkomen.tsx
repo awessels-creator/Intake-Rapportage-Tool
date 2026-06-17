@@ -66,7 +66,7 @@ export default function Page4Inkomen() {
         {norm > 0 && ink > 0 && (
           <div className="mb-3">
             {pct < 100 && <Alert variant="warn" icon={<HiExclamationTriangle />} title="Inkomen onder bijstandsniveau">€{ink.toFixed(0)} &lt; norm €{norm.toFixed(0)}. Aanvullende bijstand/AIO aanvragen.</Alert>}
-            {pct >= 100 && pct < 105 && !isPensioen && <Alert variant="gold" icon={<HiOutlineClock />} title="IIT — tijdsduur controleren">Na 3 jaar ≤120% norm kan IIT worden aangevraagd.</Alert>}
+            {pct >= 100 && pct < 105 && !isPensioen && <Alert variant="gold" icon={<HiOutlineClock />} title="IIT — tijdsduur controleren">Na 3 jaar ≤105% norm kan IIT worden aangevraagd.</Alert>}
             {pct < 110 && !isPensioen && <Alert variant="info" icon={<HiOutlineInformationCircle />} title="FDMA — inkomen &lt;110% norm">Controleer bij Regelcheck.</Alert>}
             {pct < 120 && <Alert variant="ok" icon={<HiOutlineBuildingLibrary />} title="Kwijtschelding mogelijk — &lt;120% norm">Controleer bij Vaste Lasten en Regelcheck.</Alert>}
           </div>
@@ -233,7 +233,7 @@ export default function Page4Inkomen() {
                   <option value="check">Controleren</option>
                   <option value="nvt">N.v.t.</option>
                 </select>
-                <div className="text-[0.7rem] text-inkl mt-0.5">3 jaar aaneengesloten ≤120% norm — niet voor pensioengerechtigden</div>
+                <div className="text-[0.7rem] text-inkl mt-0.5">3 jaar aaneengesloten ≤105% norm — niet voor pensioengerechtigden</div>
               </div>
               {(state.iit === 'nee' || state.iit === 'check') && (
                 <div>
