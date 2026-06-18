@@ -97,6 +97,7 @@ export default function Page9Advies() {
     { key: 'cb_bewind_medisch', label: 'Beschermingsbewind — medische gronden' },
     { key: 'cb_bewind_schuld', label: 'Beschermingsbewind — schuldenbewind' },
     { key: 'cb_schuldhulpmaatje', label: 'Schuldhulpmaatje / Humanitas' },
+    { key: 'cb_over_rood', label: 'Over Rood' },
     { key: 'cb_overig_aanvr', label: 'Overige doorverwijzing' },
   ]
 

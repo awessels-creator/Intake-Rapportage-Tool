@@ -165,6 +165,7 @@ export interface FormState {
   cb_bewind_medisch: boolean
   cb_bewind_schuld: boolean
   cb_schuldhulpmaatje: boolean
+  cb_over_rood: boolean
   cb_overig_aanvr: boolean
   overig_aanvr_txt: string
   conclusie: string

@@ -49,7 +49,7 @@ export function mkInitial(): FormState {
     fdma: '', kwgt: '', kwgm: '', kindsupport: '', voedselbank: '',
     advItems: [], cb_budgetbeheer: false, cb_schuldregeling: false,
     cb_bewind_medisch: false, cb_bewind_schuld: false, cb_schuldhulpmaatje: false,
-    cb_overig_aanvr: false, overig_aanvr_txt: '', conclusie: '',
+    cb_over_rood: false, cb_overig_aanvr: false, overig_aanvr_txt: '', conclusie: '',
     naam_consulent2: '', datum_rapportage: d,
   }
 }
