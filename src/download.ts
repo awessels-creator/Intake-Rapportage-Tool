@@ -173,11 +173,11 @@ ${state.schulden_opm ? `<p style="font-size:9.5pt"><em>${state.schulden_opm}</em
 </table>
 
 <h2>12. Aanvraag Type Dienstverlening</h2>
-${['budgetbeheer', 'schuldregeling', 'bewind_medisch', 'bewind_schuld', 'schuldhulpmaatje', 'overig_aanvr'].some(k => state[`cb_${k}` as keyof FormState])
+${['budgetbeheer', 'schuldregeling', 'bewind_medisch', 'bewind_schuld', 'schuldhulpmaatje', 'over_rood', 'overig_aanvr'].some(k => state[`cb_${k}` as keyof FormState])
   ? `<table><thead><tr><th>Dienst</th><th>Aangevraagd</th></tr></thead><tbody>${
-      (['budgetbeheer', 'schuldregeling', 'bewind_medisch', 'bewind_schuld', 'schuldhulpmaatje'] as const)
+      (['budgetbeheer', 'schuldregeling', 'bewind_medisch', 'bewind_schuld', 'schuldhulpmaatje', 'over_rood'] as const)
         .filter(k => state[`cb_${k}` as keyof FormState])
-        .map(k => `<tr><td>${({ budgetbeheer: 'Budgetbeheer', schuldregeling: 'Schuldregeling', bewind_medisch: 'Beschermingsbewind (medisch)', bewind_schuld: 'Schuldenbewind', schuldhulpmaatje: 'Schuldhulpmaatje/Humanitas' })[k]}</td><td>✅ Ja</td></tr>`)
+        .map(k => `<tr><td>${({ budgetbeheer: 'Budgetbeheer', schuldregeling: 'Schuldregeling', bewind_medisch: 'Beschermingsbewind (medisch)', bewind_schuld: 'Schuldenbewind', schuldhulpmaatje: 'Schuldhulpmaatje/Humanitas', over_rood: 'Over Rood' })[k]}</td><td>✅ Ja</td></tr>`)
         .join('')
     }${state.cb_overig_aanvr && state.overig_aanvr_txt ? `<tr><td>Overig: ${state.overig_aanvr_txt}</td><td>✅ Ja</td></tr>` : ''}</tbody></table>`
   : '<p style="font-size:9.5pt">Geen dienstverlening geselecteerd.</p>'}
