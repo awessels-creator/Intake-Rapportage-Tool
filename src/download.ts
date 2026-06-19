@@ -7,8 +7,6 @@ import {
   Header, Footer, PageNumber
 } from 'docx'
 
-import { saveAs } from 'file-saver'
-
 const ORANGE = 'EA5403'
 const DARK_GREEN = '1A4B2D'
 const RED = '9D3D1D'
@@ -508,5 +506,12 @@ export async function downloadWord(state: FormState) {
   })
 
   const blob = await Packer.toBlob(doc)
-  saveAs(blob, `Intakerapportage_${naam.replace(/\s+/g, '_')}_${datum}.docx`)
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_${datum}.docx`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
