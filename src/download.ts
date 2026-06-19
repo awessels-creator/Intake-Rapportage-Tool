@@ -91,7 +91,7 @@ export function downloadWord(state: FormState) {
     .map(k => ({ cr_water: 'water', cr_energie: 'energie', cr_ontruiming: 'ontruiming', cr_anders: 'anders' }[k] || k))
 
   const html =`<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Intakerapportage ${naam}</title>
-<style>body{font-family:Arial,sans-serif;font-size:10.5pt;color:#111111;margin:1.8cm;line-height:1.4}h1{font-size:17pt;border-bottom:3px solid #ea5403;padding-bottom:5px;margin-bottom:6px}h2{font-size:11.5pt;color:#ea5403;margin-top:8px;margin-bottom:2px;border-bottom:1px solid #e0e0e0;padding-bottom:2px}h3{font-size:10.5pt;color:#555555;margin-top:6px;margin-bottom:2px}p{margin:2px 0}table{border-collapse:collapse;width:100%;font-size:9.5pt;margin-top:4px}th{background:#ea5403;color:#fff;padding:4px 7px;text-align:left}td{padding:4px 7px;border:1px solid #e0e0e0}tr:nth-child(even)td{background:#f2f2f2}.nt td{border:none!important;background:transparent!important;color:#555}.meta{color:#666;font-size:9pt}.footer{margin-top:26px;border-top:1px solid #e0e0e0;padding-top:6px;font-size:8.5pt;color:#888}</style>
+<style>body{font-family:Arial,sans-serif;font-size:10.5pt;color:#111111;margin:1cm 1.2cm;line-height:1.3}h1{font-size:16pt;border-bottom:3px solid #ea5403;padding-bottom:3px;margin-bottom:4px}h2{font-size:11pt;color:#ea5403;margin-top:5px;margin-bottom:1px;border-bottom:1px solid #e0e0e0;padding-bottom:1px}h3{font-size:10pt;color:#555555;margin-top:3px;margin-bottom:1px}p{margin:1px 0}table{border-collapse:collapse;width:100%;font-size:9.5pt;margin-top:2px}th{background:#ea5403;color:#fff;padding:3px 6px;text-align:left}td{padding:3px 6px;border:1px solid #e0e0e0}tr:nth-child(even)td{background:#f2f2f2}.nt td{border:none!important;background:transparent!important;color:#555}.meta{color:#666;font-size:9pt;margin:2px 0}.footer{margin-top:12px;border-top:1px solid #e0e0e0;padding-top:4px;font-size:8.5pt;color:#888}</style>
 </head><body>
 <h1>Intakerapportage Geldzorgen Schuldhulpverlening</h1>
 <p class="meta">Datum: ${datum} | Consulent: ${consulent} | Cliëntnr: ${state.clientnr || '—'} | <em>Vertrouwelijk</em></p>
@@ -189,11 +189,11 @@ ${state.conclusie ? `<h2>14. Conclusie / Afspraken / Afsluiting</h2><p style="fo
 <div class="footer">Rapportage: ${new Date().toLocaleDateString('nl-NL')} | Consulent: ${consulent} | Cliëntnr: ${state.clientnr || '—'} | Vertrouwelijk — Geldzorgen Schuldhulpverlening Meppel 2026</div>
 </body></html>`
 
-  const blob = new Blob([html], { type: 'application/msword' })
+  const blob = new Blob([html], { type: 'text/html' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_${datum}.doc`
+  a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_${datum}.htm`
   a.click()
   URL.revokeObjectURL(url)
 }
