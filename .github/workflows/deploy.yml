@@ -57,12 +57,6 @@ jobs:
           # Set base path for the beta version
           VITE_BASE_URL: /Intake-Rapportage-Tool/beta/
 
-      - name: Fix asset paths for GitHub Pages
-        run: |
-          sed -i 's|src="/Intake-Rapportage-Tool/beta/|src="./|g' dist/index.html
-          sed -i 's|href="/Intake-Rapportage-Tool/beta/|href="./|g' dist/index.html
-          sed -i 's|url(/Intake-Rapportage-Tool/beta/|url(./|g' dist/assets/*.css 2>/dev/null || true
-
       - name: Deploy to /beta
         uses: JamesIves/github-pages-deploy-action@v4
         with:
