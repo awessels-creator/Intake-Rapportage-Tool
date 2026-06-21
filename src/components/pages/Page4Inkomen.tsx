@@ -32,13 +32,13 @@ export default function Page4Inkomen() {
     <div>
       <Card icon={<BsCashStack />} title="Inkomen">
         <div className="bg-warm border border-rule rounded-lg p-3 text-[0.77rem] mb-3">
-          <strong className="text-[0.79rem]">Bijstandsnormen 1 januari 2026 (netto excl. vakantietoeslag)</strong>
+          <strong className="text-[0.79rem]">Bijstandsnormen 1 juli 2026 (netto excl. vakantietoeslag)</strong>
           <table className="w-full mt-1 text-[0.76rem]">
             <tbody>
-              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande / Alleenstaande ouder (21+)</td><td className="font-semibold">€ 1.331,42/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Samenwonend / Gehuwd</td><td className="font-semibold">€ 1.902,09/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — alleenstaand (AIO SVB)</td><td className="font-semibold">€ 1.430,29/mnd</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — beiden AOW-gerechtigd</td><td className="font-semibold">€ 2.041,11/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande / Alleenstaande ouder (21+)</td><td className="font-semibold">€ 1.348,49/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Samenwonend / Gehuwd</td><td className="font-semibold">€ 1.926,40/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — alleenstaand (AIO SVB)</td><td className="font-semibold">€ 1.450,99/mnd</td></tr>
+              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde — beiden AOW-gerechtigd</td><td className="font-semibold">€ 2.071,51/mnd</td></tr>
             </tbody>
           </table>
         </div>

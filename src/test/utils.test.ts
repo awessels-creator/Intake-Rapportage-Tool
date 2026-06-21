@@ -25,20 +25,20 @@ const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: f
 // ─── NORM (issue #13) ────────────────────────────────────────────────────────
 
 describe('NORM', () => {
-  test('alleenstaand is 1331.42 (excl. vakantietoeslag)', () => {
-    expect(NORM['alleenstaand']).toBeCloseTo(1331.42, 2)
+  test('alleenstaand is 1348.49 (excl. vakantietoeslag)', () => {
+    expect(NORM['alleenstaand']).toBeCloseTo(1348.49, 2)
   })
 
-  test('samenwonend is 1902.09 (excl. vakantietoeslag)', () => {
-    expect(NORM['samenwonend']).toBeCloseTo(1902.09, 2)
+  test('samenwonend is 1926.40 (excl. vakantietoeslag)', () => {
+    expect(NORM['samenwonend']).toBeCloseTo(1926.40, 2)
   })
 
-  test('pensioen_alleen is 1430.29 (excl. vakantietoeslag)', () => {
-    expect(NORM['pensioen_alleen']).toBeCloseTo(1430.29, 2)
+  test('pensioen_alleen is 1450.99 (excl. vakantietoeslag)', () => {
+    expect(NORM['pensioen_alleen']).toBeCloseTo(1450.99, 2)
   })
 
-  test('pensioen_paar is 2041.11 (excl. vakantietoeslag)', () => {
-    expect(NORM['pensioen_paar']).toBeCloseTo(2041.11, 2)
+  test('pensioen_paar is 2071.51 (excl. vakantietoeslag)', () => {
+    expect(NORM['pensioen_paar']).toBeCloseTo(2071.51, 2)
   })
 })
 
