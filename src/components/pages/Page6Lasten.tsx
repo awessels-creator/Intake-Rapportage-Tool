@@ -66,10 +66,10 @@ export default function Page6Lasten() {
     return msgs
   })()
 
-  // BVV berekening
+  // BVV berekening (90% van bijstandsnorm, conform wet)
   const bvv = (() => {
     if (!ink || !norm) return null
-    const bvv_ber = ink <= norm ? ink * 0.95 : norm * 0.95
+    const bvv_ber = ink <= norm ? ink * 0.90 : norm * 0.90
     const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
     const bvv_max = BVV_MAX[maxKey] || BVV_MAX['alleenstaand']
     const bvv_val = Math.min(bvv_ber, bvv_max)
@@ -204,7 +204,7 @@ export default function Page6Lasten() {
 
       {bvv && (
         <div className="bg-white rounded-xl border border-rule shadow-sm p-4 mb-4">
-          <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatief, jan 2026)</div>
+          <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatief, jul 2026)</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Berekende BVV', value: bvv.bvv_ber },
@@ -221,7 +221,7 @@ export default function Page6Lasten() {
             ))}
           </div>
           <div className="text-[0.7rem] text-inkl mt-2">
-            {bvv.low ? 'Laag inkomen: 95% × netto inkomen' : 'Midden/hoog inkomen: 95% × bijstandsnorm'}. Exacte berekening via uwbeslagvrijevoet.nl.
+            {bvv.low ? 'Laag inkomen: 90% × netto inkomen' : 'Midden/hoog inkomen: 90% × bijstandsnorm'}. Exacte berekening via uwbeslagvrijevoet.nl.
           </div>
         </div>
       )}

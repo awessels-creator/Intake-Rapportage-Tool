@@ -14,7 +14,7 @@ export function downloadWord(state: FormState) {
   const schulden = state.schuldenData.reduce((s, d) => s + (parseFloat(d.b) || 0), 0)
   const ls = state.leefsituatie
   const hK = state.kinderen === 'ja'
-  const bvv_ber = ink <= norm ? ink * 0.95 : norm * 0.95
+  const bvv_ber = ink <= norm ? ink * 0.90 : norm * 0.90
   const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
   const bvv = Math.min(bvv_ber, BVV_MAX[maxKey] || BVV_MAX['alleenstaand'])
 
