@@ -5,13 +5,30 @@ on:
     branches:
       - dev
       - juli-2026
+      - main
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # JOB 1: Deploy Dev Branch (Modern 2.x) to /root
+  # JOB 0: Deploy index.html to root of gh-pages (from main)
+  deploy-index:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy index to root
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: root
+          branch: gh-pages
+          target-folder: .
+          clean: false
+
+  # JOB 1: Deploy Dev Branch to /root
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
