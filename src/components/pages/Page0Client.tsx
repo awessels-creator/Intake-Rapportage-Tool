@@ -7,6 +7,7 @@ import RadioGroup from '../shared/RadioGroup'
 import Alert from '../shared/Alert'
 import { HiUser, HiExclamationTriangle, HiOutlineBanknotes, HiXMark, HiArrowRight, HiOutlineAcademicCap, HiPlus } from 'react-icons/hi2'
 import { MdOutlineElderly, MdChildCare } from 'react-icons/md'
+import { useEffect } from 'react'
 
 const L = 'block text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em]'
 const SL = 'text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em] mt-[3px] mb-[7px] pb-[3px] border-b border-rule'
@@ -16,6 +17,44 @@ const row4 = 'grid grid-cols-4 gap-[11px] mb-[11px]'
 
 export default function Page0Client() {
   const { state, set, goTo } = useForm()
+
+  // Automatische leefsituatie-berekening op basis van leeftijden
+  useEffect(() => {
+    const clientAge = lftdN(state.geboortedatum)
+    const partnerAge = lftdN(state.partner_geb)
+    const hasPartner = state.heeft_partner === 'ja'
+
+    if (clientAge < 21) return // jonger dan 21, geen automatische aanpassing
+
+    let newLeefsituatie = ''
+    const aowAge = 67
+
+    if (hasPartner && partnerAge >= 21) {
+      // Samenwonend
+      if (clientAge >= aowAge && partnerAge >= aowAge) {
+        newLeefsituatie = 'pensioen_paar'
+      } else if (clientAge >= aowAge) {
+        newLeefsituatie = 'pensioen_gemengd'
+      } else {
+        newLeefsituatie = 'samenwonend'
+      }
+    } else if (hasPartner && partnerAge > 0 && partnerAge < 21) {
+      // Partner jonger dan 21
+      newLeefsituatie = 'alleenstaand'
+    } else if (!hasPartner) {
+      // Alleenstaand
+      if (clientAge >= aowAge) {
+        newLeefsituatie = 'pensioen_alleen'
+      } else {
+        newLeefsituatie = 'alleenstaand'
+      }
+    }
+
+    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie) {
+      const norm = NORM[newLeefsituatie]
+      set({ leefsituatie: newLeefsituatie, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
+    }
+  }, [state.geboortedatum, state.partner_geb, state.heeft_partner, state.leefsituatie, set])
 
   const isPensioen = state.leefsituatie.startsWith('pensioen')
   const age = lftdN(state.geboortedatum)
