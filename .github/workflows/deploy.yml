@@ -21,14 +21,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy index to root
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: root
-          branch: gh-pages
-          target-folder: .
-          clean: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./root
+          keep_files: true
 
-  # JOB 1: Deploy Dev Branch to /root
+  # JOB 1: Deploy Dev Branch to /app
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
@@ -50,13 +50,14 @@ jobs:
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/
 
-      - name: Deploy to /root
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy to /app
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist
-          branch: gh-pages
-          target-folder: root
-          clean: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist
+          destination_dir: app
+          keep_files: true
 
   # JOB 2: Deploy Juli 2026 Branch to /juli-2026
   deploy-juli-2026:
@@ -81,9 +82,10 @@ jobs:
           VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026/
 
       - name: Deploy to /juli-2026
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist
-          branch: gh-pages
-          target-folder: juli-2026
-          clean: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist
+          destination_dir: juli-2026
+          keep_files: true
