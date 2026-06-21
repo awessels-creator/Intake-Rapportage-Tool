@@ -5,87 +5,47 @@ on:
     branches:
       - dev
       - juli-2026
-      - main
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # JOB 0: Deploy index.html to root of gh-pages (from main)
-  deploy-index:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy index to root
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./root
-          keep_files: true
-
-  # JOB 1: Deploy Dev Branch to /app
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Dev
-        run: npm run build
+      - run: npm ci
+      - run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/
-
-      - name: Deploy to /app
+      - name: Deploy to root
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./dist
-          destination_dir: app
-          keep_files: true
 
-  # JOB 2: Deploy Juli 2026 Branch to /juli-2026
   deploy-juli-2026:
     if: github.ref == 'refs/heads/juli-2026'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Juli 2026
-        run: npm run build
+      - run: npm ci
+      - run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026/
-
       - name: Deploy to /juli-2026
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./dist
           destination_dir: juli-2026
-          keep_files: true
