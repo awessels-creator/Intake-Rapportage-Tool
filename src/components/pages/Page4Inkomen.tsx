@@ -46,7 +46,10 @@ export default function Page4Inkomen() {
         <div className={row2}>
           <div>
             <label className={L}>Bijstandsnorm (netto/mnd)</label>
-            <EuroInput value={state.bijstandsnorm} onChange={v => set({ bijstandsnorm: v })} placeholder="1348.49" readOnly />
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-inkl text-[0.8rem] pointer-events-none select-none">€</span>
+              <input type="text" value={state.bijstandsnorm} readOnly className="inp inp-euro bg-warm" placeholder="1348.49" />
+            </div>
             {state.leefsituatie && NORM[state.leefsituatie] && (
               <div className="text-[0.7rem] text-accent mt-0.5">Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} excl. VT (€{Math.round(NORM[state.leefsituatie] * 1.05).toLocaleString('nl-NL')} incl. VT)</div>
             )}
