@@ -3,94 +3,61 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
       - dev
       - juli-2026
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # JOB 1: Deploy Main Branch (Legacy 1.0.0) to Root /
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare Prod Folder
-        run: |
-          mkdir prod_build
-          cp index.html prod_build/
-          cp -r public prod_build/ || true
-
-      - name: Deploy to Root
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: prod_build
-          branch: gh-pages
-          target-folder: .
-          clean: false
-
-  # JOB 2: Deploy Dev Branch (Modern 2.x) to /beta
-  deploy-beta:
+  deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Build Beta
-        run: npm run build
+      - run: npm run build
         env:
-          # Set base path for the beta version
-          VITE_BASE_URL: /Intake-Rapportage-Tool/beta/
+          VITE_BASE_URL: /Intake-Rapportage-Tool/
 
-      - name: Deploy to /beta
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy dev to root
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist # Vite build output
-          branch: gh-pages
-          target-folder: beta
-          clean: false # Do not delete the root files
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          keep_files: true
 
-  # JOB 3: Deploy Juli 2026 Branch to /juli-2026
   deploy-juli-2026:
     if: github.ref == 'refs/heads/juli-2026'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Build Juli 2026
-        run: npm run build
+      - run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026/
 
-      - name: Deploy to /juli-2026
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy juli to /juli-2026
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist
-          branch: gh-pages
-          target-folder: juli-2026
-          clean: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: juli-2026
+          keep_files: true
