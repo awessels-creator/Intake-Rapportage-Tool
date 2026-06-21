@@ -19,15 +19,6 @@ export default function Page2Crisis() {
   return (
     <div>
       <Card icon={<HiBellAlert />} title="Crisis & Urgentie">
-        <div className={row2} >
-          <div>
-            <label className={L}>Datum intakegesprek</label>
-            <input type="date" className="inp bg-warm" value={state.datum_intake} disabled />
-            <div className="text-[0.67rem] text-inkl mt-0.5 font-medium">Gelijk aan datum op pag. 1</div>
-          </div>
-        </div>
-
-        <hr className="border-rule my-[13px]" />
         <div className="mb-[11px]">
           <label className={L}>Is er sprake van een crisissituatie?</label>
           <RadioGroup value={state.crisis} options={[{ value: 'nee', label: 'Nee' }, { value: 'ja', label: 'Ja' }]} onChange={v => set({ crisis: v })} />
