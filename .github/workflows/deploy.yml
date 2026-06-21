@@ -11,8 +11,8 @@ permissions:
   contents: write
 
 jobs:
-  # JOB 1: Deploy Dev Branch (Modern 2.x) to Root /
-  deploy-beta:
+  # JOB 1: Deploy Dev Branch (Modern 2.x) to /root
+  deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
@@ -28,17 +28,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Beta
+      - name: Build Dev
         run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/
 
-      - name: Deploy to Root
+      - name: Deploy to /root
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
-          target-folder: .
+          target-folder: root
           clean: false
 
   # JOB 2: Deploy Juli 2026 Branch to /juli-2026
