@@ -16,36 +16,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+
       - run: npm ci
+
       - run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/
-      - name: Deploy to root
+
+      - name: Deploy dev to root
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          keep_files: true
 
   deploy-juli-2026:
     if: github.ref == 'refs/heads/juli-2026'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+
       - run: npm ci
+
       - run: npm run build
         env:
           VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026/
-      - name: Deploy to /juli-2026
+
+      - name: Deploy juli to /juli-2026
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           destination_dir: juli-2026
+          keep_files: true
