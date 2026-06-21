@@ -3,38 +3,15 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
       - dev
       - juli-2026
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # JOB 1: Deploy Main Branch (Legacy 1.0.0) to Root /
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare Prod Folder
-        run: |
-          mkdir prod_build
-          cp index.html prod_build/
-          cp -r public prod_build/ || true
-
-      - name: Deploy to Root
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: prod_build
-          branch: gh-pages
-          target-folder: .
-          clean: false
-
-  # JOB 2: Deploy Dev Branch (Modern 2.x) to /beta
+  # JOB 1: Deploy Dev Branch (Modern 2.x) to Root /
   deploy-beta:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
@@ -54,18 +31,17 @@ jobs:
       - name: Build Beta
         run: npm run build
         env:
-          # Set base path for the beta version
-          VITE_BASE_URL: /Intake-Rapportage-Tool/beta/
+          VITE_BASE_URL: /Intake-Rapportage-Tool/
 
-      - name: Deploy to /beta
+      - name: Deploy to Root
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # Vite build output
+          folder: dist
           branch: gh-pages
-          target-folder: beta
-          clean: false # Do not delete the root files
+          target-folder: .
+          clean: false
 
-  # JOB 3: Deploy Juli 2026 Branch to /juli-2026
+  # JOB 2: Deploy Juli 2026 Branch to /juli-2026
   deploy-juli-2026:
     if: github.ref == 'refs/heads/juli-2026'
     runs-on: ubuntu-latest
