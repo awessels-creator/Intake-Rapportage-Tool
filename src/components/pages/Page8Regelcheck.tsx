@@ -4,7 +4,7 @@ import { getTotaalInkomen, getTotaalLasten, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
-import { HiOutlineMagnifyingGlass, HiOutlineInformationCircle, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle } from 'react-icons/hi2'
+import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle } from 'react-icons/hi2'
 import { HiOutlineFaceSmile } from 'react-icons/hi2'
 import { MdOutlineHandshake } from 'react-icons/md'
 
