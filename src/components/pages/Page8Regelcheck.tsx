@@ -106,7 +106,6 @@ export default function Page8Regelcheck() {
 
   const fdmaAlert = (() => {
     if (!pct) return null
-    if (isPensioen) return { variant: 'info' as const, icon: <HiOutlineInformationCircle />, msg: 'FDMA — niet van toepassing voor pensioengerechtigden' }
     if (pct < 110) return { variant: 'ok' as const, icon: <HiOutlineFaceSmile />, msg: `FDMA — cliënt heeft hier waarschijnlijk recht op (${pct.toFixed(0)}% norm <110%). Aanvragen bij gemeente Meppel als nog niet gedaan.` }
     if (pct >= 110) return { variant: 'warn' as const, icon: <HiXMark />, msg: `FDMA — inkomen te hoog (${pct.toFixed(0)}% ≥110%). Geen recht op FDMA op basis van huidig inkomen.` }
     return null

@@ -60,6 +60,7 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   const pct = norm && ink ? (ink / norm) * 100 : 0
   const ls = state.leefsituatie
   const hK = state.kinderen === 'ja'
+  const isPensioen = ls.startsWith('pensioen')
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0)
   const grens = VGRENS[ls] || 8000
   const tot = getTotaalLasten(state)
@@ -68,7 +69,7 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   const items: AdviesItem[] = []
   if (norm && ink) {
     if (pct < 100) items.push({ p: 'urg', t: 'Aanvullende bijstand / AIO aanvragen', b: `Inkomen €${ink.toFixed(0)} onder norm €${norm.toFixed(0)}. Direct bespreken bij gemeente of SVB.`, on: true, custom: false })
-    if (pct >= 100 && pct < 105) items.push({ p: 'urg', t: 'IIT — tijdsduur controleren', b: 'Inkomen op bijstandsniveau. Na 3 jaar ≤105% norm kan IIT worden aangevraagd.', on: true, custom: false })
+    if (pct >= 100 && pct < 105 && !isPensioen) items.push({ p: 'urg', t: 'IIT — tijdsduur controleren', b: 'Inkomen op bijstandsniveau. Na 3 jaar ≤105% norm kan IIT worden aangevraagd.', on: true, custom: false })
     if (pct < 110) items.push({ p: 'med', t: 'FDMA aanvragen bij gemeente Meppel', b: 'Inkomen onder 110% norm.', on: true, custom: false })
     if (pct < 120) items.push({ p: 'med', t: 'Kwijtschelding GBLT + gemeentelijke belastingen', b: 'Inkomen onder 120% norm. Aanvragen indien nog niet gedaan.', on: true, custom: false })
   }

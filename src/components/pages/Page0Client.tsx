@@ -140,7 +140,7 @@ export default function Page0Client() {
 
         {isPensioen && (
           <Alert variant="info" icon={<MdOutlineElderly />} title="Pensioengerechtigde">
-            AIO-norm via SVB. IIT en FDMA niet van toepassing. Kwijtschelding wel mogelijk.
+            AOW-norm via SVB. IIT niet van toepassing (alleen voor niet-pensioengerechtigden). FDMA en kwijtschelding wel mogelijk indien inkomen ≤110% norm.
           </Alert>
         )}
         {pensioenAlert && (
