@@ -92,7 +92,7 @@ export default function Page0Client() {
             </select>
             {state.leefsituatie && NORM[state.leefsituatie] && (
               <div className="text-[0.67rem] text-accent mt-0.5 font-medium">
-                Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} (jan 2026, aanpasbaar)
+                Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} (jul 2026, aanpasbaar)
               </div>
             )}
           </div>

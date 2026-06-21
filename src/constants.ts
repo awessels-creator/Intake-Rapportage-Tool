@@ -1,9 +1,9 @@
 const NORM_PERIODES: { vanaf: string; normen: Record<string, number> }[] = [
   {
-    vanaf: '2026-01-01',
+    vanaf: '2026-07-01',
     normen: {
-      alleenstaand: 1331.42, alleenstaande_ouder: 1331.42, samenwonend: 1902.09,
-      pensioen_alleen: 1430.29, pensioen_paar: 2041.11, pensioen_gemengd: 1902.09,
+      alleenstaand: 1348.49, alleenstaande_ouder: 1348.49, samenwonend: 1926.40,
+      pensioen_alleen: 1450.99, pensioen_paar: 2071.51, pensioen_gemengd: 1926.40,
     },
   },
 ]
