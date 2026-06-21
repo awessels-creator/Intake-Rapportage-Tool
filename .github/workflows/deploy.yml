@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - juli-2026
   workflow_dispatch: # Allows manual trigger
 
 permissions:
@@ -63,3 +64,33 @@ jobs:
           branch: gh-pages
           target-folder: beta
           clean: false # Do not delete the root files
+
+  # JOB 3: Deploy Juli 2026 Branch to /juli-2026
+  deploy-juli-2026:
+    if: github.ref == 'refs/heads/juli-2026'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Juli 2026
+        run: npm run build
+        env:
+          VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026/
+
+      - name: Deploy to /juli-2026
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          target-folder: juli-2026
+          clean: false
