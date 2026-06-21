@@ -29,9 +29,9 @@ export const NIBUD: Record<string, number> = {
 }
 
 export const BVV_MAX: Record<string, number> = {
-  alleenstaand: 2219.61, alleenstaande_ouder: 2559.04, samenwonend: 2918.44,
-  samenwonend_kind: 3195.85, pensioen_alleen: 2219.61, pensioen_paar: 2918.44,
-  pensioen_gemengd: 2918.44,
+  alleenstaand: 2191.42, alleenstaande_ouder: 2526.69, samenwonend: 2881.41,
+  samenwonend_kind: 3155.31, pensioen_alleen: 2191.42, pensioen_paar: 2881.41,
+  pensioen_gemengd: 2881.41,
 }
 
 export interface SchuldInfo { pref: string; lei: string }
