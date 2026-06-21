@@ -19,11 +19,7 @@ export default function Page2Crisis() {
   return (
     <div>
       <Card icon={<HiBellAlert />} title="Crisis & Urgentie">
-        <div className={row2}>
-          <div>
-            <label className={L}>Naam medewerker / consulent</label>
-            <input className="inp" value={state.naam_consulent} onChange={e => set({ naam_consulent: e.target.value })} placeholder="Naam consulent geldzorgen" />
-          </div>
+        <div className={row2} >
           <div>
             <label className={L}>Datum intakegesprek</label>
             <input type="date" className="inp bg-warm" value={state.datum_intake} disabled />

@@ -75,7 +75,7 @@ function ntTable(rows: [string, string][]): Table {
 export async function downloadWord(state: FormState) {
   const naam = `${state.voornaam} ${state.achternaam}`.trim() || 'Onbekend'
   const datum = state.datum_intake || new Date().toISOString().split('T')[0]
-  const consulent = state.naam_consulent || state.naam_consulent2 || '—'
+  const consulent = state.naam_consulent2 || '—'
   const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)
   const pct = norm ? ink / norm * 100 : 0
