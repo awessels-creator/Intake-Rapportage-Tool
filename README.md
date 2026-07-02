@@ -7,7 +7,7 @@ Een professionele, interactieve tool voor de intake van schuldhulpverlening en g
 ## Direct Gebruiken
 
 De tool is direct toegankelijke via de browser op:
-👉 [https://awessels-creator.github.io/Intake-Rapportage-Tool/](https://awessels-creator.github.io/Intake-Rapportage-Tool/)
+👉 [https://awessels-creator.github.io/Intake-Rapportage-Tool/juli-2026/](https://awessels-creator.github.io/Intake-Rapportage-Tool/juli-2026/) *(normen 2e helft 2026)*
 
 ## Over het project
 
