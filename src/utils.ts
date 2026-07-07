@@ -89,6 +89,85 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   return items
 }
 
+export type RegelingVoorstel =
+  | { recht: 'ja'; reden: string }
+  | { recht: 'nee'; reden: string }
+  | { recht: 'check'; reden: string }
+  | { recht: 'nvt'; reden: string }
+
+export interface RegelingBeoordeling {
+  fdma: RegelingVoorstel
+  kwijtschelding: RegelingVoorstel
+  iit: RegelingVoorstel
+  kindsupport: RegelingVoorstel
+  voedselbank: RegelingVoorstel
+}
+
+// Voedselbank ZWD: norm besteedbaar inkomen voor voeding+kleding (per 2025)
+const VB_NORM_EENPERS = 400
+const VB_NORM_PERPERS = 120
+
+function huishoudenGrootte(state: FormState): number {
+  if (state.leefsituatie.startsWith('samenwonend') || state.leefsituatie.startsWith('pensioen_paar') || state.leefsituatie.startsWith('pensioen_gemengd')) {
+    return 2 + (state.kinderen === 'ja' ? (state.kinderenData.length || 1) : 0)
+  }
+  return 1 + (state.kinderen === 'ja' ? (state.kinderenData.length || 1) : 0)
+}
+
+export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
+  const norm = parseFloat(state.bijstandsnorm) || 0
+  const ink = getTotaalInkomen(state)
+  const pct = norm && ink ? (ink / norm) * 100 : 0
+  const ls = state.leefsituatie
+  const hK = state.kinderen === 'ja'
+  const isPensioen = ls.startsWith('pensioen')
+  const tot = getTotaalLasten(state)
+  const best = ink - tot
+  const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0)
+  const grens = VGRENS[ls] || 8000
+  const overwaarde = parseFloat(state.overwaarde) || 0
+
+  // FDMA — inkomen <=110% norm, vermogen <= grens, overwaarde <= 67500 (bij koop)
+  let fdma: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
+  if (norm && ink) {
+    if (pct > 110) fdma = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (>110%).` }
+    else if (sp > grens) fdma = { recht: 'nee', reden: `Vermogen €${nl(sp)} boven grens €${nl(grens)}.` }
+    else if (state.eigen_woning === 'ja' && overwaarde > 67500) fdma = { recht: 'nee', reden: `Overwaarde €${nl(overwaarde)} > €67.500.` }
+    else fdma = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (≤110%), vermogen €${nl(sp)} (≤€${nl(grens)}).` }
+  }
+
+  // Kwijtschelding — inkomen <120% norm
+  let kwijtschelding: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
+  if (norm && ink) {
+    if (pct >= 120) kwijtschelding = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
+    else kwijtschelding = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
+  }
+
+  // IIT — >=3 jaar aaneengesloten <=105% norm, niet voor pensioengerechtigden
+  let iit: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
+  if (norm && ink) {
+    if (isPensioen) iit = { recht: 'nvt', reden: 'Niet voor pensioengerechtigden.' }
+    else if (pct > 105) iit = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (>105%).` }
+    else iit = { recht: 'check', reden: `Inkomen ${pct.toFixed(0)}% norm (≤105%) — controleer 3-jaars-termijn (IIT-datum).` }
+  }
+
+  // Kindsupport — alleen bij kinderen
+  const kindsupport: RegelingVoorstel = !hK
+    ? { recht: 'nvt', reden: 'Geen kinderen geregistreerd.' }
+    : { recht: 'ja', reden: 'Kinderen in gezin — altijd bespreken.' }
+
+  // Voedselbank — besteedbaar inkomen negatief OF onder VB-norm (400 + 120 p.p.)
+  const vbNorm = VB_NORM_EENPERS + VB_NORM_PERPERS * (huishoudenGrootte(state) - 1)
+  let voedselbank: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen).' }
+  if (ink > 0) {
+    if (best < 0) voedselbank = { recht: 'ja', reden: `Besteedbaar inkomen €${nl(best)} (negatief).` }
+    else if (best < vbNorm) voedselbank = { recht: 'ja', reden: `Besteedbaar inkomen €${nl(best)} < VB-norm €${nl(vbNorm)} (${huishoudenGrootte(state)} pers.).` }
+    else voedselbank = { recht: 'nee', reden: `Besteedbaar inkomen €${nl(best)} ≥ VB-norm €${nl(vbNorm)}.` }
+  }
+
+  return { fdma, kwijtschelding, iit, kindsupport, voedselbank }
+}
+
 export function lftd(geb: string): string {
   if (!geb) return '—'
   const n = lftdN(geb)

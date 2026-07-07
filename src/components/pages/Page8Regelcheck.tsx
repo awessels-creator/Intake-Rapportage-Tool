@@ -4,12 +4,29 @@ import { getTotaalInkomen, getTotaalLasten, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
-import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle } from 'react-icons/hi2'
+import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle, HiMiniXCircle } from 'react-icons/hi2'
 import { HiOutlineFaceSmile } from 'react-icons/hi2'
 import { MdOutlineHandshake } from 'react-icons/md'
+import { evaluateRegelingen } from '../../utils'
+import type { RegelingVoorstel } from '../../utils'
 
 const L = 'block text-[.76rem] text-inkl mb-0.5 font-medium'
 const row2 = 'grid grid-cols-2 gap-3 mb-3'
+
+function VoorstelBadge({ v }: { v: RegelingVoorstel }) {
+  const map = {
+    ja: { cls: 'bg-oks text-ok-dark', icon: <HiCheck />, label: 'Voorstel: recht op' },
+    nee: { cls: 'bg-warns text-warn-dark', icon: <HiMiniXCircle />, label: 'Voorstel: geen recht' },
+    check: { cls: 'bg-golds text-gold-dark', icon: <HiQuestionMarkCircle />, label: 'Controleren' },
+    nvt: { cls: 'bg-gray-100 text-inkl', icon: <HiXMark />, label: 'N.v.t.' },
+  }[v.recht]
+  return (
+    <div className={`flex items-start gap-1.5 rounded-md px-2 py-1 mb-1.5 text-[0.72rem] font-medium ${map.cls}`}>
+      <span className="mt-0.5">{map.icon}</span>
+      <span><span className="font-semibold">{map.label}:</span> {v.reden}</span>
+    </div>
+  )
+}
 
 type Indicatie = 'ja' | 'nee' | 'twijfel' | 'nvt'
 
@@ -34,6 +51,7 @@ export default function Page8Regelcheck() {
   const grens = VGRENS[ls] || 8000
   const tot = getTotaalLasten(state)
   const best = ink - tot
+  const beoordeling = evaluateRegelingen(state)
 
   const iitJr = yearsSince(state.iit_datum) || 0
 
@@ -143,6 +161,7 @@ export default function Page8Regelcheck() {
 
         <div className={row2}>
           <div>
+            <VoorstelBadge v={beoordeling.fdma} />
             <label className={L}>FDMA aangevraagd?</label>
             <select className="inp" value={state.fdma} onChange={e => set({ fdma: e.target.value })}>
               <option value="">— Onbekend —</option>
@@ -153,6 +172,7 @@ export default function Page8Regelcheck() {
             <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm. <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria &amp; aanvraag</a></div>
           </div>
           <div>
+            <VoorstelBadge v={beoordeling.kwijtschelding} />
             <label className={L}>Kwijtschelding GBLT?</label>
             <select className="inp" value={state.kwgt} onChange={e => set({ kwgt: e.target.value })}>
               <option value="">— Onbekend —</option>
@@ -165,6 +185,7 @@ export default function Page8Regelcheck() {
         </div>
         <div className={row2}>
           <div>
+            <VoorstelBadge v={beoordeling.kwijtschelding} />
             <label className={L}>Kwijtschelding gemeentelijke belastingen?</label>
             <select className="inp" value={state.kwgm} onChange={e => set({ kwgm: e.target.value })}>
               <option value="">— Onbekend —</option>
@@ -175,6 +196,7 @@ export default function Page8Regelcheck() {
             </select>
           </div>
           <div>
+            <VoorstelBadge v={beoordeling.kindsupport} />
             <label className={L}>Kindsupport Meppel</label>
             <select className="inp" value={state.kindsupport} onChange={e => set({ kindsupport: e.target.value })}>
               <option value="">— Onbekend —</option>
@@ -192,6 +214,7 @@ export default function Page8Regelcheck() {
 
         <div className={row2}>
           <div>
+            <VoorstelBadge v={beoordeling.voedselbank} />
             <label className={L}>Voedselbank?</label>
             <select className="inp" value={state.voedselbank} onChange={e => set({ voedselbank: e.target.value })}>
               <option value="">— Onbekend —</option>

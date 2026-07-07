@@ -1,6 +1,6 @@
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX } from './constants'
-import { getTotaalInkomen, getTotaalLasten, lftd, nl } from './utils'
+import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType,
@@ -88,6 +88,8 @@ export async function downloadWord(state: FormState) {
   const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
   const bvv = Math.min(bvv_ber, BVV_MAX[maxKey] || BVV_MAX['alleenstaand'])
 
+  const beoordeling = evaluateRegelingen(state)
+
   const children: (Paragraph | Table)[] = []
 
   children.push(h1('Intakerapportage Geldzorgen Schuldhulpverlening'))
@@ -171,11 +173,13 @@ export async function downloadWord(state: FormState) {
   children.push(simpleTable(['Regeling', 'Status', 'Bedrag', 'Beslag?'], TOESLAGEN.map(t => { const actief = state.toeslagenActief[t]; const v = state.toeslagenBedrag[t]; const bes = state.toeslagenBeslag[t]; const rijnaam = t === 'overig_ink' && state.toeslagenNaam?.[t] ? state.toeslagenNaam[t] : TOESLAG_NAMEN[t]; return [rijnaam, actief ? 'Actief' : '—', actief && v ? `€ ${parseFloat(v).toLocaleString('nl-NL')}` : '—', actief && bes ? 'Ja' : 'Nee'] })))
   children.push(h3('Aanvullende gemeentelijke regelingen & voorzieningen'))
   const iitTekst = state.iit === 'ja' ? 'Ja, aangevraagd / actief' : state.iit === 'nee' ? 'Nee, niet aangevraagd' : state.iit === 'check' ? 'Controleren' : state.iit === 'nvt' ? 'N.v.t.' : '—'
-  children.push(simpleTable(['Regeling', 'Status', 'Criteria / link'], [
-    ['Individuele Inkomenstoeslag (IIT)', iitTekst, '3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. https://www.meppel.nl/'],
-    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', '<110% norm. https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/'],
-    ['Kindsupport Meppel', state.kindsupport || '—', 'Ondersteuning gezinnen met kinderen in Meppel. https://kindsupportmeppel.nl/'],
-    ['Voedselbank Meppel', state.voedselbank || '—', 'Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/'],
+  const vTxt = (v: { recht: string; reden: string }) => `${v.recht === 'ja' ? 'Recht op' : v.recht === 'nee' ? 'Geen recht' : v.recht === 'nvt' ? 'N.v.t.' : 'Controleren'} — ${v.reden}`
+  children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / link'], [
+    ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), '3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. https://www.meppel.nl/'],
+    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), '<110% norm. https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/'],
+    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding), '<120% norm.'],
+    ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), 'Ondersteuning gezinnen met kinderen in Meppel. https://kindsupportmeppel.nl/'],
+    ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), 'Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/'],
   ]))
   children.push(spacer())
 
