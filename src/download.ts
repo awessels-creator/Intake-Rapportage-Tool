@@ -164,12 +164,20 @@ export async function downloadWord(state: FormState) {
   if (state.inkomenData.length > 0) { children.push(h3('Inkomstenbronnen')); children.push(simpleTable(['Bron / Werkgever', 'Type', 'Netto/mnd', 'Dienstverband', 'Beslag?'], state.inkomenData.map(d => [d.bron || '—', d.type || '—', `€ ${nl(parseFloat(d.netto) || 0)}`, d.uren || '—', d.beslag ? 'Ja' : 'Nee']))) }
   const beslagData = state.beslagData.filter(b => b.wie)
   if (beslagData.length > 0) { children.push(h3('Beslagleggende schuldeisers')); children.push(simpleTable(['Schuldeiser', 'Soort', 'Bedrag'], beslagData.map(b => [b.wie, b.soort || '—', b.bedrag ? `€ ${b.bedrag}/mnd` : 'Onbekend']))) }
-  children.push(para(`IIT: ${state.iit || '—'}`)); children.push(spacer())
+  children.push(spacer())
 
   // 8. Toeslagen
   children.push(h2('8. Toeslagen'))
   children.push(simpleTable(['Regeling', 'Status', 'Bedrag', 'Beslag?'], TOESLAGEN.map(t => { const actief = state.toeslagenActief[t]; const v = state.toeslagenBedrag[t]; const bes = state.toeslagenBeslag[t]; const rijnaam = t === 'overig_ink' && state.toeslagenNaam?.[t] ? state.toeslagenNaam[t] : TOESLAG_NAMEN[t]; return [rijnaam, actief ? 'Actief' : '—', actief && v ? `€ ${parseFloat(v).toLocaleString('nl-NL')}` : '—', actief && bes ? 'Ja' : 'Nee'] })))
-  children.push(para(`FDMA: ${state.fdma || '—'} | Kindsupport Meppel: ${state.kindsupport || '—'}`)); children.push(spacer())
+  children.push(h3('Aanvullende gemeentelijke regelingen & voorzieningen'))
+  const iitTekst = state.iit === 'ja' ? 'Ja, aangevraagd / actief' : state.iit === 'nee' ? 'Nee, niet aangevraagd' : state.iit === 'check' ? 'Controleren' : state.iit === 'nvt' ? 'N.v.t.' : '—'
+  children.push(simpleTable(['Regeling', 'Status', 'Criteria / link'], [
+    ['Individuele Inkomenstoeslag (IIT)', iitTekst, '3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. https://www.meppel.nl/'],
+    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', '<110% norm. https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/'],
+    ['Kindsupport Meppel', state.kindsupport || '—', 'Ondersteuning gezinnen met kinderen in Meppel. https://kindsupportmeppel.nl/'],
+    ['Voedselbank Meppel', state.voedselbank || '—', 'Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/'],
+  ]))
+  children.push(spacer())
 
   // 9. Vaste Lasten
   children.push(h2('9. Vaste Lasten'))

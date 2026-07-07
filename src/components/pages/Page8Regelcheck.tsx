@@ -139,7 +139,7 @@ export default function Page8Regelcheck() {
         <hr className="border-rule my-3" />
         <div className="text-[0.67rem] font-semibold text-inkl uppercase tracking-widest mb-2 pb-1 border-b border-rule">Gemeentelijke regelingen Meppel</div>
 
-        {fdmaAlert && <Alert variant={fdmaAlert.variant} icon={fdmaAlert.icon} className="mb-3">{fdmaAlert.msg}</Alert>}
+        {fdmaAlert && <Alert variant={fdmaAlert.variant} icon={fdmaAlert.icon} className="mb-3">{fdmaAlert.msg} <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Meer over FDMA →</a></Alert>}
 
         <div className={row2}>
           <div>
@@ -150,7 +150,7 @@ export default function Page8Regelcheck() {
               <option value="nee">Nee</option>
               <option value="nvt">N.v.t.</option>
             </select>
-            <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm</div>
+            <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm. <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria &amp; aanvraag</a></div>
           </div>
           <div>
             <label className={L}>Kwijtschelding GBLT?</label>
@@ -174,25 +174,21 @@ export default function Page8Regelcheck() {
               <option value="nee">Niet aangevraagd</option>
             </select>
           </div>
-          {hK && (
-            <div>
-              <label className={L}>Kindsupport Meppel</label>
-              <select className="inp" value={state.kindsupport} onChange={e => set({ kindsupport: e.target.value })}>
-                <option value="">— Onbekend —</option>
-                <option value="ja">Ja, actief gebruik</option>
-                <option value="aanvragen">Aanvragen aanbevolen</option>
-                <option value="nee">Niet van toepassing</option>
-              </select>
-              <div className="text-[0.7rem] text-inkl mt-0.5">Ondersteuning gezinnen met kinderen Meppel</div>
-            </div>
-          )}
+          <div>
+            <label className={L}>Kindsupport Meppel</label>
+            <select className="inp" value={state.kindsupport} onChange={e => set({ kindsupport: e.target.value })}>
+              <option value="">— Onbekend —</option>
+              <option value="ja">Ja, actief gebruik</option>
+              <option value="aanvragen">Aanvragen aanbevolen</option>
+              <option value="nee">Niet van toepassing</option>
+            </select>
+            <div className="text-[0.7rem] text-inkl mt-0.5">Ondersteuning gezinnen met kinderen Meppel. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">kindsupportmeppel.nl</a></div>
+          </div>
         </div>
 
-        {hK && (
-          <Alert variant="purp" icon={<MdOutlineHandshake />} title="Kindsupport Meppel — altijd bespreken!" className="mb-3">
-            Cliënt heeft kinderen. Vraag naar Kindsupport Meppel en leg gebruik vast.
-          </Alert>
-        )}
+        <Alert variant="purp" icon={<MdOutlineHandshake />} title="Kindsupport Meppel — altijd bespreken!" className="mb-3">
+          Ondersteuning voor gezinnen met kinderen in Meppel. Vraag altijd na of cliënt hier gebruik van (kan) maken en leg vast. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">Meer info →</a>
+        </Alert>
 
         <div className={row2}>
           <div>
@@ -203,6 +199,7 @@ export default function Page8Regelcheck() {
               <option value="aanvragen">Aanvragen aanbevolen</option>
               <option value="nee">Nee</option>
             </select>
+            <div className="text-[0.7rem] text-inkl mt-0.5">Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). <a href="https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria voedselhulp</a></div>
           </div>
         </div>
       </Card>
