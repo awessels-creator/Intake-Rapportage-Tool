@@ -20,15 +20,6 @@ export default function Page2Crisis() {
     <div>
       <Card icon={<HiBellAlert />} title="Crisis & Urgentie">
         <div className={row2}>
-          <div>
-            <label className={L}>Naam medewerker / consulent</label>
-            <input className="inp" value={state.naam_consulent} onChange={e => set({ naam_consulent: e.target.value })} placeholder="Naam consulent geldzorgen" />
-          </div>
-          <div>
-            <label className={L}>Datum intakegesprek</label>
-            <input type="date" className="inp bg-warm" value={state.datum_intake} disabled />
-            <div className="text-[0.67rem] text-inkl mt-0.5 font-medium">Gelijk aan datum op pag. 1</div>
-          </div>
         </div>
 
         <hr className="border-rule my-[13px]" />
@@ -51,11 +42,8 @@ export default function Page2Crisis() {
             <textarea className="inp" rows={3} value={state.crisis_toelichting} onChange={e => set({ crisis_toelichting: e.target.value })} placeholder="Beschrijf de crisissituatie en acties..." />
           </div>
         )}
-
-      </Card>
-
-      <Card icon={<HiOutlineDocumentText />} title="Reden aanmelding">
-        <div className="mb-[11px]">
+        
+        <div>
           <label className={L}>Reden aanmelding / hulpvraag</label>
           <textarea className="inp" rows={3} value={state.hulpvraag} onChange={e => set({ hulpvraag: e.target.value })} placeholder="Wat is de hulpvraag en het financiële probleem? Hoe is cliënt bij ons terechtgekomen?" />
         </div>
@@ -86,7 +74,7 @@ export default function Page2Crisis() {
                   <td><input className="inp uppercase" style={{ minWidth: 140 }} value={b.iban} placeholder="NL00 BANK..." onChange={e => set({ bankData: updArr(state.bankData, i, { iban: e.target.value }) })} /></td>
                   <td><input className="inp" style={{ minWidth: 100 }} value={b.naam} placeholder="T.n.v. ..." onChange={e => set({ bankData: updArr(state.bankData, i, { naam: e.target.value }) })} /></td>
                   <td>
-                    <select className="inp" style={{ minWidth: 75 }} value={b.type} onChange={e => set({ bankData: updArr(state.bankData, i, { type: e.target.value as BankItem['type'] }) })}>
+                    <select className="inp" style={{ minWidth: 75 }} value={b.type} onChange={e => set({ bankData: updArr(state.bankData, i, { type: e.target.value as BankItem['type'] }) })} >
                       <option value="betaal">Betaal</option>
                       <option value="spaar">Spaar</option>
                       <option value="kind">Kind</option>
@@ -106,7 +94,7 @@ export default function Page2Crisis() {
                     </label>
                   </td>
                   <td>
-                    <select className="inp" style={{ minWidth: 110 }} value={b.nieuw} onChange={e => set({ bankData: updArr(state.bankData, i, { nieuw: e.target.value }) })}>
+                    <select className="inp" style={{ minWidth: 110 }} value={b.nieuw} onChange={e => set({ bankData: updArr(state.bankData, i, { nieuw: e.target.value }) })} >
                       <option value="">—</option>
                       <option value="ja">Ja, besproken</option>
                       <option value="aanvragen">Aanvragen</option>
@@ -128,7 +116,7 @@ export default function Page2Crisis() {
           Rekening toevoegen
         </button>
         <div className="mt-3">
-          <label className={L}>Toelichting bankrekening(en)</label>
+          <label className={L}>Toelichting bankrekeningen</label>
           <textarea className="inp" rows={2} value={state.bank_toelichting} onChange={e => set({ bank_toelichting: e.target.value })} placeholder="Toelichting bankrekeningen: afspraken, bijzonderheden, achterstanden..." />
         </div>
         {hasRood && (
@@ -150,9 +138,9 @@ export default function Page2Crisis() {
         {(state.ondernemer === 'actief' || state.ondernemer === 'gestopt') && (
           <div>
             <div className={row3}>
-              <div><label className={L}>Bedrijfsnaam</label><input className="inp" value={state.kvk_naam} onChange={e => set({ kvk_naam: e.target.value })} placeholder="Naam onderneming" /></div>
-              <div><label className={L}>KvK-nummer</label><input className="inp" value={state.kvk_nr} onChange={e => set({ kvk_nr: e.target.value })} placeholder="00000000" /></div>
-              {state.ondernemer === 'gestopt' && <div><label className={L}>Datum uitschrijving</label><input type="date" className="inp" value={state.kvk_datum} onChange={e => set({ kvk_datum: e.target.value })} /></div>}
+              <div><label className={L}>Bedrijfsnaam</label><input className={input} value={state.kvk_naam} onChange={e => set({ kvk_naam: e.target.value })} placeholder="Naam onderneming" /></div>
+              <div><label className={L}>KvK-nummer</label><input className={input} value={state.kvk_nr} onChange={e => set({ kvk_nr: e.target.value })} placeholder="00000000" /></div>
+              {state.ondernemer === 'gestopt' && <div><label className={L}>Datum uitschrijving</label><input type="date" className={input} value={state.kvk_datum} onChange={e => set({ kvk_datum: e.target.value })} /></div>}
             </div>
             <div className={row2}>
               <div>
