@@ -1,6 +1,7 @@
 import { useForm } from '../../context'
 import { LASTEN_DEF, NIBUD, PER_OPTIES, BVV_MAX, type LastenDef } from '../../constants'
 import { getTotaalInkomen, getTotaalLasten, getMndBedrag } from '../../utils'
+import { downloadBudgetCSV } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -200,6 +201,14 @@ export default function Page6Lasten() {
 
 
         {verzConsistentie.map((s, i) => <Alert key={i} variant={s.variant} icon={s.icon} title={s.title} className="mt-2">{s.msg}</Alert>)}
+
+        <button
+          type="button"
+          className="flex items-center gap-1.5 mt-3 text-[0.78rem] text-accent border border-accent/40 rounded px-3 py-1 hover:bg-accents cursor-pointer"
+          onClick={() => downloadBudgetCSV(state)}
+        >
+          <HiOutlineHome /> Exporteer budgetoverzicht (voor inwoner, .csv)
+        </button>
       </Card>
 
       {bvv && (

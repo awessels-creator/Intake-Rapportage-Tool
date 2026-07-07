@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm } from '../../context'
 import { VGRENS } from '../../constants'
 import { nl, updArr, rmArr, mkVoertuig } from '../../utils'
@@ -30,6 +31,7 @@ const TW_VERZ_NVT = [
 
 export default function Page3Vermogen() {
   const { state, set, goTo } = useForm()
+  const [undo, setUndo] = useState<{ item: VoertuigItem; index: number } | null>(null)
 
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0)
   const aw = state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
@@ -106,7 +108,7 @@ export default function Page3Vermogen() {
             <div className="flex items-center justify-between mb-2">
               <div className="text-[0.78rem] font-semibold text-inkl"><BsCarFront className="inline-block mr-1" /> Voertuig {i + 1}</div>
               {state.voertuigen.length > 1 && (
-                <button type="button" className="text-warn border border-warn-border hover:bg-warns rounded px-1.5 py-0.5 text-[0.73rem] cursor-pointer" onClick={() => set({ voertuigen: rmArr(state.voertuigen, i) })}><HiXMark /> Verwijderen</button>
+                <button type="button" className="text-warn border border-warn-border hover:bg-warns rounded px-1.5 py-0.5 text-[0.73rem] cursor-pointer" onClick={() => { setUndo({ item: state.voertuigen[i], index: i }); set({ voertuigen: rmArr(state.voertuigen, i) }) }}><HiXMark /> Verwijderen</button>
               )}
             </div>
             <div className={row4}>
@@ -135,6 +137,12 @@ export default function Page3Vermogen() {
             </div>
           </div>
         ))}
+        {undo && (
+          <div className="flex items-center justify-between bg-warns border border-warn-border rounded-lg px-3 py-2 mb-3 text-[0.78rem]">
+            <span>Voertuig {undo.index + 1} verwijderd{undo.item.kenteken ? ` (${undo.item.kenteken})` : ''}.</span>
+            <button type="button" className="text-accent font-semibold hover:underline cursor-pointer" onClick={() => { const v = [...state.voertuigen]; v.splice(undo.index, 0, undo.item); set({ voertuigen: v }); setUndo(null) }}>Ongedaan maken</button>
+          </div>
+        )}
         <button
           type="button"
           className="flex items-center gap-1.5 mt-1 mb-3 text-[0.78rem] text-accent border border-accent/40 rounded px-3 py-1 hover:bg-accents cursor-pointer"

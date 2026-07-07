@@ -1,4 +1,5 @@
 import { useForm } from '../context'
+import { tabVolledig } from '../utils'
 
 const STEPS = [
   'Cliënt', 'Persoonlijk', 'Crisis', 'Vermogen', 'Inkomen',
@@ -14,11 +15,13 @@ export default function ProgressBar() {
       {STEPS.map((label, i) => {
         const isActive = i === cur
         const isDone = i < cur
+        const volledig = tabVolledig(state, i)
         return (
           <button
             key={i}
             type="button"
             onClick={() => goTo(i)}
+            title={volledig ? 'Tabblad compleet' : 'Nog niet compleet'}
             className={`flex-1 py-[7px] px-0.5 text-center text-[0.56rem] font-medium leading-[1.3] border-r border-rule last:border-r-0 cursor-pointer transition-all duration-200 ${
               isActive
                 ? 'bg-accent text-white'
@@ -29,6 +32,7 @@ export default function ProgressBar() {
           >
             <span className="block text-[0.52rem] opacity-60 mb-px">{String(i + 1).padStart(2, '0')}</span>
             {label}
+            <span className={`block mx-auto mt-1 w-1.5 h-1.5 rounded-full ${volledig ? 'bg-white' : 'bg-warn'}`}></span>
           </button>
         )
       })}

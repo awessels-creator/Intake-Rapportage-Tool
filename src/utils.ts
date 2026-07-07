@@ -27,6 +27,22 @@ export function bsn11Proef(bsn: string): boolean {
   return sum % 11 === 0
 }
 
+// Voortgangs-indicator: per tabblad (0-9) controleren of de kernvelden zijn ingevuld
+export function tabVolledig(state: FormState, index: number): boolean {
+  switch (index) {
+    case 0: return !!(state.clientnr && state.voornaam && state.achternaam && state.geboortedatum)
+    case 1: return !!(state.persoonlijk && state.persoonlijk.trim()) || state.flank !== ''
+    case 2: return state.crisis !== ''
+    case 3: return true // Vermogen is optioneel
+    case 4: return state.inkomenData.some(d => (parseFloat(d.netto) || 0) !== 0)
+    case 5: return true // Toeslagen: keuze, altijd "OK"
+    case 6: return true // Lasten: altijd zichtbaar
+    case 7: return true // Schulden: mkInitial heeft altijd 1 rij
+    case 8: return true // Regelcheck
+    case 9: return true // Advies
+    default: return false
+  }
+}
 export function mkInitial(): FormState {
   const d = today()
   return {
