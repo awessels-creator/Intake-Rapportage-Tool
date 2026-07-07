@@ -20,7 +20,7 @@ export function genereerBudgetCSV(state: FormState): string {
     const bedrag = parseFloat(d.netto) || 0
     if (bedrag > 0) inkomstenRijen.push({ naam: d.bron || 'Inkomstenbron', bedrag })
   })
-  state.toeslagenActief && Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
+  Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
     if (actief) {
       const bedrag = parseFloat(state.toeslagenBedrag[id] || '0') || 0
       if (bedrag > 0) inkomstenRijen.push({ naam: TOESLAG_NAMEN[id] || id, bedrag })

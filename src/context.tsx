@@ -47,7 +47,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
     if (opgeslagen && JSON.stringify(opgeslagen) !== JSON.stringify(mkInitial())) {
       setHerstelVraag(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Autosave naar sessionStorage bij elke wijziging
