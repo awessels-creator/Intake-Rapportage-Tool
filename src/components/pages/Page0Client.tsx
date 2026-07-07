@@ -1,6 +1,6 @@
 import { useForm } from '../../context'
 import { NORM } from '../../constants'
-import { lftd, lftdN, updArr, rmArr } from '../../utils'
+import { lftd, lftdN, updArr, rmArr, bsn11Proef } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
@@ -90,7 +90,13 @@ export default function Page0Client() {
           <div><label className={L}>Geboortedatum</label><input type="date" className="inp" value={state.geboortedatum} onChange={e => set({ geboortedatum: e.target.value })} /></div>
         </div>
         <div className={row3}>
-          <div><label className={L}>BSN</label><input className="inp" value={state.bsn} maxLength={9} onChange={e => set({ bsn: e.target.value })} placeholder="000000000" /></div>
+          <div>
+            <label className={L}>BSN</label>
+            <input className="inp" value={state.bsn} maxLength={9} onChange={e => set({ bsn: e.target.value.replace(/\D/g, '') })} placeholder="000000000" />
+            {state.bsn && !bsn11Proef(state.bsn) && (
+              <p className="text-[0.7rem] text-warn mt-1 flex items-center gap-1"><HiExclamationTriangle /> Ongeldig BSN (9 cijfers, 11-proef faalt)</p>
+            )}
+          </div>
           <div>
             <label className={L}>Burgerlijke staat</label>
             <select className="inp" value={state.burgstaat} onChange={e => set({ burgstaat: e.target.value })}>
@@ -169,7 +175,13 @@ export default function Page0Client() {
               <div><label className={L}>Voornaam partner</label><input className="inp" value={state.partner_vnaam} onChange={e => set({ partner_vnaam: e.target.value })} /></div>
               <div><label className={L}>Achternaam partner</label><input className="inp" value={state.partner_anaam} onChange={e => set({ partner_anaam: e.target.value })} /></div>
               <div><label className={L}>Geboortedatum partner</label><input type="date" className="inp" value={state.partner_geb} onChange={e => set({ partner_geb: e.target.value })} /></div>
-              <div><label className={L}>BSN partner</label><input className="inp" value={state.partner_bsn} maxLength={9} onChange={e => set({ partner_bsn: e.target.value })} placeholder="000000000" /></div>
+              <div>
+                <label className={L}>BSN partner</label>
+                <input className="inp" value={state.partner_bsn} maxLength={9} onChange={e => set({ partner_bsn: e.target.value.replace(/\D/g, '') })} placeholder="000000000" />
+                {state.partner_bsn && !bsn11Proef(state.partner_bsn) && (
+                  <p className="text-[0.7rem] text-warn mt-1 flex items-center gap-1"><HiExclamationTriangle /> Ongeldig BSN (9 cijfers, 11-proef faalt)</p>
+                )}
+              </div>
             </div>
             <div className={row2}>
               <div>

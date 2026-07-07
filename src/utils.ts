@@ -17,6 +17,16 @@ export function yearsSince(date: string, now: number = Date.now()): number | nul
   return (now - new Date(date).getTime()) / (1000 * 60 * 60 * 24 * 365.25)
 }
 
+// BSN 11-proef: 9 cijfers, gewogen som (2,4,6,8,10,12,14,16,18) deelbaar door 11
+export function bsn11Proef(bsn: string): boolean {
+  const s = bsn.trim()
+  if (!/^\d{9}$/.test(s)) return false
+  const digits = s.split('').map(Number)
+  const weights = [9, 8, 7, 6, 5, 4, 3, 2, -1]
+  const sum = digits.reduce((acc, d, i) => acc + d * weights[i], 0)
+  return sum % 11 === 0
+}
+
 export function mkInitial(): FormState {
   const d = today()
   return {
@@ -161,7 +171,7 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
   const vbNorm = VB_NORM_EENPERS + VB_NORM_PERPERS * (huishoudenGrootte(state) - 1)
   let voedselbank: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen).' }
   if (ink > 0) {
-    if (best < 0) voedselbank = { recht: 'ja', reden: `Besteedbaar inkomen €${nl(best)} (negatief).` }
+    if (best < 0) voedselbank = { recht: 'ja', reden: `Let op: besteedbaar inkomen €${nl(best)} (negatief). Cliënt mogelijk ook in aanmerking voor Voedselbank, ondanks VB-norm. Doorvragen.` }
     else if (best < vbNorm) voedselbank = { recht: 'ja', reden: `Besteedbaar inkomen €${nl(best)} < VB-norm €${nl(vbNorm)} (${huishoudenGrootte(state)} pers.).` }
     else voedselbank = { recht: 'nee', reden: `Besteedbaar inkomen €${nl(best)} ≥ VB-norm €${nl(vbNorm)}.` }
   }

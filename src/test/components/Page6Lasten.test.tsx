@@ -210,11 +210,11 @@ describe('Page6Lasten', () => {
       bijstandsnorm: '1000',
       inkomenData: [ink('1000')],
     })
-    expect(screen.getByText('Beslagvrije Voet (indicatief, jan 2026)')).toBeInTheDocument()
+    expect(screen.getByText('Beslagvrije Voet (indicatief, jul 2026)')).toBeInTheDocument()
   })
 
   test('hides BVV section when income is missing', () => {
     renderWithState(<Page6Lasten />, { bijstandsnorm: '1000' })
-    expect(screen.queryByText('Beslagvrije Voet (indicatief, jan 2026)')).not.toBeInTheDocument()
+    expect(screen.queryByText('Beslagvrije Voet (indicatief, jul 2026)')).not.toBeInTheDocument()
   })
 })

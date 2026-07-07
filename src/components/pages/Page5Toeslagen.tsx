@@ -1,5 +1,5 @@
 import { useForm } from '../../context'
-import { TOESLAGEN, TOESLAG_NAMEN } from '../../constants'
+import { TOESLAGEN, TOESLAG_NAMEN, TOESLAG_GRENZEN_2026 } from '../../constants'
 import { getTotaalInkomen } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -7,8 +7,8 @@ import Alert from '../shared/Alert'
 import { HiOutlineBuildingLibrary, HiOutlineBell, HiArrowLeft, HiArrowRight, HiXCircle, HiExclamationTriangle, HiCheck } from 'react-icons/hi2'
 import { MdChildCare } from 'react-icons/md'
 
-interface TsigProps { isKoop?: boolean; v: string; norm: number; ink: number; huurBdr: number }
-function HuurSig({ isKoop, v, norm, ink, huurBdr }: TsigProps) {
+interface TsigProps { isKoop?: boolean; v: string; ink: number; huurBdr: number; jaarGrens: number }
+function HuurSig({ isKoop, v, ink, huurBdr, jaarGrens }: TsigProps) {
   if (isKoop) return (
     <div className="flex items-center gap-1 text-[0.7rem] mt-1 text-warn-dark">
       <HiXCircle />
@@ -23,10 +23,10 @@ function HuurSig({ isKoop, v, norm, ink, huurBdr }: TsigProps) {
       <span>Ongebruikelijk (normaal €30–€950/mnd)</span>
     </div>
   )
-  if (norm && ink > norm * 1.45) return (
+  if (jaarGrens && ink > jaarGrens) return (
     <div className="flex items-center gap-1 text-[0.7rem] mt-1 text-gold">
       <HiExclamationTriangle />
-      <span>Inkomen lijkt te hoog voor huurtoeslag</span>
+      <span>Inkomen boven grens huurtoeslag (bij benadering — controleer Proefberekening)</span>
     </div>
   )
   if (huurBdr > 0 && val > huurBdr * 0.9) return (
@@ -46,8 +46,9 @@ function HuurSig({ isKoop, v, norm, ink, huurBdr }: TsigProps) {
 export default function Page5Toeslagen() {
   const { state, set, goTo } = useForm()
 
-  const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)
+  const jaarInk = ink * 12
+  const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (state.leefsituatie === 'samenwonend' || state.leefsituatie === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
   const hK = state.kinderen === 'ja'
   const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
 
@@ -61,10 +62,13 @@ export default function Page5Toeslagen() {
   const setSig = (id: string): { ok: boolean; icon: React.ReactNode; msg: string } | null => {
     if (!state.toeslagenActief[id]) return null
     const v = parseFloat(state.toeslagenBedrag[id] || '0') || 0
+    const grens = TOESLAG_GRENZEN_2026[id]
+    const jaarGrens = grens ? (state.leefsituatie === 'samenwonend' || state.leefsituatie === 'alleenstaande_ouder' ? grens.samen : grens.alleen) : 0
+    const isBenadering = grens?.benadering
     if (id === 'zorg') {
       if (!v) return null
       if (v < 10 || v > 165) return { ok: false, icon: <HiExclamationTriangle />, msg: 'Ongebruikelijk (normaal €10–€160/mnd)' }
-      if (norm && ink > norm * 1.55) return { ok: false, icon: <HiExclamationTriangle />, msg: 'Inkomen lijkt te hoog' }
+      if (jaarGrens && jaarInk > jaarGrens) return { ok: false, icon: <HiExclamationTriangle />, msg: `Inkomen (€${Math.round(jaarInk).toLocaleString('nl-NL')}/jr) boven grens zorgtoeslag (€${jaarGrens.toLocaleString('nl-NL')}/jr)` }
       return { ok: true, icon: <HiCheck />, msg: 'Plausibel' }
     }
     if (id === 'kinderbijslag') {
@@ -81,7 +85,7 @@ export default function Page5Toeslagen() {
     if (id === 'kindgebonden') {
       if (!v) return null
       if (!hK) return { ok: false, icon: <HiExclamationTriangle />, msg: 'WKB maar geen kinderen' }
-      if (norm && ink > norm * 1.6) return { ok: false, icon: <HiExclamationTriangle />, msg: 'Inkomen lijkt te hoog voor WKB' }
+      if (jaarGrens && jaarInk > jaarGrens) return { ok: false, icon: <HiExclamationTriangle />, msg: `Inkomen boven grens WKB${isBenadering ? ' (bij benadering — controleer Proefberekening)' : ''}` }
       return { ok: true, icon: <HiCheck />, msg: 'Geregistreerd' }
     }
     if (id === 'overig_ink') {
@@ -147,7 +151,7 @@ export default function Page5Toeslagen() {
                       </label>
                     )}
                     {naam === 'huur' && (
-                      <HuurSig isKoop={isKoop} v={bedrag} norm={norm} ink={ink} huurBdr={huurBdr} />
+                      <HuurSig isKoop={isKoop} v={bedrag} ink={ink} huurBdr={huurBdr} jaarGrens={jaarGrensHuur} />
                     )}
                     {sig && (
                       <div className={`flex items-center gap-1 text-[0.7rem] mt-1 ${sig.ok ? 'text-ok' : 'text-gold'}`}>

@@ -12,7 +12,7 @@ describe('Page4Inkomen', () => {
 
   test('renders the bijstandsnormen reference table', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/Bijstandsnormen 1 januari 2026/)).toBeInTheDocument()
+    expect(screen.getByText(/Bijstandsnormen 1 juli 2026/)).toBeInTheDocument()
   })
 
   test('renders the income source table header', () => {
@@ -106,14 +106,14 @@ describe('Page4Inkomen', () => {
     expect(screen.queryByText(/incl\. 5% vakantietoeslag/)).not.toBeInTheDocument()
   })
 
-  test('reference table shows alleenstaand norm excl. vakantietoeslag (€ 1.331,42)', () => {
+  test('reference table shows alleenstaand norm excl. vakantietoeslag (€ 1.348,49)', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/1\.331,42/)).toBeInTheDocument()
+    expect(screen.getByText(/1\.348,49/)).toBeInTheDocument()
   })
 
-  test('reference table shows samenwonend norm excl. vakantietoeslag (€ 1.902,09)', () => {
+  test('reference table shows samenwonend norm excl. vakantietoeslag (€ 1.926,40)', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/1\.902,09/)).toBeInTheDocument()
+    expect(screen.getByText(/1\.926,40/)).toBeInTheDocument()
   })
 
   test('auto-ingevuld hint says excl. vakantietoeslag', () => {

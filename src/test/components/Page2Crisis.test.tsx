@@ -12,14 +12,13 @@ describe('Page2Crisis', () => {
     expect(screen.getByText('Crisis & Urgentie')).toBeInTheDocument()
   })
 
-  test('renders "Reden aanmelding" as a separate card heading', () => {
+  test('renders "Reden aanmelding / hulpvraag" field in de Crisis-card', () => {
     renderWithState(<Page2Crisis />)
-    expect(screen.getByText('Reden aanmelding')).toBeInTheDocument()
+    expect(screen.getByText('Reden aanmelding / hulpvraag')).toBeInTheDocument()
   })
 
-  test('hulpvraag textarea is visible under the Reden aanmelding heading', () => {
+  test('hulpvraag textarea is visible', () => {
     renderWithState(<Page2Crisis />)
-    expect(screen.getByText('Reden aanmelding')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/hulpvraag/i)).toBeInTheDocument()
   })
 

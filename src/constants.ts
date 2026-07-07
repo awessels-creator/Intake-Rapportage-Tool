@@ -87,6 +87,13 @@ export const PER_OPTIES: PerOptie[] = [
   { v: '10ter', l: '/10 term.', f: 10 / 12 },
 ]
 
+export const TOESLAG_GRENZEN_2026: Record<string, { alleen: number; samen: number; benadering?: boolean }> = {
+  // Jaarlijkse toetsingsinkomen-grens 2026 (Bron: Belastingdienst). Maand = /12.
+  zorg:          { alleen: 40857, samen: 51142 },                          // harde grens
+  huur:          { alleen: 43500, samen: 48000, benadering: true },        // bij benadering (hangt van huur/samenstelling)
+  kindgebonden:  { alleen: 57000, samen: 88000, benadering: true },        // bij benadering (alleenstaande ouder 1 kind ~57k)
+}
+
 export const TOESLAG_NAMEN: Record<string, string> = {
   huur: 'Huurtoeslag',
   zorg: 'Zorgtoeslag',
