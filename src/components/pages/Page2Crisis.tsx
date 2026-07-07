@@ -5,7 +5,7 @@ import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
 import Alert from '../shared/Alert'
-import { HiBellAlert, HiOutlineBuildingLibrary, HiOutlineLightBulb, HiOutlineBuildingOffice, HiOutlineDocumentText, HiXMark, HiArrowLeft, HiArrowRight, HiPlus } from 'react-icons/hi2'
+import { HiBellAlert, HiOutlineBuildingLibrary, HiOutlineLightBulb, HiOutlineBuildingOffice, HiXMark, HiArrowLeft, HiArrowRight, HiPlus } from 'react-icons/hi2'
 
 const L = 'block text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em]'
 const row2 = 'grid grid-cols-2 gap-[11px] mb-[11px]'
@@ -138,9 +138,9 @@ export default function Page2Crisis() {
         {(state.ondernemer === 'actief' || state.ondernemer === 'gestopt') && (
           <div>
             <div className={row3}>
-              <div><label className={L}>Bedrijfsnaam</label><input className={input} value={state.kvk_naam} onChange={e => set({ kvk_naam: e.target.value })} placeholder="Naam onderneming" /></div>
-              <div><label className={L}>KvK-nummer</label><input className={input} value={state.kvk_nr} onChange={e => set({ kvk_nr: e.target.value })} placeholder="00000000" /></div>
-              {state.ondernemer === 'gestopt' && <div><label className={L}>Datum uitschrijving</label><input type="date" className={input} value={state.kvk_datum} onChange={e => set({ kvk_datum: e.target.value })} /></div>}
+              <div><label className={L}>Bedrijfsnaam</label><input className="inp" value={state.kvk_naam} onChange={e => set({ kvk_naam: e.target.value })} placeholder="Naam onderneming" /></div>
+              <div><label className={L}>KvK-nummer</label><input className="inp" value={state.kvk_nr} onChange={e => set({ kvk_nr: e.target.value })} placeholder="00000000" /></div>
+              {state.ondernemer === 'gestopt' && <div><label className={L}>Datum uitschrijving</label><input type="date" className="inp" value={state.kvk_datum} onChange={e => set({ kvk_datum: e.target.value })} /></div>}
             </div>
             <div className={row2}>
               <div>

@@ -1,12 +1,11 @@
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX } from './constants'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl } from './utils'
-import * as docx from "docx";
-const {
+import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType,
   Header, Footer, PageNumber
-} = docx;
+} from "docx";
 
 const ORANGE = 'EA5403'
 const DARK_GREEN = '1A4B2D'
