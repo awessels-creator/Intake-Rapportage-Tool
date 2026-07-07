@@ -148,7 +148,7 @@ describe('getTotaalLasten', () => {
 
   test('converts quarterly expense to monthly (÷3)', () => {
     expect(getTotaalLasten(s({
-      heeft_auto: 'ja',
+      voertuigen: [{ kenteken: 'AB-12-CD', merk: 'Opel', bouwjaar: '2015', waarde: '5000', reden: 'werk', behoud: 'behoud' }],
       lastenWaarden: { wegenb: { bedrag: '300', per: 'kwt', opm: '' } },
     }))).toBeCloseTo(100)
   })
@@ -166,16 +166,16 @@ describe('getTotaalLasten', () => {
     }))).toBeCloseTo(950)
   })
 
-  test('excludes auto-only rows when heeft_auto is not ja', () => {
+  test('excludes auto-only rows when no voertuig filled in', () => {
     expect(getTotaalLasten(s({
-      heeft_auto: 'nee',
+      voertuigen: [{ kenteken: '', merk: '', bouwjaar: '', waarde: '', reden: '', behoud: '' }],
       lastenWaarden: { autoverzek: { bedrag: '80', per: 'mnd', opm: '' } },
     }))).toBe(0)
   })
 
-  test('includes auto-only rows when heeft_auto is ja', () => {
+  test('includes auto-only rows when a voertuig with waarde is present', () => {
     expect(getTotaalLasten(s({
-      heeft_auto: 'ja',
+      voertuigen: [{ kenteken: 'AB-12-CD', merk: 'Opel', bouwjaar: '2015', waarde: '5000', reden: 'werk', behoud: 'behoid' }],
       lastenWaarden: { autoverzek: { bedrag: '80', per: 'mnd', opm: '' } },
     }))).toBeCloseTo(80)
   })

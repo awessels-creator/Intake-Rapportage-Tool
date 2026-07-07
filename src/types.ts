@@ -4,6 +4,15 @@ export interface KindItem {
   coouder: 'ja' | 'nee'
 }
 
+export interface VoertuigItem {
+  kenteken: string
+  merk: string
+  bouwjaar: string
+  waarde: string
+  reden: string
+  behoud: string
+}
+
 export interface BankItem {
   iban: string
   naam: string
@@ -113,13 +122,9 @@ export interface FormState {
   beleggingen: string
   eigen_woning: string
   overwaarde: string
-  heeft_auto: string
-  auto_kenteken: string
-  auto_merk: string
-  auto_bouwjaar: string
-  auto_waarde: string
-  auto_reden: string
-  auto_verm: string
+  voertuigen: VoertuigItem[]
+  overigVermogenOms: string
+  overigVermogenBedrag: string
   vermogen_toel: string
   tw_avp: string
   tw_inboedel: string

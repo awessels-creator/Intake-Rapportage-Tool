@@ -149,7 +149,10 @@ export async function downloadWord(state: FormState) {
   // 6. Vermogen
   children.push(h2('6. Vermogen'))
   const vermRows: [string, string][] = [['Spaargeld', `€ ${nl(parseFloat(state.spaargeld) || 0)}`], ['Beleggingen', `€ ${nl(parseFloat(state.beleggingen) || 0)}`], ['Eigen woning', state.eigen_woning === 'ja' ? 'Ja (koop)' : 'Nee (huur)'], ['Overig vermogen', `€ ${nl(parseFloat(state.overig_verm) || 0)}`]]
-  if (state.heeft_auto === 'ja') { vermRows.push(['Auto/motor', `${state.auto_kenteken || ''} ${state.auto_merk || ''} | dagwaarde €${nl(parseFloat(state.auto_waarde) || 0)}`]); vermRows.push(['Behoud/verkoop', state.auto_verm || '—']) }
+  if (state.overigVermogenBedrag || state.overigVermogenOms) vermRows.push([state.overigVermogenOms || 'Overig vermogen (vrij veld)', `€ ${nl(parseFloat(state.overigVermogenBedrag) || 0)}`])
+  state.voertuigen.filter(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0).forEach((v, idx) => {
+    vermRows.push([`Voertuig ${idx + 1}${v.kenteken ? ` (${v.kenteken})` : ''}${v.merk ? ` ${v.merk}` : ''}`, `Dagwaarde €${nl(parseFloat(v.waarde) || 0)}${v.reden ? ` | reden: ${v.reden}` : ''}${v.behoud ? ` | ${v.behoud}` : ''}`])
+  })
   children.push(ntTable(vermRows))
   children.push(h3('Verzekeringen'))
   const verzItems = [{ n: 'AVP (aansprakelijkheid)', v: state.tw_avp }, { n: 'Inboedelverzekering', v: state.tw_inboedel }, { n: 'Uitvaartverzekering', v: state.tw_uitvaart }, ...(state.eigen_woning === 'ja' ? [{ n: 'Opstalverzekering', v: state.tw_opstal }] : []), { n: 'Aanvullende zorgverzekering', v: state.tw_zorgaanv }, { n: 'Wanbetalersregeling (CAK)', v: state.tw_wanbet }]
@@ -186,7 +189,7 @@ export async function downloadWord(state: FormState) {
   // 9. Vaste Lasten
   children.push(h2('9. Vaste Lasten'))
   const allDef = [...LASTEN_DEF, ...state.lastenExtra.map((e, i) => ({ id: `extra_${i}`, post: e.post || 'Eigen post', per: 'mnd', autoOnly: false as const, kinderOnly: false as const }))]
-  const lastenRows = allDef.filter(row => { if (row.autoOnly && state.heeft_auto !== 'ja') return false; if (row.kinderOnly && !hK) return false; const w = state.lastenWaarden[row.id]; return w && parseFloat(w.bedrag) > 0 }).map(row => { const w = state.lastenWaarden[row.id]; const bdr = parseFloat(w.bedrag) || 0; const factor = PER_OPTIES.find(p => p.v === w.per)?.f || 1; const mnd = bdr * factor; return [row.post, `€ ${nl(bdr)} ${PER_OPTIES.find(p => p.v === w.per)?.l || '/mnd'}`, `€ ${mnd.toFixed(2)}/mnd`, w.opm || ''] })
+  const lastenRows = allDef.filter(row => { if (row.autoOnly && !state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)) return false; if (row.kinderOnly && !hK) return false; const w = state.lastenWaarden[row.id]; return w && parseFloat(w.bedrag) > 0 }).map(row => { const w = state.lastenWaarden[row.id]; const bdr = parseFloat(w.bedrag) || 0; const factor = PER_OPTIES.find(p => p.v === w.per)?.f || 1; const mnd = bdr * factor; return [row.post, `€ ${nl(bdr)} ${PER_OPTIES.find(p => p.v === w.per)?.l || '/mnd'}`, `€ ${mnd.toFixed(2)}/mnd`, w.opm || ''] })
   const lastenTableRows = [...lastenRows, ['Totaal inkomen (incl. toeslagen)', '', `€ ${ink.toFixed(2)}/mnd`, ''], ['Totaal vaste lasten', '', `€ ${tot.toFixed(2)}/mnd`, ''], ['Besteedbaar', '', `€ ${best.toFixed(2)}/mnd`, '']]
   children.push(new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },

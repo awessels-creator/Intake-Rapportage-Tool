@@ -42,13 +42,18 @@ describe('Page3Vermogen', () => {
     expect(screen.getByText('Vermogen & Bezittingen')).toBeInTheDocument()
   })
 
-  test('shows auto-veld when heeft_auto is ja', () => {
-    renderWithState(<Page3Vermogen />, { heeft_auto: 'ja' })
-    expect(screen.getByText('Voertuiggegevens')).toBeInTheDocument()
+  test('shows voertuig 1 section by default', () => {
+    renderWithState(<Page3Vermogen />, { voertuigen: [{ kenteken: '', merk: '', bouwjaar: '', waarde: '', reden: '', behoud: '' }] })
+    expect(screen.getByText('Voertuig 1')).toBeInTheDocument()
   })
 
-  test('hides auto-veld when heeft_auto is nee', () => {
-    renderWithState(<Page3Vermogen />, { heeft_auto: 'nee' })
-    expect(screen.queryByText('Voertuiggegevens')).not.toBeInTheDocument()
+  test('shows add-voertuig button', () => {
+    renderWithState(<Page3Vermogen />)
+    expect(screen.getByText('Voertuig toevoegen')).toBeInTheDocument()
+  })
+
+  test('shows overig vermogen section', () => {
+    renderWithState(<Page3Vermogen />)
+    expect(screen.getByText(/Overig vermogen \(boot, caravan/)).toBeInTheDocument()
   })
 })

@@ -1,4 +1,4 @@
-import type { FormState, AdviesItem, BankItem, InkomenItem, SchuldItem, BeslagItem } from './types'
+import type { FormState, AdviesItem, BankItem, InkomenItem, SchuldItem, BeslagItem, VoertuigItem } from './types'
 import { LASTEN_DEF, PER_OPTIES, VGRENS } from './constants'
 
 export const nl = (n: number, dec = 0) =>
@@ -10,6 +10,7 @@ export const mkBank = (): BankItem => ({ iban: '', naam: '', type: 'betaal', sal
 export const mkInk = (): InkomenItem => ({ bron: '', type: '', netto: '', uren: '', beslag: false, invoerPer: 'mnd', inclVak: false, weekBedrag: '' })
 export const mkSchuld = (): SchuldItem => ({ s: '', t: '', subt: '', b: '', afl: '', st: '' })
 export const mkBeslag = (): BeslagItem => ({ wie: '', soort: '', bedrag: '' })
+export const mkVoertuig = (): VoertuigItem => ({ kenteken: '', merk: '', bouwjaar: '', waarde: '', reden: '', behoud: '' })
 
 export function yearsSince(date: string, now: number = Date.now()): number | null {
   if (!date) return null
@@ -35,8 +36,8 @@ export function mkInitial(): FormState {
     ondernemer: '', kvk_naam: '', kvk_nr: '', kvk_datum: '', boekhouding: '',
     aangifte: '', kvk_toel: '',
     spaargeld: '', overig_verm: '', beleggingen: '', eigen_woning: 'nee',
-    overwaarde: '', heeft_auto: '', auto_kenteken: '', auto_merk: '',
-    auto_bouwjaar: '', auto_waarde: '', auto_reden: '', auto_verm: '',
+    overwaarde: '', voertuigen: [mkVoertuig()],
+    overigVermogenOms: '', overigVermogenBedrag: '',
     vermogen_toel: '', tw_avp: '', tw_inboedel: '', tw_opstal: '',
     tw_uitvaart: '', tw_zorgaanv: '', tw_wanbet: '',
     bijstandsnorm: '', inkomenData: [mkInk()],
@@ -123,7 +124,7 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
   const isPensioen = ls.startsWith('pensioen')
   const tot = getTotaalLasten(state)
   const best = ink - tot
-  const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0)
+  const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0) + state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
   const grens = VGRENS[ls] || 8000
   const overwaarde = parseFloat(state.overwaarde) || 0
 
@@ -194,7 +195,7 @@ export function getTotaalInkomen(state: FormState): number {
 }
 
 export function getTotaalLasten(state: FormState): number {
-  const hA = state.heeft_auto === 'ja'
+  const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
   const hK = state.kinderen === 'ja'
   const allDef = [
     ...LASTEN_DEF,

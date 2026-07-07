@@ -43,7 +43,7 @@ describe('Page6Lasten', () => {
 
   test('shows converted monthly amount for a quarterly expense', () => {
     renderWithState(<Page6Lasten />, {
-      heeft_auto: 'ja',
+      voertuigen: [{ kenteken: 'AB-12-CD', merk: 'Opel', bouwjaar: '2015', waarde: '5000', reden: 'werk', behoud: 'behoud' }],
       lastenWaarden: lasten('wegenb', '300', 'kwt'), // 300 / 3 = 100/mnd
     })
     // The per-row conversion column shows "€100.00/mnd"
@@ -89,14 +89,14 @@ describe('Page6Lasten', () => {
 
   // ── Auto-only rows ────────────────────────────────────────────────────────
 
-  test('hides auto-only rows when heeft_auto is not ja', () => {
-    renderWithState(<Page6Lasten />, { heeft_auto: 'nee' })
+  test('hides auto-only rows when no voertuig is filled in', () => {
+    renderWithState(<Page6Lasten />, { voertuigen: [{ kenteken: '', merk: '', bouwjaar: '', waarde: '', reden: '', behoud: '' }] })
     expect(screen.queryByText('Autoverzekering')).not.toBeInTheDocument()
     expect(screen.queryByText('Wegenbelasting')).not.toBeInTheDocument()
   })
 
-  test('shows auto-only rows when heeft_auto is ja', () => {
-    renderWithState(<Page6Lasten />, { heeft_auto: 'ja' })
+  test('shows auto-only rows when a voertuig with waarde is present', () => {
+    renderWithState(<Page6Lasten />, { voertuigen: [{ kenteken: 'AB-12-CD', merk: 'Opel', bouwjaar: '2015', waarde: '5000', reden: 'werk', behoud: 'behoud' }] })
     expect(screen.getByText('Autoverzekering')).toBeInTheDocument()
     expect(screen.getByText('Wegenbelasting')).toBeInTheDocument()
   })

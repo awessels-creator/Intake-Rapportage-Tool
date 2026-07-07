@@ -15,7 +15,7 @@ interface ExtendedLastenDef extends LastenDef {
 export default function Page6Lasten() {
   const { state, set, goTo } = useForm()
 
-  const hA = state.heeft_auto === 'ja'
+  const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
   const hK = state.kinderen === 'ja'
   const ls = state.leefsituatie
   const nibud = NIBUD[ls]
