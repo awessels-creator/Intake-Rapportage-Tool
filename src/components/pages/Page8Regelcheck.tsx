@@ -1,5 +1,5 @@
 import { useForm } from '../../context'
-import { VGRENS } from '../../constants'
+import { VGRENS, TOESLAG_GRENZEN_2026 } from '../../constants'
 import { getTotaalInkomen, getTotaalLasten, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -51,6 +51,7 @@ export default function Page8Regelcheck() {
   const grens = VGRENS[ls] || 8000
   const tot = getTotaalLasten(state)
   const best = ink - tot
+  const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (ls === 'samenwonend' || ls === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
   const beoordeling = evaluateRegelingen(state)
 
   const iitJr = yearsSince(state.iit_datum)
@@ -88,9 +89,9 @@ export default function Page8Regelcheck() {
     {
       n: 'Huurtoeslag',
       norm: 'Huurwoning, inkomen < inkomensgrens',
-      sit: state.eigen_woning === 'ja' ? 'Koopwoning' : `${pct.toFixed(0)}%`,
-      r: state.eigen_woning === 'ja' ? 'nvt' : norm && ink ? pct < 130 ? 'ja' : 'twijfel' : 'twijfel',
-      t: state.eigen_woning === 'ja' ? 'Koopwoning — geen recht' : 'Check Belastingdienst for exacte inkomensgrens',
+      sit: state.eigen_woning === 'ja' ? 'Koopwoning' : jaarGrensHuur ? `Inkomen €${Math.round(ink).toLocaleString('nl-NL')} / grens €${jaarGrensHuur.toLocaleString('nl-NL')}` : `${pct.toFixed(0)}%`,
+      r: state.eigen_woning === 'ja' ? 'nvt' : norm && ink ? jaarGrensHuur && ink > jaarGrensHuur ? 'twijfel' : 'ja' : 'twijfel',
+      t: state.eigen_woning === 'ja' ? 'Koopwoning — geen recht' : jaarGrensHuur && ink > jaarGrensHuur ? `Inkomen boven grens huurtoeslag (€${jaarGrensHuur.toLocaleString('nl-NL')}/jr, bij benadering — controleer Proefberekening Belastingdienst)` : 'Inkomen onder grens — controleer Belastingdienst voor exacte inkomensgrens',
     },
     {
       n: 'Zorgtoeslag',
@@ -173,7 +174,7 @@ export default function Page8Regelcheck() {
             <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm. <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria &amp; aanvraag</a></div>
           </div>
           <div>
-            <VoorstelBadge v={beoordeling.kwijtschelding} />
+            <VoorstelBadge v={beoordeling.kwijtschelding_gblt} />
             <label className={L}>Kwijtschelding GBLT?</label>
             <select className="inp" value={state.kwgt} onChange={e => set({ kwgt: e.target.value })}>
               <option value="">— Onbekend —</option>
@@ -186,7 +187,7 @@ export default function Page8Regelcheck() {
         </div>
         <div className={row2}>
           <div>
-            <VoorstelBadge v={beoordeling.kwijtschelding} />
+            <VoorstelBadge v={beoordeling.kwijtschelding_gemeente} />
             <label className={L}>Kwijtschelding gemeentelijke belastingen?</label>
             <select className="inp" value={state.kwgm} onChange={e => set({ kwgm: e.target.value })}>
               <option value="">— Onbekend —</option>

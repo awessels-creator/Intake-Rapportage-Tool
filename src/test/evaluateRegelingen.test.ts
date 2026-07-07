@@ -36,14 +36,14 @@ describe('evaluateRegelingen', () => {
   it('Kwijtschelding: recht op bij <120% norm', () => {
     const s = base() // 89%
     const b = evaluateRegelingen(s)
-    expect(b.kwijtschelding.recht).toBe('ja')
+    expect(b.kwijtschelding_gblt.recht).toBe('ja')
   })
 
   it('Kwijtschelding: geen recht bij >=120% norm', () => {
     const s = base()
     s.inkomenData[0].netto = '1700' // 126%
     const b = evaluateRegelingen(s)
-    expect(b.kwijtschelding.recht).toBe('nee')
+    expect(b.kwijtschelding_gblt.recht).toBe('nee')
   })
 
   it('IIT: nvt voor pensioengerechtigden', () => {

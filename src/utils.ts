@@ -109,7 +109,8 @@ export type RegelingVoorstel =
 
 export interface RegelingBeoordeling {
   fdma: RegelingVoorstel
-  kwijtschelding: RegelingVoorstel
+  kwijtschelding_gblt: RegelingVoorstel
+  kwijtschelding_gemeente: RegelingVoorstel
   iit: RegelingVoorstel
   kindsupport: RegelingVoorstel
   voedselbank: RegelingVoorstel
@@ -148,11 +149,18 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
     else fdma = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (≤110%), vermogen €${nl(sp)} (≤€${nl(grens)}).` }
   }
 
-  // Kwijtschelding — inkomen <120% norm
-  let kwijtschelding: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
+  // Kwijtschelding GBLT — inkomen <120% norm
+  let kwijtschelding_gblt: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
   if (norm && ink) {
-    if (pct >= 120) kwijtschelding = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
-    else kwijtschelding = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
+    if (pct >= 120) kwijtschelding_gblt = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
+    else kwijtschelding_gblt = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
+  }
+
+  // Kwijtschelding gemeentelijke belastingen — inkomen <120% norm (zelfde toets, apart vast te leggen)
+  let kwijtschelding_gemeente: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
+  if (norm && ink) {
+    if (pct >= 120) kwijtschelding_gemeente = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
+    else kwijtschelding_gemeente = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
   }
 
   // IIT — >=3 jaar aaneengesloten <=105% norm, niet voor pensioengerechtigden
@@ -177,7 +185,7 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
     else voedselbank = { recht: 'nee', reden: `Besteedbaar inkomen €${nl(best)} ≥ VB-norm €${nl(vbNorm)}.` }
   }
 
-  return { fdma, kwijtschelding, iit, kindsupport, voedselbank }
+  return { fdma, kwijtschelding_gblt, kwijtschelding_gemeente, iit, kindsupport, voedselbank }
 }
 
 export function lftd(geb: string): string {

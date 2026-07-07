@@ -180,7 +180,7 @@ export async function downloadWord(state: FormState) {
   children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / link'], [
     ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), '3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. https://www.meppel.nl/'],
     ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), '<110% norm. https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/'],
-    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding), '<120% norm.'],
+    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding_gblt), '<120% norm.'],
     ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), 'Ondersteuning gezinnen met kinderen in Meppel. https://kindsupportmeppel.nl/'],
     ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), 'Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/'],
   ]))
