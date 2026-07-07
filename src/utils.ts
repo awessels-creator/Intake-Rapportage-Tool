@@ -27,20 +27,31 @@ export function bsn11Proef(bsn: string): boolean {
   return sum % 11 === 0
 }
 
-// Voortgangs-indicator: per tabblad (0-9) controleren of de kernvelden zijn ingevuld
-export function tabVolledig(state: FormState, index: number): boolean {
+// Voortgangs-indicator: per tabblad (0-9) de status bepalen
+// 'open' = nog invullen, 'ok' = ingevuld, 'nvt' = niet van toepassing (geen invoer nodig)
+export function tabStatus(state: FormState, index: number): 'open' | 'ok' | 'nvt' {
   switch (index) {
-    case 0: return !!(state.clientnr && state.voornaam && state.achternaam && state.geboortedatum)
-    case 1: return !!(state.persoonlijk && state.persoonlijk.trim()) || state.flank !== ''
-    case 2: return state.crisis !== ''
-    case 3: return true // Vermogen is optioneel
-    case 4: return state.inkomenData.some(d => (parseFloat(d.netto) || 0) !== 0)
-    case 5: return true // Toeslagen: keuze, altijd "OK"
-    case 6: return true // Lasten: altijd zichtbaar
-    case 7: return true // Schulden: mkInitial heeft altijd 1 rij
-    case 8: return true // Regelcheck
-    case 9: return true // Advies
-    default: return false
+    case 0: return (state.clientnr && state.voornaam && state.achternaam && state.geboortedatum) ? 'ok' : 'open'
+    case 1: return (state.persoonlijk && state.persoonlijk.trim()) || state.flank !== '' ? 'ok' : 'open'
+    case 2: return state.crisis !== '' ? 'ok' : 'open'
+    case 3: {
+      const heeftVermogen = (parseFloat(state.spaargeld) || 0) > 0 || (parseFloat(state.overig_verm) || 0) > 0 ||
+        (parseFloat(state.beleggingen) || 0) > 0 || state.eigen_woning === 'ja' ||
+        state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0) ||
+        (parseFloat(state.overigVermogenBedrag) || 0) > 0
+      return heeftVermogen ? 'ok' : 'open'
+    }
+    case 4: return state.inkomenData.some(d => (parseFloat(d.netto) || 0) !== 0) ? 'ok' : 'open'
+    case 5: return 'ok' // Toeslagen: vinklijst, altijd beoordeeld
+    case 6: return Object.values(state.lastenWaarden).some(w => w && (parseFloat(w.bedrag) || 0) > 0) ? 'ok' : 'open'
+    case 7: {
+      const heeftSchuld = state.schuldenData.some(d => (parseFloat(d.b) || 0) !== 0)
+      if (state.schuldenData.length === 0) return 'nvt' // Alle rijen verwijderd = geen schulden
+      return heeftSchuld ? 'ok' : 'open'
+    }
+    case 8: return 'ok' // Regelcheck
+    case 9: return 'ok' // Advies
+    default: return 'open'
   }
 }
 export function mkInitial(): FormState {
