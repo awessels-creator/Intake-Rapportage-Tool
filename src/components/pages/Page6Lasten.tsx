@@ -2,7 +2,7 @@ import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
 import { LASTEN_DEF, PER_OPTIES, type LastenDef } from '../../constants'
 import { getTotaalInkomen, getTotaalLasten, getMndBedrag } from '../../utils'
-import { downloadBudgetCSV } from '../../budgetCsv'
+import { downloadBudgetXLSX } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -210,9 +210,9 @@ export default function Page6Lasten() {
         <button
           type="button"
           className="flex items-center gap-1.5 mt-3 text-[0.78rem] text-accent border border-accent/40 rounded px-3 py-1 hover:bg-accents cursor-pointer"
-          onClick={() => downloadBudgetCSV(state)}
+          onClick={() => downloadBudgetXLSX(state)}
         >
-          <HiOutlineHome /> Exporteer budgetoverzicht (voor inwoner, .csv)
+          <HiOutlineHome /> Exporteer budgetoverzicht (voor inwoner, .xlsx)
         </button>
       </Card>
 
