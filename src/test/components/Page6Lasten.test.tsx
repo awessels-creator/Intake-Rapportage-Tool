@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Page6Lasten from '../../components/pages/Page6Lasten'
 import { renderWithState } from '../helpers'
@@ -216,5 +216,24 @@ describe('Page6Lasten', () => {
   test('hides BVV section when income is missing', () => {
     renderWithState(<Page6Lasten />, { bijstandsnorm: '1000' })
     expect(screen.queryByText('Beslagvrije Voet (indicatief, jul 2026)')).not.toBeInTheDocument()
+  })
+
+  // ── Regressie: default periodiek blijft staan bij eerste invoer ──────────
+
+  test('levensonderhoud blijft op /week als je een bedrag typt (regressie #week-default)', async () => {
+    const user = userEvent.setup()
+    renderWithState(<Page6Lasten />)
+
+    const rij = screen.getByText(/levensonderhoud/i).closest('tr') as HTMLElement
+    expect(rij).toBeTruthy()
+
+    const perSelectInitieel = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectInitieel.value).toBe('week')
+
+    const bedragInput = within(rij).getByPlaceholderText('0') as HTMLInputElement
+    await user.type(bedragInput, '150')
+
+    const perSelectNaTypen = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectNaTypen.value).toBe('week')
   })
 })

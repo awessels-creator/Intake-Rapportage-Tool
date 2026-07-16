@@ -53,8 +53,8 @@ export default function Page6Lasten() {
   const getW = (id: string, defaultPer: string): LastenWaarde =>
     state.lastenWaarden[id] || { bedrag: '', per: defaultPer, opm: '' }
 
-  const updW = (id: string, patch: Partial<LastenWaarde>) => {
-    const current = state.lastenWaarden[id] || { bedrag: '', per: 'mnd', opm: '' }
+  const updW = (id: string, patch: Partial<LastenWaarde>, defaultPer: string = 'mnd') => {
+    const current = state.lastenWaarden[id] || { bedrag: '', per: defaultPer, opm: '' }
     set({ lastenWaarden: { ...state.lastenWaarden, [id]: { ...current, ...patch } } })
   }
 
@@ -132,12 +132,12 @@ export default function Page6Lasten() {
                           style={{ paddingLeft: 16 }}
                           value={w.bedrag}
                           placeholder="0"
-                          onChange={e => updW(row.id, { bedrag: e.target.value })}
+                          onChange={e => updW(row.id, { bedrag: e.target.value }, row.per)}
                         />
                       </div>
                     </td>
                     <td>
-                      <select className={`inp ${w.per && w.per !== 'mnd' ? 'border-gold bg-golds' : ''}`} value={w.per} onChange={e => updW(row.id, { per: e.target.value })}>
+                      <select className={`inp ${w.per && w.per !== 'mnd' ? 'border-gold bg-golds' : ''}`} value={w.per} onChange={e => updW(row.id, { per: e.target.value }, row.per)}>
                         {PER_OPTIES.map(p => <option key={p.v} value={p.v}>{p.l}</option>)}
                       </select>
                     </td>
@@ -155,7 +155,7 @@ export default function Page6Lasten() {
                         className="inp"
                         value={w.opm}
                         placeholder={row.id === 'leef' ? `Bijv. boodschappen, kleding${nibHint}` : row.gblt ? 'Bijzonderheden | Kwijtschelding: zie Regelcheck' : 'Bijzonderheden, achterstand, wie betaalt...'}
-                        onChange={e => updW(row.id, { opm: e.target.value })}
+                        onChange={e => updW(row.id, { opm: e.target.value }, row.per)}
                       />
                     </td>
                   </tr>
