@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Page4Inkomen from '../../components/pages/Page4Inkomen'
 import { renderWithState } from '../helpers'
+import { NORM, NORMPERIODE } from '../../constants'
 
 // Reusable income item shape
 const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: false, invoerPer: 'mnd' as const, inclVak: false, weekBedrag: '' })
@@ -10,9 +11,10 @@ const ink = (netto: string) => ({ bron: '', type: '', netto, uren: '', beslag: f
 describe('Page4Inkomen', () => {
   // ── Basic render ─────────────────────────────────────────────────────────
 
-  test('renders the bijstandsnormen reference table', () => {
+  test('renders the bijstandsnormen reference table header (periode-label)', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/Bijstandsnormen 1 juli 2026/)).toBeInTheDocument()
+    // Label komt uit de centrale normperiode (NORMPERIODE.label), niet hard-coded
+    expect(screen.getByText(new RegExp(`Bijstandsnormen ${NORMPERIODE.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))).toBeInTheDocument()
   })
 
   test('renders the income source table header', () => {
@@ -108,12 +110,13 @@ describe('Page4Inkomen', () => {
 
   test('reference table shows alleenstaand norm excl. vakantietoeslag (€ 1.348,49)', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/1\.348,49/)).toBeInTheDocument()
+    // Waarde komt uit de centrale bron (NORM), niet hard-coded
+    expect(screen.getByText(new RegExp(NORM.alleenstaand.toLocaleString('nl-NL').replace('.', '\\.')))).toBeInTheDocument()
   })
 
   test('reference table shows samenwonend norm excl. vakantietoeslag (€ 1.926,40)', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText(/1\.926,40/)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(NORM.samenwonend.toLocaleString('nl-NL').replace('.', '\\.')))).toBeInTheDocument()
   })
 
   test('auto-ingevuld hint says excl. vakantietoeslag', () => {

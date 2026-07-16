@@ -1,38 +1,75 @@
-const NORM_PERIODES: { vanaf: string; normen: Record<string, number> }[] = [
+// ── ÉÉN BRON VAN WAARHEID VOOR ALLE FINANCIËLE NORMEN ───────────────────────
+// Elke periode bevat ALLE normen (bijstand, vermogen, vrijstelling, NIBUD, BVV).
+// Bij een normwijziging vul je één nieuwe periode toe — niets anders aanpassen.
+// De tool kiest automatisch de periode die op de huidige datum van kracht is.
+
+export interface NormPeriode {
+  vanaf: string                     // datum (YYYY-MM-DD) waarop deze normen ingaan
+  label: string                     // leesbare periode-aanduiding voor in de UI
+  bijstand: Record<string, number> // netto bijstandsnormen excl. vakantietoeslag (/mnd)
+  vermogen: Record<string, number> // vrijstellingsgrens vermogen Participatiewet
+  vrijstellingOverwaarde: number   // vrijstelling overwaarde eigen woning
+  nibud: Record<string, number>    // NIBUD besteedbaar budget
+  bvvMax: Record<string, number>   // wettelijke maximum beslagvrije voet
+}
+
+const NORM_PERIODES: NormPeriode[] = [
   {
     vanaf: '2026-07-01',
-    normen: {
+    label: '2e helft 2026 (per 1 juli 2026)',
+    bijstand: {
       alleenstaand: 1348.49, alleenstaande_ouder: 1348.49, samenwonend: 1926.40,
       pensioen_alleen: 1450.99, pensioen_paar: 2071.51, pensioen_gemengd: 1926.40,
+    },
+    vermogen: {
+      alleenstaand: 8000, alleenstaande_ouder: 16000, samenwonend: 16000,
+      pensioen_alleen: 8000, pensioen_paar: 16000, pensioen_gemengd: 16000,
+    },
+    vrijstellingOverwaarde: 67500,
+    nibud: {
+      alleenstaand: 540, alleenstaande_ouder: 620, samenwonend: 760,
+      pensioen_alleen: 510, pensioen_paar: 720, pensioen_gemengd: 720,
+    },
+    bvvMax: {
+      alleenstaand: 2191.42, alleenstaande_ouder: 2526.69, samenwonend: 2881.41,
+      samenwonend_kind: 3155.31, pensioen_alleen: 2191.42, pensioen_paar: 2881.41,
+      pensioen_gemengd: 2881.41,
     },
   },
 ]
 
-export function getNormen(): Record<string, number> {
-  const nu = new Date().toISOString().split('T')[0]
+/** Geldige normperiode voor een gegeven datum (default: vandaag). */
+export function getNormPeriode(op: string = new Date().toISOString().split('T')[0]): NormPeriode {
   const geldig = NORM_PERIODES
-    .filter(p => p.vanaf <= nu)
+    .filter(p => p.vanaf <= op)
     .sort((a, b) => b.vanaf.localeCompare(a.vanaf))
-  return geldig[0]?.normen ?? NORM_PERIODES[0].normen
+  return geldig[0] ?? NORM_PERIODES[NORM_PERIODES.length - 1]
 }
 
-export const NORM = getNormen()
+// Actuele periode (bij app-start bevroren — normen veranderen niet binnen een sessie)
+export const NORMPERIODE = getNormPeriode()
 
-export const VGRENS: Record<string, number> = {
-  alleenstaand: 8000, alleenstaande_ouder: 16000, samenwonend: 16000,
-  pensioen_alleen: 8000, pensioen_paar: 16000, pensioen_gemengd: 16000,
-}
+// Terugwaartse compatibiliteit + gemak: afgeleide constantes uit de actuele periode
+export const NORM = NORMPERIODE.bijstand
+export const VGRENS = NORMPERIODE.vermogen
+export const NIBUD = NORMPERIODE.nibud
+export const BVV_MAX = NORMPERIODE.bvvMax
+export const VRIJSTELLING_OVERWAARDE = NORMPERIODE.vrijstellingOverwaarde
 
-export const NIBUD: Record<string, number> = {
-  alleenstaand: 540, alleenstaande_ouder: 620, samenwonend: 760,
-  pensioen_alleen: 510, pensioen_paar: 720, pensioen_gemengd: 720,
-}
+// Leesbare volgorde + labels voor de bijstandsnorm-tabel (Page4)
+export const BIJSTAND_LABELS: { key: string; label: string }[] = [
+  { key: 'alleenstaand', label: 'Alleenstaande / Alleenstaande ouder (21+)' },
+  { key: 'samenwonend', label: 'Samenwonend / Gehuwd' },
+  { key: 'pensioen_alleen', label: 'Pensioengerechtigde — alleenstaand (AIO SVB)' },
+  { key: 'pensioen_paar', label: 'Pensioengerechtigde — beiden AOW-gerechtigd' },
+]
 
-export const BVV_MAX: Record<string, number> = {
-  alleenstaand: 2191.42, alleenstaande_ouder: 2526.69, samenwonend: 2881.41,
-  samenwonend_kind: 3155.31, pensioen_alleen: 2191.42, pensioen_paar: 2881.41,
-  pensioen_gemengd: 2881.41,
-}
+// Leesbare volgorde voor de vermogensgrenzen-tabel (Page3)
+export const VERMOGEN_LABELS: { key: string; label: string }[] = [
+  { key: 'alleenstaand', label: 'Alleenstaande' },
+  { key: 'alleenstaande_ouder', label: 'Alleenstaande ouder / Gezin' },
+  { key: 'pensioen_alleen', label: 'Pensioengerechtigde — alleenstaand / paar' },
+]
 
 export interface SchuldInfo { pref: string; lei: string }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from '../../context'
-import { VGRENS } from '../../constants'
+import { VGRENS, VRIJSTELLING_OVERWAARDE, VERMOGEN_LABELS, NORMPERIODE } from '../../constants'
 import { nl, updArr, rmArr, mkVoertuig } from '../../utils'
 import type { VoertuigItem } from '../../types'
 import Card from '../shared/Card'
@@ -35,7 +35,7 @@ export default function Page3Vermogen() {
 
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0)
   const aw = state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
-  const owex = state.eigen_woning === 'ja' ? Math.max(0, (parseFloat(state.overwaarde) || 0) - 67500) : 0
+  const owex = state.eigen_woning === 'ja' ? Math.max(0, (parseFloat(state.overwaarde) || 0) - VRIJSTELLING_OVERWAARDE) : 0
   const tot = sp + aw + owex
   const grens = VGRENS[state.leefsituatie] || 8000
 
@@ -64,13 +64,16 @@ export default function Page3Vermogen() {
     <div>
       <Card icon={<IoDiamondOutline />} title="Vermogen & Bezittingen">
         <div className="bg-warm border border-rule rounded-lg p-3 text-[0.77rem] mb-3">
-          <strong className="text-[0.79rem]">Vermogensgrenzen Participatiewet 2026</strong>
+          <strong className="text-[0.79rem]">Vermogensgrenzen Participatiewet {NORMPERIODE.label}</strong>
           <table className="w-full mt-1 text-[0.76rem]">
             <tbody>
-              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande</td><td className="font-semibold">€ 8.000</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Alleenstaande ouder / Gezin</td><td className="font-semibold">€ 16.000</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Pensioengerechtigde (alleen/paar)</td><td className="font-semibold">€ 8.000 / €16.000</td></tr>
-              <tr><td className="text-inkl py-0.5 pr-2">Vrijstelling overwaarde eigen woning</td><td className="font-semibold">€ 67.500</td></tr>
+              {VERMOGEN_LABELS.map(({ key, label }) => (
+                <tr key={key}>
+                  <td className="text-inkl py-0.5 pr-2">{label}</td>
+                  <td className="font-semibold">€ {VGRENS[key]?.toLocaleString('nl-NL')}</td>
+                </tr>
+              ))}
+              <tr><td className="text-inkl py-0.5 pr-2">Vrijstelling overwaarde eigen woning</td><td className="font-semibold">€ {VRIJSTELLING_OVERWAARDE.toLocaleString('nl-NL')}</td></tr>
             </tbody>
           </table>
         </div>

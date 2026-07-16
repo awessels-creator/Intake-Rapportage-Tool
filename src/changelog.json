@@ -1,6 +1,26 @@
 {
   "versions": [
     {
+      "version": "2.0.15",
+      "date": "2026-07-16",
+      "categories": [
+        {
+          "title": "Onderhoudbaarheid & Toekomstbestendig",
+          "items": [
+            "Alle financiële normen (bijstand, vermogen, vrijstelling overwaarde, NIBUD, BVV) gebundeld in één bron in constants.ts met periode-structuur — normwijziging is nu één edit",
+            "Zichtbare normtabellen op Inkomen- en Vermogen-tab genereren nu uit de centrale bron (geen dubbele/verouderde getallen meer)",
+            "Bijstandsnorm-label toont automatisch de geldige periode (bijv. '2e helft 2026')"
+          ]
+        },
+        {
+          "title": "Performance",
+          "items": [
+            "Word-export (docx, ~370KB) wordt nu lazy geladen bij de download-knop — initiële app-bundle gehalveerd van ~750KB naar ~378KB"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.14",
       "date": "2026-05-22",
       "categories": [
