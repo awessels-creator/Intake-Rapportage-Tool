@@ -1,5 +1,5 @@
 import type { FormState, AdviesItem, BankItem, InkomenItem, SchuldItem, BeslagItem, VoertuigItem } from './types'
-import { LASTEN_DEF, PER_OPTIES, VGRENS } from './constants'
+import { LASTEN_DEF, PER_OPTIES, VGRENS, EIGEN_RISICO_JAAR } from './constants'
 
 export const nl = (n: number, dec = 0) =>
   n.toLocaleString('nl-NL', { minimumFractionDigits: dec, maximumFractionDigits: dec })
@@ -51,11 +51,12 @@ export function mkInitial(): FormState {
     overigVermogenOms: '', overigVermogenBedrag: '',
     vermogen_toel: '', tw_avp: '', tw_inboedel: '', tw_opstal: '',
     tw_uitvaart: '', tw_zorgaanv: '', tw_wanbet: '',
+    huisdieren: '', huisdieren_oms: '',
     bijstandsnorm: '', inkomenData: [mkInk()],
     alim_ontvangen: '', alim_partner: '', alim_kind: '', alim_lbio: '',
     iit: '', iit_datum: '', beslagData: [], inkomen_toel: '',
     toeslagenActief: {}, toeslagenBedrag: {}, toeslagenBeslag: {}, toeslagenNaam: {},
-    lastenWaarden: {}, lastenExtra: [],
+    lastenWaarden: { eigenrisico: { bedrag: String(EIGEN_RISICO_JAAR), per: 'jaar', opm: '' } }, lastenExtra: [],
     schuldenData: [mkSchuld()],
     ach_huur: 'nee', ach_energie: 'nee', sch_exparter: 'nvt', schulden_opm: '',
     fdma: '', kwgt: '', kwgm: '', kindsupport: '', voedselbank: '',

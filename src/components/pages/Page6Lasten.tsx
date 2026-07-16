@@ -12,6 +12,7 @@ import { HiOutlineHome, HiOutlineLightBulb, HiExclamationTriangle, HiXMark, HiAr
 interface ExtendedLastenDef extends LastenDef {
   extra?: boolean
   extraIdx?: number
+  dierOnly?: boolean
 }
 
 export default function Page6Lasten() {
@@ -19,6 +20,7 @@ export default function Page6Lasten() {
   const { NIBUD, BVV_MAX } = useNormen()
 
   const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
+  const hD = state.huisdieren === 'ja'
   const hK = state.kinderen === 'ja'
   const ls = state.leefsituatie
   const nibud = NIBUD[ls]
@@ -30,19 +32,20 @@ export default function Page6Lasten() {
 
   const allDef: ExtendedLastenDef[] = [
     ...LASTEN_DEF,
-    ...state.lastenExtra.map((e, i) => ({
+    ...state.lastenExtra.map((e, i): ExtendedLastenDef => ({
       id: `extra_${i}`,
       post: e.post || 'Eigen post',
       per: e.per || 'mnd',
       vast: false,
-      autoOnly: false as const,
-      kinderOnly: false as const,
+      autoOnly: false,
+      kinderOnly: false,
       gblt: false,
       extra: true,
       extraIdx: i,
     })),
   ].filter(row => {
     if (row.autoOnly && !hA) return false
+    if (row.dierOnly && !hD) return false
     if (row.kinderOnly && !hK) return false
     return true
   })

@@ -145,7 +145,13 @@ export const SCHULD_INFO: Record<string, SchuldInfo> = {
 export interface LastenDef {
   id: string; post: string; per: string; vast: boolean
   verzSleutel?: string | null; autoOnly?: boolean; kinderOnly?: boolean; gblt?: boolean
+  dierOnly?: boolean; defaultBedrag?: number
 }
+
+// Eigen risico ziektekostenverzekering — verandert per kalenderjaar.
+// WIJZIGEN PER 1 JANUARI: zet hier het geldende wettelijke eigen risico.
+// Wordt als default-ingang gebruikt bij de lastenpost 'Eigen risico ziektekosten' (zie LASTEN_DEF).
+export const EIGEN_RISICO_JAAR = 385.00 // 2026
 
 export const LASTEN_DEF: LastenDef[] = [
   { id: 'huur', post: 'Huur / Hypotheek', per: 'mnd', vast: true },
@@ -166,6 +172,9 @@ export const LASTEN_DEF: LastenDef[] = [
   { id: 'betreg', post: 'Betalingsregelingen schulden', per: 'mnd', vast: true },
   { id: 'leef', post: 'Kosten levensonderhoud/huishoudgeld', per: 'week', vast: true },
   { id: 'overig', post: 'Abonnementen / overig', per: 'mnd', vast: true },
+  { id: 'eigenrisico', post: 'Eigen risico ziektekosten (reservering)', per: 'jaar', vast: true, defaultBedrag: EIGEN_RISICO_JAAR },
+  { id: 'contributie', post: 'Contributie / lidmaatschappen', per: 'mnd', vast: true },
+  { id: 'huisdier_kosten', post: 'Huisdier(en) — voeding/verzorging', per: 'mnd', vast: false, dierOnly: true },
 ]
 
 export interface PerOptie { v: string; l: string; f: number }

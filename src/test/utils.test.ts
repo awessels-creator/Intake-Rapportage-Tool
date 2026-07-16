@@ -134,8 +134,13 @@ describe('getTotaalInkomen', () => {
 // ─── getTotaalLasten ─────────────────────────────────────────────────────────
 
 describe('getTotaalLasten', () => {
-  test('returns 0 with no lasten values', () => {
-    expect(getTotaalLasten(s())).toBe(0)
+  test('fresh mkInitial: eigen risico is vooringevuld (jaar → maand)', () => {
+    // mkInitial seedt eigen risico (EIGEN_RISICO_JAAR per jaar) als reservering
+    expect(getTotaalLasten(s())).toBeCloseTo(385 / 12, 2)
+  })
+
+  test('returns only the eigen-risico seed when no other lasten are filled', () => {
+    expect(getTotaalLasten(s({ lastenWaarden: { eigenrisico: { bedrag: '', per: 'jaar', opm: '' } } }))).toBe(0)
   })
 
   test('includes a monthly expense at face value', () => {

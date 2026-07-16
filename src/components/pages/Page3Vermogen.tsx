@@ -158,6 +158,18 @@ export default function Page3Vermogen() {
         </button>
         {autoAdv && <Alert variant="gold" icon={<BsCarFront />} title="Voertuigwaarde >€3.000">{autoAdv}</Alert>}
 
+        <div className="mt-4 mb-2">
+          <label className={L}>Huisdieren?</label>
+          <p className="text-[0.72rem] text-inkl mb-2">Bij 'Ja' verschijnt de kostenpost 'Huisdier(en)' bij de vaste lasten. Gebruik het veld hieronder voor soort/aantal (bijv. '2 katten, 1 hond').</p>
+          <ToggleWidget value={state.huisdieren} options={[{ v: 'ja', l: 'Ja' }, { v: 'nee', l: 'Nee' }]} onChange={val => set({ huisdieren: val })} />
+          {state.huisdieren === 'ja' && (
+            <div className="mt-2" style={{ maxWidth: 360 }}>
+              <label className={L}>Soort / aantal</label>
+              <input className="inp" value={state.huisdieren_oms} onChange={e => set({ huisdieren_oms: e.target.value })} placeholder="Bijv. 1 hond, 2 katten" />
+            </div>
+          )}
+        </div>
+
         <hr className="border-rule my-3" />
         <div className={SL}>Overig vermogen (boot, caravan, camper, vakantiehuis e.d.)</div>
         <div className={row2}>

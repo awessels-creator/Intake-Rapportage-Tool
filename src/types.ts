@@ -132,6 +132,8 @@ export interface FormState {
   tw_uitvaart: string
   tw_zorgaanv: string
   tw_wanbet: string
+  huisdieren: string
+  huisdieren_oms: string
   // Page 4
   bijstandsnorm: string
   inkomenData: InkomenItem[]
