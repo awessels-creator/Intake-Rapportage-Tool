@@ -1,5 +1,6 @@
 import { useForm } from '../../context'
-import { LASTEN_DEF, NIBUD, PER_OPTIES, BVV_MAX, type LastenDef } from '../../constants'
+import { useNormen } from '../../context/NormContext'
+import { LASTEN_DEF, PER_OPTIES, type LastenDef } from '../../constants'
 import { getTotaalInkomen, getTotaalLasten, getMndBedrag } from '../../utils'
 import { downloadBudgetCSV } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
@@ -15,6 +16,7 @@ interface ExtendedLastenDef extends LastenDef {
 
 export default function Page6Lasten() {
   const { state, set, goTo } = useForm()
+  const { NIBUD, BVV_MAX } = useNormen()
 
   const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
   const hK = state.kinderen === 'ja'

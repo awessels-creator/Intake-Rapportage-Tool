@@ -1,10 +1,11 @@
 import { act, render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { FormProvider, useForm } from '../context'
+import { NormProvider } from '../context/NormContext'
 import type { FormState } from '../types'
 
 /**
- * Renders a component inside FormProvider and synchronously applies an
+ * Renders a component inside FormProvider (+ NormProvider) and synchronously applies an
  * optional initial state patch before returning.
  *
  * Usage:
@@ -21,8 +22,10 @@ export function renderWithState(ui: ReactElement, initialState: Partial<FormStat
 
   const result = render(
     <FormProvider>
-      <SetCapture />
-      {ui}
+      <NormProvider>
+        <SetCapture />
+        {ui}
+      </NormProvider>
     </FormProvider>,
   )
 

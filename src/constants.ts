@@ -63,12 +63,52 @@ export const NORMPERIODE = getNormPeriode()
 // Model-code van de actieve periode (bv. "2026-2") — eenduidige identificatie
 export const MODEL = NORMPERIODE.model
 
+// ── MODEL-PREVIEW (voor de consulent: toekomstige normen alvast bekijken) ──────
+// Bij een halfjaarlijkse update voeg je de nieuwe periode toe aan NORM_PERIODES.
+// Met setNormPreview('2027-1') toont de tool tijdelijk die set (badge, tabellen,
+// rapport, bestandsnaam) — handig om vóór de ingangsdatum te controleren hoe het
+// eruitziet. clearNormPreview() of een herlaad zet de live datum weer terug.
+let ACTIEF: NormPeriode = NORMPERIODE
+export const PREVIEW_NORMPERIODE: { vanaf: string; model: string; label: string } | null =
+  NORMPERIODE.model === ACTIEF.model ? null : { vanaf: ACTIEF.vanaf, model: ACTIEF.model, label: ACTIEF.label }
+
+export function setNormPreview(model: string): void {
+  const p = NORM_PERIODES.find(x => x.model === model)
+  if (!p) return
+  ACTIEF = p
+  NORM = p.bijstand
+  VGRENS = p.vermogen
+  NIBUD = p.nibud
+  BVV_MAX = p.bvvMax
+  VRIJSTELLING_OVERWAARDE = p.vrijstellingOverwaarde
+  document.dispatchEvent(new CustomEvent('norm-preview-change'))
+}
+
+export function clearNormPreview(): void {
+  ACTIEF = NORMPERIODE
+  NORM = NORMPERIODE.bijstand
+  VGRENS = NORMPERIODE.vermogen
+  NIBUD = NORMPERIODE.nibud
+  BVV_MAX = NORMPERIODE.bvvMax
+  VRIJSTELLING_OVERWAARDE = NORMPERIODE.vrijstellingOverwaarde
+  document.dispatchEvent(new CustomEvent('norm-preview-change'))
+}
+
+export function getActivePeriode(): NormPeriode {
+  return ACTIEF
+}
+
+/** Lijst van alle beschikbare modellen (voor de preview-dropdown), nieuwste eerst. */
+export function getBeschikbareModellen(): NormPeriode[] {
+  return [...NORM_PERIODES].reverse()
+}
+
 // Terugwaartse compatibiliteit + gemak: afgeleide constantes uit de actuele periode
-export const NORM = NORMPERIODE.bijstand
-export const VGRENS = NORMPERIODE.vermogen
-export const NIBUD = NORMPERIODE.nibud
-export const BVV_MAX = NORMPERIODE.bvvMax
-export const VRIJSTELLING_OVERWAARDE = NORMPERIODE.vrijstellingOverwaarde
+export let NORM = NORMPERIODE.bijstand
+export let VGRENS = NORMPERIODE.vermogen
+export let NIBUD = NORMPERIODE.nibud
+export let BVV_MAX = NORMPERIODE.bvvMax
+export let VRIJSTELLING_OVERWAARDE = NORMPERIODE.vrijstellingOverwaarde
 
 // Leesbare volgorde + labels voor de bijstandsnorm-tabel (Page4)
 export const BIJSTAND_LABELS: { key: string; label: string }[] = [

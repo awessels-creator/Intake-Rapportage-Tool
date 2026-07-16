@@ -1,4 +1,5 @@
 import { FormProvider, useForm } from './context'
+import { NormProvider } from './context/NormContext'
 import TopBar from './components/TopBar'
 import ProgressBar from './components/ProgressBar'
 import Changelog from './components/Changelog'
@@ -60,7 +61,9 @@ function AppInner() {
 export default function App() {
   return (
     <FormProvider>
-      <AppInner />
+      <NormProvider>
+        <AppInner />
+      </NormProvider>
     </FormProvider>
   )
 }

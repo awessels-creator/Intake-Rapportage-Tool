@@ -1,5 +1,6 @@
 import { useForm } from '../../context'
-import { VGRENS, TOESLAG_GRENZEN_2026 } from '../../constants'
+import { useNormen } from '../../context/NormContext'
+import { TOESLAG_GRENZEN_2026 } from '../../constants'
 import { getTotaalInkomen, getTotaalLasten, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -40,6 +41,7 @@ interface Regel {
 
 export default function Page8Regelcheck() {
   const { state, set, goTo } = useForm()
+  const { VGRENS } = useNormen()
 
   const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)

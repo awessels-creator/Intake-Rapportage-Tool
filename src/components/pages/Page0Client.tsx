@@ -1,5 +1,5 @@
 import { useForm } from '../../context'
-import { NORM } from '../../constants'
+import { useNormen } from '../../context/NormContext'
 import { lftd, lftdN, updArr, rmArr, bsn11Proef } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -17,6 +17,7 @@ const row4 = 'grid grid-cols-4 gap-[11px] mb-[11px]'
 
 export default function Page0Client() {
   const { state, set, goTo } = useForm()
+  const { NORM, NORMPERIODE } = useNormen()
 
   // Automatische leefsituatie-berekening op basis van leeftijden
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function Page0Client() {
             </select>
             {state.leefsituatie && NORM[state.leefsituatie] && (
               <div className="text-[0.67rem] text-accent mt-0.5 font-medium">
-                Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} (jul 2026, aanpasbaar)
+                Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} ({NORMPERIODE.label}, aanpasbaar)
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useForm } from '../../context'
-import { NORM, NORMPERIODE, BIJSTAND_LABELS } from '../../constants'
+import { useNormen } from '../../context/NormContext'
+import { BIJSTAND_LABELS } from '../../constants'
 import { getTotaalInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -16,6 +17,7 @@ const row3 = 'grid grid-cols-3 gap-3 mb-3'
 
 export default function Page4Inkomen() {
   const { state, set, goTo } = useForm()
+  const { NORM, NORMPERIODE } = useNormen()
 
   const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)

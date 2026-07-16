@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useForm } from '../../context'
-import { VGRENS, VRIJSTELLING_OVERWAARDE, VERMOGEN_LABELS, NORMPERIODE } from '../../constants'
+import { useNormen } from '../../context/NormContext'
+import { VERMOGEN_LABELS } from '../../constants'
 import { nl, updArr, rmArr, mkVoertuig } from '../../utils'
 import type { VoertuigItem } from '../../types'
 import Card from '../shared/Card'
@@ -31,6 +32,7 @@ const TW_VERZ_NVT = [
 
 export default function Page3Vermogen() {
   const { state, set, goTo } = useForm()
+  const { VGRENS, VRIJSTELLING_OVERWAARDE, NORMPERIODE } = useNormen()
   const [undo, setUndo] = useState<{ item: VoertuigItem; index: number } | null>(null)
 
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0)

@@ -21,6 +21,14 @@
           ]
         },
         {
+          "title": "Model-preview (toekomstige normen bekijken)",
+          "items": [
+            "Dropdown in de TopBar toont alle beschikbare modellen (bv. 2026-2, 2027-1) — kies er een om de tabellen, badge, rapport en bestandsnaam tijdelijk op die set te zetten",
+            "Handig om vóór de ingangsdatum te controleren hoe een nieuwe normenset eruitziet; 'live'-knop zet terug naar het actuele model",
+            "Preview is sessie-only: bij herladen staat de tool weer op de datum-geldige set"
+          ]
+        },
+        {
           "title": "Performance",
           "items": [
             "Word-export (docx, ~370KB) wordt nu lazy geladen bij de download-knop — initiële app-bundle gehalveerd van ~750KB naar ~378KB"
