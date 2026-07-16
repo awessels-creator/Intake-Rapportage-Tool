@@ -3,33 +3,39 @@ import { LASTEN_DEF, TOESLAG_NAMEN, PER_OPTIES } from './constants'
 
 // Genereert een CSV (Excel NL: ';' delimiter, ',' decimaal) budgetoverzicht
 // met ONDERLIGGENDE FORMULES zodat de inwoner bedragen kan wijzigen en alles
-// automatisch doorrekent (net als in Excel).
+// automatisch doorrekent (net als in het Excel-voorbeeld van de gemeente).
 //
-// Kolommen:  A = Post
-//            B = Invoer-bedrag (wat de consulent invulde, ongewijzigd)
-//            C = Periode (label, bv. '/week')
-//            D = Maandbedrag (€) — FORMULE die B omrekent met dezelfde factor
-//                als de tool (week=4,333, kwt=/3, jaar=/12, 10 term=*10/12).
-//                Wijzigt de inwoner B (of de invoer in de tool), dan rekent D
-//                en het totaal/saldo automatisch door.
+// Structuur (gespiegeld aan het vertrouwde Budgetplan .xls):
+//   A = Post
+//   B = Maandbedrag (€) — FORMULE, verwijst naar D (invoer) × periode-factor
+//   C = (lege kolom, voor leesbaarheid)
+//   D = Invoer-bedrag (wat de consulent invulde; de inwoner kan dit wijzigen)
+//   E = Periode (label, bv. '/week')
+//
+// De formule staat in B en kijkt naar D (een ándere kolom, zelfde rij), dus
+// NOOIT een zelf-referentie → geen kringverwijzing bij openen in Excel.
+// Wijzigt de inwoner D (of de periode in de tool), dan rekent B + de totalen
+// automatisch door. Werkt twee richtingen op: maandbedrag volgt altijd uit
+// (invoer-bedrag × periode).
 export function genereerBudgetCSV(state: FormState): string {
   const rows: string[] = []
 
-  // Titel
-  rows.push('Budgetoverzicht;Invoer;Periode;Maandbedrag (€)')
-  rows.push(`Cliënt;${state.voornaam || ''} ${state.achternaam || ''};;`.trim())
+  // Titel + header
+  rows.push('Budgetoverzicht;Maandbedrag (€);;Invoer;Periode')
+  rows.push(`Cliënt;${state.voornaam || ''} ${state.achternaam || ''};;;`)
 
-  // Formule-factor naar NL-Excel-formule (verwijst naar kolom B, huidige rij)
+  // Formule-factor naar NL-Excel-formule verwijzend naar kolom D (invoer)
   const formule = (rij: number, per: string): string => {
     const f = PER_OPTIES.find(p => p.v === per)?.f ?? 1
-    if (f === 1) return `=B${rij}`
-    if (f === 4.333) return `=B${rij}*4,333`
-    if (f === 1 / 3) return `=B${rij}/3`
-    if (f === 1 / 12) return `=B${rij}/12`
-    if (f === 10 / 12) return `=B${rij}*10/12`
-    return `=B${rij}*${String(f).replace('.', ',')}`
+    if (f === 1) return `=D${rij}`
+    if (f === 4.333) return `=D${rij}*4,333`
+    if (f === 1 / 3) return `=D${rij}/3`
+    if (f === 1 / 12) return `=D${rij}/12`
+    if (f === 10 / 12) return `=D${rij}*10/12`
+    return `=D${rij}*${String(f).replace('.', ',')}`
   }
   const perLabel = (per: string) => PER_OPTIES.find(p => p.v === per)?.l || '/mnd'
+  // Betaalverkeer: maximaal 2 cijfers achter de komma
   const fmt = (n: number) => n.toFixed(2).replace('.', ',')
 
   // ── Inkomsten ──────────────────────────────────────────────
@@ -48,10 +54,11 @@ export function genereerBudgetCSV(state: FormState): string {
   })
   const startInk = rows.length + 1
   inkomstenRijen.forEach(r => {
-    rows.push(`${r.naam};${fmt(r.bedrag)};${perLabel(r.per)};${formule(rows.length + 1, r.per)}`)
+    // B=formule, D=invoer, E=periode  (C blijft leeg)
+    rows.push(`${r.naam};${formule(rows.length + 1, r.per)};;${fmt(r.bedrag)};${perLabel(r.per)}`)
   })
   const eindInk = rows.length
-  rows.push(`Totaal inkomen;;;=SOM(D${startInk}:D${eindInk})`)
+  rows.push(`Totaal inkomen;;;=SOM(B${startInk}:B${eindInk});`)
 
   // ── Lasten ─────────────────────────────────────────────────
   rows.push('')
@@ -73,16 +80,16 @@ export function genereerBudgetCSV(state: FormState): string {
   })
   const startLast = rows.length + 1
   lastenRijen.forEach(r => {
-    rows.push(`${r.naam};${fmt(r.bedrag)};${perLabel(r.per)};${formule(rows.length + 1, r.per)}`)
+    rows.push(`${r.naam};${formule(rows.length + 1, r.per)};;${fmt(r.bedrag)};${perLabel(r.per)}`)
   })
   const eindLast = rows.length
-  rows.push(`Totaal uitgaven;;;=SOM(D${startLast}:D${eindLast})`)
+  rows.push(`Totaal uitgaven;;;=SOM(B${startLast}:B${eindLast});`)
 
   // ── Saldo ──────────────────────────────────────────────────
   rows.push('')
   const totaalInkRij = eindInk + 1
   const totaalLastRij = eindLast + 1
-  rows.push(`SALDO (inkomen − uitgaven);;;=D${totaalInkRij}-D${totaalLastRij}`)
+  rows.push(`SALDO (inkomen − uitgaven);;;=B${totaalInkRij}-B${totaalLastRij};`)
 
   return rows.join('\r\n')
 }

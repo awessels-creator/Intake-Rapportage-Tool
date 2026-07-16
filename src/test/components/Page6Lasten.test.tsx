@@ -236,4 +236,38 @@ describe('Page6Lasten', () => {
     const perSelectNaTypen = within(rij).getByRole('combobox') as HTMLSelectElement
     expect(perSelectNaTypen.value).toBe('week')
   })
+
+  test('GBLT blijft op /10 term. als je een bedrag typt (regressie #gblt-default)', async () => {
+    const user = userEvent.setup()
+    renderWithState(<Page6Lasten />)
+
+    const rij = screen.getByText(/GBLT/i).closest('tr') as HTMLElement
+    expect(rij).toBeTruthy()
+
+    const perSelectInitieel = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectInitieel.value).toBe('10ter')
+
+    const bedragInput = within(rij).getByPlaceholderText('0') as HTMLInputElement
+    await user.type(bedragInput, '120')
+
+    const perSelectNaTypen = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectNaTypen.value).toBe('10ter')
+  })
+
+  test('Gemeentelijke belastingen blijft op /10 term. als je een bedrag typt (regressie #gem-default)', async () => {
+    const user = userEvent.setup()
+    renderWithState(<Page6Lasten />)
+
+    const rij = screen.getByText(/Gemeentelijke belastingen/i).closest('tr') as HTMLElement
+    expect(rij).toBeTruthy()
+
+    const perSelectInitieel = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectInitieel.value).toBe('10ter')
+
+    const bedragInput = within(rij).getByPlaceholderText('0') as HTMLInputElement
+    await user.type(bedragInput, '90')
+
+    const perSelectNaTypen = within(rij).getByRole('combobox') as HTMLSelectElement
+    expect(perSelectNaTypen.value).toBe('10ter')
+  })
 })
