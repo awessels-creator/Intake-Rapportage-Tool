@@ -5,6 +5,7 @@
 
 export interface NormPeriode {
   vanaf: string                     // datum (YYYY-MM-DD) waarop deze normen ingaan
+  model: string                     // stabiele model-code, bv. "2026-1" (1e helft) of "2026-2" (2e helft)
   label: string                     // leesbare periode-aanduiding voor in de UI
   bijstand: Record<string, number> // netto bijstandsnormen excl. vakantietoeslag (/mnd)
   vermogen: Record<string, number> // vrijstellingsgrens vermogen Participatiewet
@@ -13,9 +14,19 @@ export interface NormPeriode {
   bvvMax: Record<string, number>   // wettelijke maximum beslagvrije voet
 }
 
+// ── HALFJAARLIJKSE UPDATE ───────────────────────────────────────────────────
+// Normen wijzigen per 1 januari en per 1 juli. Voeg bij elke wijziging ÉÉN
+// nieuwe periode toe aan NORM_PERIODES hieronder:
+//   { vanaf: '2027-01-01', model: '2027-1', label: '1e helft 2027 (per 1 jan 2027)', bijstand: {...}, ... }
+// De tool kiest automatisch de periode die op de huidige datum van kracht is.
+// Geen overlap nodig: de nieuwe periode vervangt de oude zodra 'vanaf' is bereikt.
+// Het `model` (bv. "2026-2") identificeert eenduidig welke normenset actief is —
+// zichtbaar in de TopBar, het rapport en de bestandsnaam.
+
 const NORM_PERIODES: NormPeriode[] = [
   {
     vanaf: '2026-07-01',
+    model: '2026-2',
     label: '2e helft 2026 (per 1 juli 2026)',
     bijstand: {
       alleenstaand: 1348.49, alleenstaande_ouder: 1348.49, samenwonend: 1926.40,
@@ -48,6 +59,9 @@ export function getNormPeriode(op: string = new Date().toISOString().split('T')[
 
 // Actuele periode (bij app-start bevroren — normen veranderen niet binnen een sessie)
 export const NORMPERIODE = getNormPeriode()
+
+// Model-code van de actieve periode (bv. "2026-2") — eenduidige identificatie
+export const MODEL = NORMPERIODE.model
 
 // Terugwaartse compatibiliteit + gemak: afgeleide constantes uit de actuele periode
 export const NORM = NORMPERIODE.bijstand

@@ -2,7 +2,7 @@
 // dus deze module wordt alleen geladen wanneer de gebruiker daadwerkelijk
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
-import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX } from './constants'
+import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE } from './constants'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
@@ -165,7 +165,7 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(spacer())
 
   // 7. Inkomen
-  children.push(h2('7. Inkomen (per 1 jan 2026)'))
+  children.push(h2(`7. Inkomen (model ${MODEL} — ${NORMPERIODE.label})`))
   const inkRows: [string, string][] = [['Bijstandsnorm', `€ ${nl(norm)}/mnd`], ['Totaal inkomen', `€ ${nl(ink)}/mnd (${pct.toFixed(0)}% van norm)`]]
   if (state.alim_ontvangen === 'ja') inkRows.push(['Alimentatie ontvangen', `Partner: €${state.alim_partner || '0'}/mnd | Kind: €${state.alim_kind || '0'}/mnd | Via LBIO: ${state.alim_lbio || '—'}`])
   children.push(ntTable(inkRows))
@@ -204,7 +204,7 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(para(`Kwijtschelding GBLT: ${state.kwgt || '—'} | Kwijtschelding gemeente: ${state.kwgm || '—'}`)); children.push(spacer())
 
   // 9a. Beslagvrije Voet
-  children.push(h2('9a. Beslagvrije Voet (indicatief, jan 2026)'))
+  children.push(h2(`9a. Beslagvrije Voet (indicatief, model ${MODEL})`))
   children.push(ntTable([['Toe te passen BVV', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
   children.push(spacer())
 
@@ -244,7 +244,7 @@ export async function buildAndSaveWord(state: FormState) {
   if (state.conclusie) { children.push(h2('14. Conclusie / Afspraken / Afsluiting')); state.conclusie.split('\n').forEach(line => children.push(para(line))) }
 
   children.push(spacer())
-  children.push(new Paragraph({ children: [new TextRun({ text: `Rapportage: ${new Date().toLocaleDateString('nl-NL')} | Consulent: ${consulent} | Cliëntnr: ${state.clientnr || '—'} | Vertrouwelijk — Geldzorgen Schuldhulpverlening Meppel 2026`, color: '888888', size: 17, font: 'Arial' })], spacing: { before: 200 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR } } }))
+  children.push(new Paragraph({ children: [new TextRun({ text: `Rapportage: ${new Date().toLocaleDateString('nl-NL')} | Consulent: ${consulent} | Cliëntnr: ${state.clientnr || '—'} | Model: ${MODEL} (${NORMPERIODE.label}) | Vertrouwelijk — Geldzorgen Schuldhulpverlening Meppel`, color: '888888', size: 17, font: 'Arial' })], spacing: { before: 200 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR } } }))
 
   const doc = new Document({
     creator: 'Geldzorgen Meppel', title: `Intakerapportage ${naam}`, description: 'Intakerapportage gegenereerd door de Intake-Rapportage Tool',
@@ -260,7 +260,7 @@ export async function buildAndSaveWord(state: FormState) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_${datum}.docx`
+  a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_model_${MODEL}_${datum}.docx`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

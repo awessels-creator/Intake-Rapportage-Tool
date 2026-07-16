@@ -1,5 +1,6 @@
 import { useForm } from '../context'
 import { downloadWord } from '../download'
+import { MODEL, NORMPERIODE } from '../constants'
 import { HiArrowPath, HiArrowDownTray } from 'react-icons/hi2'
 
 export default function TopBar() {
@@ -11,6 +12,10 @@ export default function TopBar() {
       <div className="flex items-center gap-[10px]">
         <div className="font-semibold text-[1.1rem]">Intakerapportage</div>
         <div className="text-[0.7rem] text-white/60">2026</div>
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 text-[0.68rem] font-medium text-white/90" title={`Actieve normenset: ${NORMPERIODE.label}`}>
+          <span className="opacity-70">model</span>
+          <span className="font-semibold">{MODEL}</span>
+        </div>
       </div>
       <div className="flex gap-1.5">
         <button

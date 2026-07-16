@@ -13,6 +13,14 @@
           ]
         },
         {
+          "title": "Model-identificatie (halfjaarlijkse normen)",
+          "items": [
+            "Elke normperiode heeft nu een stabiele model-code (bv. '2026-2') — zichtbaar als badge in de TopBar",
+            "Het model staat ook in de rapport-ondertekening, de sectiekoppen (Inkomen, BVV) en de bestandsnaam van de download",
+            "Documentatie in constants.ts: normen bijwerken per 1-1 / 1-7 is één nieuwe periode toevoegen"
+          ]
+        },
+        {
           "title": "Performance",
           "items": [
             "Word-export (docx, ~370KB) wordt nu lazy geladen bij de download-knop — initiële app-bundle gehalveerd van ~750KB naar ~378KB"
