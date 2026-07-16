@@ -164,7 +164,7 @@ export const LASTEN_DEF: LastenDef[] = [
   { id: 'ko', post: 'Kinderopvang (eigen bijdrage)', per: 'mnd', vast: false, kinderOnly: true },
   { id: 'alim_betaald', post: 'Alimentatie (betaald)', per: 'mnd', vast: true },
   { id: 'betreg', post: 'Betalingsregelingen schulden', per: 'mnd', vast: true },
-  { id: 'leef', post: 'Kosten levensonderhoud/huishoudgeld', per: 'mnd', vast: true },
+  { id: 'leef', post: 'Kosten levensonderhoud/huishoudgeld', per: 'week', vast: true },
   { id: 'overig', post: 'Abonnementen / overig', per: 'mnd', vast: true },
 ]
 

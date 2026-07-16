@@ -125,7 +125,7 @@ export default function Page6Lasten() {
                         <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-inkl text-[0.73rem] pointer-events-none">€</span>
                         <input
                           type="number"
-                          className="inp"
+                          className={`inp ${w.per && w.per !== 'mnd' ? 'border-gold bg-golds' : ''}`}
                           style={{ paddingLeft: 16 }}
                           value={w.bedrag}
                           placeholder="0"
@@ -134,7 +134,7 @@ export default function Page6Lasten() {
                       </div>
                     </td>
                     <td>
-                      <select className="inp" value={w.per} onChange={e => updW(row.id, { per: e.target.value })}>
+                      <select className={`inp ${w.per && w.per !== 'mnd' ? 'border-gold bg-golds' : ''}`} value={w.per} onChange={e => updW(row.id, { per: e.target.value })}>
                         {PER_OPTIES.map(p => <option key={p.v} value={p.v}>{p.l}</option>)}
                       </select>
                     </td>
