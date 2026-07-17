@@ -175,12 +175,16 @@ describe('budget .xlsx export', () => {
     expect(String(ws.getCell(1, 2).value || '')).toBe('Maandbedrag')
     expect(String(ws.getCell(1, 3).value || '')).toContain('Invoer')
 
-    // 10) automatische kolombreedte: elke kolom is minstens zo breed als de
-    //     langste header/inhoud (+marge), en nooit smaller dan 10.
+    // 10) automatische kolombreedte: A (Post) ruim (38–50), overige (10–30)
     for (const c of [1, 2, 3, 4]) {
       const w = ws.getColumn(c).width as number
-      expect(w).toBeGreaterThanOrEqual(10)
-      expect(w).toBeLessThanOrEqual(30)
+      if (c === 1) {
+        expect(w).toBeGreaterThanOrEqual(38)
+        expect(w).toBeLessThanOrEqual(50)
+      } else {
+        expect(w).toBeGreaterThanOrEqual(10)
+        expect(w).toBeLessThanOrEqual(30)
+      }
     }
   })
 })

@@ -289,7 +289,11 @@ export function bouwBudgetWerkboek(
   })
   for (const c of [1, 2, 3, 4]) {
     const max = colMax[c] || 10
-    ws.getColumn(c).width = Math.min(Math.max(max + 2, 10), 30)
+    // Kolom A (Post) krijgt een ruime vloer zodat labels altijd leesbaar zijn;
+    // de overige kolommen blijven binnen de 30-cap.
+    const cap = c === 1 ? 50 : 30
+    const floor = c === 1 ? 38 : 10
+    ws.getColumn(c).width = Math.min(Math.max(max + 2, floor), cap)
   }
 
   // Bladbeveiliging: kolom B (de maandbedrag-formules) is vergrendeld, zodat de
