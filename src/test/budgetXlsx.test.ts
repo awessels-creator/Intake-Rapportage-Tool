@@ -27,6 +27,7 @@ describe('budget .xlsx export', () => {
 
     // Verzamel alle formules in kolom B en controleer op zelf-referentie
     let zelfRef = false
+    let foutFormule = false
     let saldoFormule = ''
     let totaalInkFormule = ''
     let totaalLastFormule = ''
@@ -37,6 +38,8 @@ describe('budget .xlsx export', () => {
       if (cell && typeof cell.f === 'string') {
         // zelf-referentie: formule mag niet naar zijn eigen B-cel verwijzen
         if (cell.f.includes(`B${r + 1}`)) zelfRef = true
+        // geen '@' (implicit intersection bug) en géén leading/trailing whitespace
+        if (cell.f.includes('@') || cell.f !== cell.f.trim()) foutFormule = true
         const a = XLSX.utils.encode_cell({ r, c: 0 }) // A (post-naam)
         const naam = (ws[a] && ws[a].v) || ''
         if (/SALDO/i.test(String(naam))) saldoFormule = cell.f
@@ -46,17 +49,40 @@ describe('budget .xlsx export', () => {
     }
 
     expect(zelfRef).toBe(false)
+    expect(foutFormule).toBe(false) // geen @ en geen whitespace in formules
     // Totaal inkomen sommeert de inkomsten (B5:B6)
-    expect(totaalInkFormule).toMatch(/^=SOM\(B5:B6\)$/)
-    expect(totaalLastFormule).toMatch(/^=SOM\(B10:B13\)$/)
+    expect(totaalInkFormule).toMatch(/^SOM\(B5:B6\)$/)
+    expect(totaalLastFormule).toMatch(/^SOM\(B10:B13\)$/)
     // Saldo = totaal inkomen − totaal uitgaven
-    expect(saldoFormule).toMatch(/^=B7-B14$/)
+    expect(saldoFormule).toMatch(/^B7-B14$/)
+  })
+
+  test('formule-cellen hebben een gecachte waarde (v) zodat Excel die direct toont', () => {
+    const wb = bouwBudgetWerkboek(maakState(), XLSX)
+    const ws = wb.Sheets['Budgetoverzicht']
+
+    // Vind de B-cellen voor Werk (rij5), Totaal inkomen (rij7), Saldo (rij16)
+    const lees = (rij: number) => ws[XLSX.utils.encode_cell({ r: rij - 1, c: 1 })]
+    const werk = lees(5)
+    const totInk = lees(7)
+    const saldo = lees(16)
+
+    // Elke formule-cel moet een numerieke gecachte waarde hebben (niet leeg)
+    expect(typeof werk.v).toBe('number')
+    expect(typeof totInk.v).toBe('number')
+    expect(typeof saldo.v).toBe('number')
+
+    // Verwachte waarden: Werk 1500*mnd=1500; Totaal ink 1500+100=1600;
+    // Lasten: 800 + 120*10/12 + 100*4,333 + 385/12 = 1365,41; Saldo 1600-1365,41=234,59
+    expect(werk.v).toBeCloseTo(1500, 1)
+    expect(totInk.v).toBeCloseTo(1600, 1)
+    expect(saldo.v).toBeCloseTo(234.59, 1)
   })
 
   test('schrijft werkboek naar bestand voor externe verificatie', () => {
     const wb = bouwBudgetWerkboek(maakState(), XLSX)
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    writeFileSync('/tmp/verify_budget.xlsx', Buffer.from(buf))
+    writeFileSync('./verify_budget.xlsx', Buffer.from(buf))
     expect(buf.byteLength).toBeGreaterThan(1000)
   })
 })

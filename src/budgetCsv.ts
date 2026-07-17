@@ -28,9 +28,14 @@ type WerkboekRij = {
   per: string
 }
 
-// Van periode -> NL-Excel formule-factor verwijzend naar kolom D (invoer)
-function formuleFactor(per: string): string {
+// Multiplier van periode naar maand (voor de JS-berekening van de waarde)
+function factor(per: string): number {
   const f = PER_OPTIES.find(p => p.v === per)?.f ?? 1
+  return f
+}
+// NL-Excel formule (verwijst naar kolom D, de invoer-cel op dezelfde rij)
+function formuleFactor(per: string): string {
+  const f = factor(per)
   if (f === 1) return 'D{r}' // 1:1 (maand)
   if (f === 4.333) return 'D{r}*4,333' // week
   if (f === 1 / 3) return 'D{r}/3' // kwartaal
@@ -42,6 +47,15 @@ const perLabel = (per: string) => PER_OPTIES.find(p => p.v === per)?.l || '/mnd'
 // Betaalverkeer: maximaal 2 cijfers achter de komma
 const fmt = (n: number) => Number(n.toFixed(2))
 
+// Maakt een formule-cel aan MET gecachte waarde. Excel toont de waarde direct
+// (geen "bewerken" nodig) en de @-bug (implicit intersection) verdwijnt, omdat
+// de cel correct als number-formule { f, v, t:'n' } is gemarkeerd.
+// SheetJS verwacht de formule in `f` ZONDER leading '=' — die strippen we.
+function formuleCel(formule: string, waarde: number) {
+  const f = formule.startsWith('=') ? formule.slice(1) : formule
+  return { f, v: Number(waarde.toFixed(2)), t: 'n' as const }
+}
+
 // Bouwt het SheetJS-workbook-object (formules + opmaak). De `xlsx`-module
 // wordt hier NIET geïmporteerd — die geven we door zodat de caller hem lazy
 // kan laden en de workbook naar een bestand kan schrijven.
@@ -49,7 +63,7 @@ export function bouwBudgetWerkboek(
   state: FormState,
   XLSX: typeof import('xlsx'),
 ): import('xlsx').WorkBook {
-  const rows: (string | number)[][] = []
+  const rows: (string | number | object)[][] = []
   rows.push(['Budgetoverzicht', 'Maandbedrag (€)', '', 'Invoer', 'Periode'])
   rows.push([`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`, '', '', '', ''])
 
@@ -68,11 +82,16 @@ export function bouwBudgetWerkboek(
     }
   })
   const inkStart = rows.length + 1 // 1-based rij van eerste inkomst
+  const inkomstWaarden: number[] = []
   inkomsten.forEach(r => {
-    rows.push([r.naam, `=${formuleFactor(r.per).replace('{r}', String(rows.length + 1))}`, '', fmt(r.bedrag), perLabel(r.per)])
+    const rij = rows.length + 1
+    const w = r.bedrag * factor(r.per)
+    inkomstWaarden.push(w)
+    rows.push([r.naam, formuleCel(`=${formuleFactor(r.per).replace('{r}', String(rij))}`, w), '', fmt(r.bedrag), perLabel(r.per)])
   })
   const inkEnd = rows.length
-  rows.push(['Totaal inkomen', `=SOM(B${inkStart}:B${inkEnd})`, '', '', ''])
+  const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
+  rows.push(['Totaal inkomen', formuleCel(`=SOM(B${inkStart}:B${inkEnd})`, totInk), '', '', ''])
 
   // Lasten
   rows.push([])
@@ -93,33 +112,24 @@ export function bouwBudgetWerkboek(
     }
   })
   const lastStart = rows.length + 1
+  const lastWaarden: number[] = []
   lasten.forEach(r => {
-    rows.push([r.naam, `=${formuleFactor(r.per).replace('{r}', String(rows.length + 1))}`, '', fmt(r.bedrag), perLabel(r.per)])
+    const rij = rows.length + 1
+    const w = r.bedrag * factor(r.per)
+    lastWaarden.push(w)
+    rows.push([r.naam, formuleCel(`=${formuleFactor(r.per).replace('{r}', String(rij))}`, w), '', fmt(r.bedrag), perLabel(r.per)])
   })
   const lastEnd = rows.length
-  rows.push(['Totaal uitgaven', `=SOM(B${lastStart}:B${lastEnd})`, '', '', ''])
+  const totLast = lastWaarden.reduce((a, b) => a + b, 0)
+  rows.push(['Totaal uitgaven', formuleCel(`=SOM(B${lastStart}:B${lastEnd})`, totLast), '', '', ''])
 
   // Saldo
   rows.push([])
   const totInkRij = inkEnd + 1
   const totLastRij = lastEnd + 1
-  rows.push(['SALDO (inkomen − uitgaven)', `=B${totInkRij}-B${totLastRij}`, '', '', ''])
+  rows.push(['SALDO (inkomen − uitgaven)', formuleCel(`=B${totInkRij}-B${totLastRij}`, totInk - totLast), '', '', ''])
 
   const ws = XLSX.utils.aoa_to_sheet(rows)
-  // SheetJS zet strings die met '=' beginnen niet automatisch om naar formules.
-  // Forceer dat elke '='-string een echte formule-cel { f } wordt, zodat Excel
-  // hem bij openen berekent (en het saldo een bedrag toont, geen formuleteskt).
-  const range = XLSX.utils.decode_range(ws['!ref'] as string)
-  for (let r = range.s.r; r <= range.e.r; r++) {
-    for (let c = range.s.c; c <= range.e.c; c++) {
-      const addr = XLSX.utils.encode_cell({ r, c })
-      const cell = ws[addr]
-      if (cell && typeof cell.v === 'string' && cell.v.startsWith('=')) {
-        cell.f = cell.v
-        delete cell.v
-      }
-    }
-  }
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
   // B maandbedrag, C leeg, D invoer, E periode.
   ws['!cols'] = [
