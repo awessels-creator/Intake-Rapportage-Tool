@@ -100,14 +100,14 @@ export function bouwBudgetWerkboek(
   })
 
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
-  // B maandbedrag, C leeg, D invoer (brede kolom zodat de instructie zichtbaar
-  // is), E periode.
+  // B maandbedrag, C leeg, D invoer (breedte = exacte tekstlengte, geen
+  // extra ruimte), E periode (iets breder voor het ▼-pijltje in de kop).
   ws.columns = [
     { width: 42 }, // A
     { width: 16 }, // B
     { width: 3 },  // C
-    { width: 40 }, // D
-    { width: 14 }, // E
+    { width: 42 }, // D  ("Invoer (€) -> wijzig hier bij verandering" = 42 tekens)
+    { width: 12 }, // E
   ]
 
   let rij = 1
@@ -136,6 +136,10 @@ export function bouwBudgetWerkboek(
         formulae: [`"${PER_CODES.join(',')}"`],
         showErrorMessage: true,
         error: 'Kies een van: ' + PER_CODES.join(', '),
+        // Invoer-bericht (prompt) bij selectie van de cel: maakt het
+        // uitklapveld expliciet zichtbaar voor de cliënt.
+        showInputMessage: true,
+        prompt: 'Klik op het pijltje en kies de betaalperiode: ' + PER_CODES.join(', '),
       }
     }
     rij++
@@ -145,8 +149,8 @@ export function bouwBudgetWerkboek(
   // Header-rij (A t/m E)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
   ws.getCell(rij, 2).value = 'Maandbedrag (€)'
-  ws.getCell(rij, 4).value = 'Invoer (€) wijzig hier bij verandering'
-  ws.getCell(rij, 5).value = 'Periode'
+  ws.getCell(rij, 4).value = 'Invoer (€) -> wijzig hier bij verandering'
+  ws.getCell(rij, 5).value = 'Periode ▼'
   rij++
   zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
   rij++ // lege rij
