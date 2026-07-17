@@ -48,8 +48,8 @@ describe('budget .xlsx export', () => {
     expect(totaalInkFormule).toMatch(/^SUM\(B5:B6\)$/)
     expect(totaalLastFormule).toMatch(/^SUM\(B10:B13\)$/)
     expect(saldoFormule).toMatch(/^B7-B14$/)
-    // Groen/rood nummerformaat op de saldo-cel
-    expect(saldoNumFmt).toContain('Green')
+    // Rood bij negatief budget (positief/ongebruikt blijft zwart)
+    expect(saldoNumFmt).not.toContain('Green')
     expect(saldoNumFmt).toContain('Red')
   })
 

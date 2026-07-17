@@ -95,8 +95,8 @@ export function bouwBudgetWerkboek(
 
   // Header-rij (A t/m E) apart zetten
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
-  ws.getCell(rij, 2).value = 'Maandbedrag (€)'
-  ws.getCell(rij, 4).value = 'Invoer'
+  ws.getCell(rij, 2).value = 'Maandbedrag (€) — automatisch'
+  ws.getCell(rij, 4).value = 'Invoer (€) — wijzig hier bij verandering'
   ws.getCell(rij, 5).value = 'Periode'
   rij++
   zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
@@ -169,10 +169,10 @@ export function bouwBudgetWerkboek(
     ws.getCell(r, 4).numFmt = numFmt2
   }
 
-  // SALDO: groen bij positief/ongebruikt, rood bij negatief budget.
-  // Voorwaardelijk nummerformaat — ExcelJS schrijft dit correct weg (anders
-  // dan SheetJS). Volgt automatisch als de inwoner bedragen wijzigt.
-  saldoCell.numFmt = '[Green]#,##0.00;[Red]-#,##0.00'
+  // SALDO: rood bij negatief budget (positief/ongebruikt blijft standaard zwart).
+  // Voorwaardelijk nummerformaat — ExcelJS schrijft dit correct weg. Volgt
+  // automatisch als de inwoner bedragen wijzigt.
+  saldoCell.numFmt = '#,##0.00;[Red]-#,##0.00'
 
   return wb
 }
