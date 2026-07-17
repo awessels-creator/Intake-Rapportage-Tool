@@ -32,7 +32,7 @@ describe('budget .xlsx export', () => {
     return -1
   }
 
-  test('formules wijzen naar D én E, geen leading "=", geen zelf-ref, geen #NAAM, dropdown op E', async () => {
+  test('formules wijzen naar C én D, geen leading "=", geen zelf-ref, geen #NAAM, dropdown op D', async () => {
     const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
     const ws = wb.getWorksheet('Budgetoverzicht')!
     let zelfRef = false, fout = false, dropdowns = 0
@@ -43,8 +43,8 @@ describe('budget .xlsx export', () => {
         if (f.includes(`B${r}`)) zelfRef = true
         if (f.startsWith('=') || f.includes('@') || f.includes('SOM(') || f !== f.trim()) fout = true
       }
-      const e = row.getCell(5)
-      if (e && e.dataValidation && e.dataValidation.type === 'list') dropdowns++
+      const d = row.getCell(4)
+      if (d && d.dataValidation && d.dataValidation.type === 'list') dropdowns++
     })
     const saldoR = vindRij(ws, /SALDO/i)
     const saldoCell = ws.getCell(saldoR, 2)
@@ -121,36 +121,36 @@ describe('budget .xlsx export', () => {
     expect(totBold).toBe(true)
     expect(saldoBold).toBe(true)
 
-    // 4) uitklapbare groep: outlineLevel op detailkolommen D + E
+    // 4) uitklapbare groep: outlineLevel op detailkolommen C + D
+    expect(ws.getColumn(3).outlineLevel).toBe(1)
     expect(ws.getColumn(4).outlineLevel).toBe(1)
-    expect(ws.getColumn(5).outlineLevel).toBe(1)
 
-    // 5) goud-fill op Invoer (D) + Periode (E) bij niet-maandelijkse rij
+    // 5) goud-fill op Invoer (C) + Periode (D) bij niet-maandelijkse rij
     let goudOpD = false, goudOpE = false
     ws.eachRow(r => {
       const a = String(r.getCell(1).value || '')
       if (/levensonderhoud/i.test(a)) {
+        const fC = r.getCell(3).fill as any
         const fD = r.getCell(4).fill as any
-        const fE = r.getCell(5).fill as any
-        if (fD?.fgColor?.argb === 'FFFDF6E9') goudOpD = true
-        if (fE?.fgColor?.argb === 'FFFDF6E9') goudOpE = true
+        if (fC?.fgColor?.argb === 'FFFDF6E9') goudOpD = true
+        if (fD?.fgColor?.argb === 'FFFDF6E9') goudOpE = true
       }
     })
     expect(goudOpD).toBe(true)
     expect(goudOpE).toBe(true)
 
-    // 6) header (regel 1) vet op A én B én D én E
+    // 6) header (regel 1) vet op A én B én C én D
     expect((ws.getCell(1, 1).font as any)?.bold).toBe(true)
     expect((ws.getCell(1, 2).font as any)?.bold).toBe(true)
+    expect((ws.getCell(1, 3).font as any)?.bold).toBe(true)
     expect((ws.getCell(1, 4).font as any)?.bold).toBe(true)
-    expect((ws.getCell(1, 5).font as any)?.bold).toBe(true)
 
     // 7) lege regel 2 (tussen header en INKOMSTEN)
     expect(String(ws.getCell(2, 1).value || '').trim()).toBe('')
 
-    // 8) template-rijen: géén 'maand' in E, B-formule toont leeg bij lege D,
-    //    en B vergrendeld (locked) terwijl D/E ontgrendeld (bewerkbaar) zijn.
-    let tmplGeenMaand = true, tmplBLocked = true, dUnlocked = true, eUnlocked = true, tmplGevonden = 0
+    // 8) template-rijen: géén 'maand' in D, B-formule toont leeg bij lege C,
+    //    en B vergrendeld (locked) terwijl C/D ontgrendeld (bewerkbaar) zijn.
+    let tmplGeenMaand = true, tmplBLocked = true, cUnlocked = true, dUnlocked = true, tmplGevonden = 0
     ws.eachRow(r => {
       const a = String(r.getCell(1).value || '')
       const b = r.getCell(2)
@@ -158,16 +158,30 @@ describe('budget .xlsx export', () => {
       // template-rij = lege A + formule in B
       if (!a.trim() && isFormule) {
         tmplGevonden++
-        if (String(r.getCell(5).value || '').trim() === 'maand') tmplGeenMaand = false
+        if (String(r.getCell(4).value || '').trim() === 'maand') tmplGeenMaand = false
         if ((b.protection as any)?.locked !== true) tmplBLocked = false
+        if ((r.getCell(3).protection as any)?.locked === true) cUnlocked = false
         if ((r.getCell(4).protection as any)?.locked === true) dUnlocked = false
-        if ((r.getCell(5).protection as any)?.locked === true) eUnlocked = false
       }
     })
     expect(tmplGevonden).toBeGreaterThanOrEqual(4) // 2 inkomen + 2 uitgaven templates
     expect(tmplGeenMaand).toBe(true)
     expect(tmplBLocked).toBe(true)
+    expect(cUnlocked).toBe(true)
     expect(dUnlocked).toBe(true)
-    expect(eUnlocked).toBe(true)
+    // 9) headers bevatten GEEN "€" (was "Maandbedrag (€)" / "Invoer (€)…")
+    expect(String(ws.getCell(1, 2).value || '')).not.toContain('€')
+    expect(String(ws.getCell(1, 3).value || '')).not.toContain('€')
+    expect(String(ws.getCell(1, 2).value || '')).toBe('Maandbedrag')
+    expect(String(ws.getCell(1, 3).value || '')).toContain('Invoer')
+
+    // 10) automatische kolombreedte: elke kolom is minstens zo breed als de
+    //     langste header/inhoud (+marge), en nooit smaller dan 10.
+    for (const c of [1, 2, 3, 4]) {
+      const w = ws.getColumn(c).width as number
+      expect(w).toBeGreaterThanOrEqual(10)
+      // "Invoer -> wijzig hier bij verandering" is ~36 tekens → breedte ~38
+      if (c === 3) expect(w).toBeGreaterThan(30)
+    }
   })
 })
