@@ -142,7 +142,7 @@ export function bouwBudgetWerkboek(
         showErrorMessage: true,
         error: 'Kies een van: ' + PER_CODES.join(', '),
         showInputMessage: true,
-        prompt: 'Kies de betaalperiode via het pijltje in deze cel (verschijnt bij selectie).',
+        prompt: 'Invoer: wijzig hier bij verandering. Kies de betaalperiode via het pijltje in deze cel (verschijnt bij selectie).',
       }
 
       // Goud kleurtje op Invoer (C) + Periode (D) als de periode niet maandelijks is
@@ -169,7 +169,7 @@ export function bouwBudgetWerkboek(
   ws.getCell(rij, 1).font = { bold: true, size: 13 }
   ws.getCell(rij, 2).value = 'Maandbedrag'
   ws.getCell(rij, 2).font = { bold: true }
-  ws.getCell(rij, 3).value = 'Invoer -> wijzig hier bij verandering'
+  ws.getCell(rij, 3).value = 'Invoer'
   ws.getCell(rij, 3).font = { bold: true }
   ws.getCell(rij, 4).value = 'Periode'
   ws.getCell(rij, 4).font = { bold: true }
@@ -289,7 +289,7 @@ export function bouwBudgetWerkboek(
   })
   for (const c of [1, 2, 3, 4]) {
     const max = colMax[c] || 10
-    ws.getColumn(c).width = Math.min(Math.max(max + 2, 10), 60)
+    ws.getColumn(c).width = Math.min(Math.max(max + 2, 10), 26)
   }
 
   // Bladbeveiliging: kolom B (de maandbedrag-formules) is vergrendeld, zodat de
