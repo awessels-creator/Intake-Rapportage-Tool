@@ -87,7 +87,7 @@ export async function buildAndSaveWord(state: FormState) {
   const schulden = state.schuldenData.reduce((s, d) => s + (parseFloat(d.b) || 0), 0)
   const ls = state.leefsituatie
   const hK = state.kinderen === 'ja'
-  const bvv_ber = ink <= norm ? ink * 0.95 : norm * 0.95
+  const bvv_ber = Math.min(norm * 0.95, ink) // basis: 95% norm, begrenst op inkomen
   const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
   const bvv = Math.min(bvv_ber, BVV_MAX[maxKey] || BVV_MAX['alleenstaand'])
 
@@ -204,8 +204,9 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(para(`Kwijtschelding GBLT: ${state.kwgt || '—'} | Kwijtschelding gemeente: ${state.kwgm || '—'}`)); children.push(spacer())
 
   // 9a. Beslagvrije Voet
-  children.push(h2(`9a. Beslagvrije Voet (indicatief, model ${MODEL})`))
-  children.push(ntTable([['Toe te passen BVV', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
+  children.push(h2(`9a. Beslagvrije Voet (indicatie basis, model ${MODEL})`))
+  children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
+  children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
   children.push(spacer())
 
   // 10. Schulden

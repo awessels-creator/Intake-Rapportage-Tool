@@ -7,7 +7,7 @@ import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
-import { HiOutlineHome, HiOutlineLightBulb, HiExclamationTriangle, HiXMark, HiArrowLeft, HiArrowRight, HiArrowSmallRight, HiPlus } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineLightBulb, HiExclamationTriangle, HiXMark, HiArrowLeft, HiArrowRight, HiArrowSmallRight, HiPlus, HiArrowTopRightOnSquare } from 'react-icons/hi2'
 
 interface ExtendedLastenDef extends LastenDef {
   extra?: boolean
@@ -72,15 +72,18 @@ export default function Page6Lasten() {
     return msgs
   })()
 
-  // BVV berekening (95% van bijstandsnorm, conform wet)
+  // BVV indicatie: basis = 95% van de bijstandsnorm, begrenst op het inkomen.
+  // Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) tellen
+  // hier niet mee - de volledige berekening loopt via berekenuwrecht.nl.
   const bvv = (() => {
     if (!ink || !norm) return null
-    const bvv_ber = ink <= norm ? ink * 0.95 : norm * 0.95
+    const basisBvv = norm * 0.95
+    const bvv_ber = Math.min(basisBvv, ink)
     const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
     const bvv_max = BVV_MAX[maxKey] || BVV_MAX['alleenstaand']
     const bvv_val = Math.min(bvv_ber, bvv_max)
     const inhoud = ink - bvv_val
-    return { bvv_ber, bvv_max, bvv_val, inhoud, low: ink <= norm }
+    return { bvv_ber, bvv_max, bvv_val, inhoud }
   })()
 
   return (
@@ -218,7 +221,7 @@ export default function Page6Lasten() {
 
       {bvv && (
         <div className="bg-white rounded-xl border border-rule shadow-sm p-4 mb-4">
-          <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatief, jul 2026)</div>
+          <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, jul 2026)</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Berekende BVV', value: bvv.bvv_ber },
@@ -235,8 +238,16 @@ export default function Page6Lasten() {
             ))}
           </div>
           <div className="text-[0.7rem] text-inkl mt-2">
-            {bvv.low ? 'Laag inkomen: 95% × netto inkomen' : 'Midden/hoog inkomen: 95% × bijstandsnorm'}. Exacte berekening via uwbeslagvrijevoet.nl.
+            Dit is de basis-beslagvrije voet: 95% van de bijstandsnorm, begrenst op het inkomen. Opslagen zoals heffingskorting, kindgebonden budget en woonkosten zijn niet meegeteld.
           </div>
+          <a
+            href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
+          >
+            <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via berekenuwrecht.nl
+          </a>
         </div>
       )}
 
