@@ -74,7 +74,7 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   const ls = state.leefsituatie
   const hK = state.kinderen === 'ja'
   const isPensioen = ls.startsWith('pensioen')
-  const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0)
+  const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0) + state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
   const grens = VGRENS[ls] || 8000
   const tot = getTotaalLasten(state)
   const best = ink - tot
@@ -143,10 +143,13 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
 
   // FDMA — inkomen <=110% norm, vermogen <= grens, overwaarde <= 67500 (bij koop)
   let fdma: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
-  if (norm && ink) {
+  // Vermogenstoets loopt altijd (ook zonder inkomen): vermogen boven grens = geen FDMA.
+  if (sp > grens) {
+    fdma = { recht: 'nee', reden: `Vermogen €${nl(sp)} boven grens €${nl(grens)}.` }
+  } else if (state.eigen_woning === 'ja' && overwaarde > 67500) {
+    fdma = { recht: 'nee', reden: `Overwaarde €${nl(overwaarde)} > €67.500.` }
+  } else if (norm && ink) {
     if (pct > 110) fdma = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (>110%).` }
-    else if (sp > grens) fdma = { recht: 'nee', reden: `Vermogen €${nl(sp)} boven grens €${nl(grens)}.` }
-    else if (state.eigen_woning === 'ja' && overwaarde > 67500) fdma = { recht: 'nee', reden: `Overwaarde €${nl(overwaarde)} > €67.500.` }
     else fdma = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (≤110%), vermogen €${nl(sp)} (≤€${nl(grens)}).` }
   }
 
