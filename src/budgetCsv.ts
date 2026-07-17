@@ -101,21 +101,20 @@ export function bouwBudgetWerkboek(
 
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
   // B maandbedrag, C leeg, D invoer (breedte = exacte tekstlengte, geen
-  // extra ruimte), E periode, F altijd-zichtbare dropdown-aanwijzer (▼).
+  // extra ruimte), E periode.
   ws.columns = [
     { width: 42 }, // A
     { width: 16 }, // B
     { width: 3 },  // C
     { width: 42 }, // D  ("Invoer (€) -> wijzig hier bij verandering" = 42 tekens)
     { width: 12 }, // E
-    { width: 4 },  // F  (▼ aanwijzer)
   ]
 
-  // Uitklapbare groep: kolommen C (leeg), D (invoer) en E (periode) + F (▼)
-  // krijgen outlineLevel 1, zodat Excel de [-]/[+]-pijltjes toont om de
-  // detailkolommen in/uit te klappen. Blijft standaard uitgeklapt (zichtbaar);
-  // de cliënt kan de groep inklappen zodat alleen Post + Maandbedrag overblijft.
-  ;[3, 4, 5, 6].forEach(c => { ws.getColumn(c).outlineLevel = 1 })
+  // Uitklapbare groep: kolommen C (leeg), D (invoer) en E (periode) krijgen
+  // outlineLevel 1, zodat Excel de [-]/[+]-pijltjes toont om de detailkolommen
+  // in/uit te klappen. Blijft standaard uitgeklapt (zichtbaar); de cliënt kan de
+  // groep inklappen zodat alleen Post + Maandbedrag overblijft.
+  ;[3, 4, 5].forEach(c => { ws.getColumn(c).outlineLevel = 1 })
 
   let rij = 1
   // zet een tekstregel (A, optioneel B/D/E)
@@ -151,15 +150,8 @@ export function bouwBudgetWerkboek(
         // Invoer-bericht (prompt) bij selectie van de cel: maakt het
         // uitklapveld expliciet zichtbaar voor de cliënt.
         showInputMessage: true,
-        prompt: 'Klik op het pijltje en kies de betaalperiode: ' + PER_CODES.join(', '),
+        prompt: 'Kies de betaalperiode via het pijltje in deze cel (verschijnt bij selectie).',
       }
-      // Altijd-zichtbare dropdown-aanwijzer in kolom F (naast E). Excel toont
-      // de echte data-validation-pijl pas bij cel-selectie; dit ▼ blijft altijd
-      // staan zodat de cliënt ziet dat er een keuzeveld is.
-      const fc = ws.getCell(rij, 6)
-      fc.value = '▼'
-      fc.alignment = { horizontal: 'center', vertical: 'middle' }
-      fc.font = { color: { argb: 'FF555555' } }
 
       // Goud kleurtje op Invoer (D) + Periode (E) als de periode niet maandelijks is
       // — spiegelt de goud-markering in de tool (niet-maandelijkse lasten).

@@ -54,6 +54,7 @@ export default function Page8Regelcheck() {
   const tot = getTotaalLasten(state)
   const best = ink - tot
   const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (ls === 'samenwonend' || ls === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
+  const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
   const beoordeling = evaluateRegelingen(state)
 
   const iitJr = yearsSince(state.iit_datum)
@@ -90,10 +91,21 @@ export default function Page8Regelcheck() {
     },
     {
       n: 'Huurtoeslag',
-      norm: 'Huurwoning, inkomen < inkomensgrens',
-      sit: state.eigen_woning === 'ja' ? 'Koopwoning' : jaarGrensHuur ? `Inkomen €${Math.round(ink).toLocaleString('nl-NL')} / grens €${jaarGrensHuur.toLocaleString('nl-NL')}` : `${pct.toFixed(0)}%`,
-      r: state.eigen_woning === 'ja' ? 'nvt' : norm && ink ? jaarGrensHuur && ink > jaarGrensHuur ? 'twijfel' : 'ja' : 'twijfel',
-      t: state.eigen_woning === 'ja' ? 'Koopwoning — geen recht' : jaarGrensHuur && ink > jaarGrensHuur ? `Inkomen boven grens huurtoeslag (€${jaarGrensHuur.toLocaleString('nl-NL')}/jr, bij benadering — controleer Proefberekening Belastingdienst)` : 'Inkomen onder grens — controleer Belastingdienst voor exacte inkomensgrens',
+      norm: 'Huurwoning, inkomen < inkomensgrens, huur binnen bandbreedte',
+      sit: state.eigen_woning === 'ja' ? 'Koopwoning' : jaarGrensHuur ? `Inkomen €${Math.round(ink).toLocaleString('nl-NL')} / grens €${jaarGrensHuur.toLocaleString('nl-NL')} / huur €${Math.round(huurBdr).toLocaleString('nl-NL')}` : `${pct.toFixed(0)}%`,
+      r: state.eigen_woning === 'ja' ? 'nvt' : norm && ink ? (
+        jaarGrensHuur && ink > jaarGrensHuur ? 'twijfel'
+          : huurBdr > 0 && huurBdr < 30 ? 'nee'
+          : huurBdr > 950 ? 'twijfel'
+          : huurBdr === 0 ? 'twijfel'
+          : 'ja'
+      ) : 'twijfel',
+      t: state.eigen_woning === 'ja' ? 'Koopwoning — geen recht'
+        : jaarGrensHuur && ink > jaarGrensHuur ? `Inkomen boven grens huurtoeslag (€${jaarGrensHuur.toLocaleString('nl-NL')}/jr, bij benadering — controleer Proefberekening Belastingdienst)`
+        : huurBdr > 0 && huurBdr < 30 ? 'Huur te laag (<€30/mnd) — geen recht op huurtoeslag, controleer huurbedrag'
+        : huurBdr > 950 ? 'Huur onrealistisch hoog (>€950/mnd) — controleer huurbedrag'
+        : huurBdr === 0 ? 'Huurbedrag niet ingevuld — vul de huur in voor een juiste beoordeling'
+        : 'Inkomen onder grens en huur binnen bandbreedte — controleer Belastingdienst voor exacte hoogte',
     },
     {
       n: 'Zorgtoeslag',
