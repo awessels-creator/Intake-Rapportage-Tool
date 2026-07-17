@@ -61,6 +61,11 @@ const PER_TABEL = 'Bureau!G1:H5' // verborgen hulptabel op het Bureau-blad
 function maandFormule(rij: number): string {
   return `IFERROR(D${rij}*VLOOKUP(E${rij},${PER_TABEL},2,0),0)`
 }
+// Variant voor lege template-rijen: toont "" (leeg) zolang D leeg is, en vult
+// automatisch als de cliënt D invult. Voorkomt "0,00" in ongebruikte rijen.
+function maandFormuleLeeg(rij: number): string {
+  return `IF(D${rij}="","",IFERROR(D${rij}*VLOOKUP(E${rij},${PER_TABEL},2,0),0))`
+}
 
 // Betaalverkeer: maximaal 2 cijfers achter de komma
 const fmt = (n: number) => Number(n.toFixed(2))
@@ -99,14 +104,12 @@ export function bouwBudgetWerkboek(
     bureau.getCell(i + 1, 8).value = fac  // H
   })
 
-  // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
-  // B maandbedrag, C leeg, D invoer (breedte = exacte tekstlengte, geen
-  // extra ruimte), E periode.
+  // Kolombreedte: A niet te breed, B maandbedrag, C leeg, D invoer (korter), E periode.
   ws.columns = [
-    { width: 42 }, // A
+    { width: 30 }, // A  (was 42)
     { width: 16 }, // B
     { width: 3 },  // C
-    { width: 42 }, // D  ("Invoer (€) -> wijzig hier bij verandering" = 42 tekens)
+    { width: 24 }, // D  (was 42 — "Invoer (€) -> wijzig hier bij verandering")
     { width: 12 }, // E
   ]
 
@@ -129,6 +132,8 @@ export function bouwBudgetWerkboek(
   // zet een formule-regel: B = { formula, result }, D = invoer, E = periode (dropdown)
   // opties.bold -> A+B vet (voor totalen/saldo)
   // goud (D+E) wordt automatisch toegepast als de periode niet 'maand' is.
+  // B (de formule) is altijd vergrendeld (locked) zodat de cliënt hem niet per
+  // ongeluk overschrijft en de doorrekening breekt. D en E blijven bewerkbaar.
   const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: PerCode, opties: { bold?: boolean } = {}) => {
     ws.getCell(rij, 1).value = a
     if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
@@ -136,19 +141,23 @@ export function bouwBudgetWerkboek(
     // breekt Excel de berekening bij "bewerken inschakelen".
     const bCell = ws.getCell(rij, 2)
     bCell.value = { formula: formule.replace(/^=/, ''), result: Number(result.toFixed(2)) }
+    bCell.protection = { locked: true } // B vergrendeld
     if (opties.bold) bCell.font = { bold: true }
-    if (d !== undefined) ws.getCell(rij, 4).value = d
+    if (d !== undefined) {
+      const dc = ws.getCell(rij, 4)
+      dc.value = d
+      dc.protection = { locked: false } // D bewerkbaar
+    }
     if (e !== undefined) {
       const ec = ws.getCell(rij, 5)
       ec.value = e
+      ec.protection = { locked: false } // E bewerkbaar
       ec.dataValidation = {
         type: 'list',
         allowBlank: true,
         formulae: [`"${PER_CODES.join(',')}"`],
         showErrorMessage: true,
         error: 'Kies een van: ' + PER_CODES.join(', '),
-        // Invoer-bericht (prompt) bij selectie van de cel: maakt het
-        // uitklapveld expliciet zichtbaar voor de cliënt.
         showInputMessage: true,
         prompt: 'Kies de betaalperiode via het pijltje in deze cel (verschijnt bij selectie).',
       }
@@ -164,18 +173,24 @@ export function bouwBudgetWerkboek(
         ec.fill = goudBg
         ec.font = goudFont
       }
+    } else {
+      // Lege template-rij: geen periode (E blijft leeg), géén dropdown, géén goud.
+      ws.getCell(rij, 5).protection = { locked: false }
     }
     rij++
     return rij - 1
   }
 
-  // Header-rij (A t/m F)
+  // Header-rij (A t/m E)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
   ws.getCell(rij, 1).font = { bold: true, size: 13 }
   ws.getCell(rij, 2).value = 'Maandbedrag (€)'
+  ws.getCell(rij, 2).font = { bold: true }
   ws.getCell(rij, 4).value = 'Invoer (€) -> wijzig hier bij verandering'
+  ws.getCell(rij, 4).font = { bold: true }
   ws.getCell(rij, 5).value = 'Periode'
-  // F = altijd-zichtbare dropdown-aanwijzer (zie zetFormule)
+  ws.getCell(rij, 5).font = { bold: true }
+  rij++ // lege regel tussen header en INKOMSTEN
   rij++ // lege rij
   zet('INKOMSTEN')
 
@@ -201,7 +216,7 @@ export function bouwBudgetWerkboek(
     zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
   // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
-  for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
+  for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
   const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
@@ -242,7 +257,7 @@ export function bouwBudgetWerkboek(
     lastWaarden.push(w)
     zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
-  for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
+  for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
   const lastEnd = rij - 1
   const totLast = lastWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast, undefined, undefined, { bold: true })
@@ -264,6 +279,25 @@ export function bouwBudgetWerkboek(
   // Voorwaardelijk nummerformaat — ExcelJS schrijft dit correct weg. Volgt
   // automatisch als de inwoner bedragen of periodes wijzigt.
   saldoCell.numFmt = '#,##0.00;[Red]-#,##0.00'
+
+  // Bladbeveiliging: kolom B (de maandbedrag-formules) is vergrendeld, zodat de
+  // cliënt hem niet per ongeluk kan overschrijven en de doorrekening breekt.
+  // D (invoer) en E (periode) zijn ontgrendeld en blijven bewerkbaar. Zonder
+  // wachtwoord: via "Blad beveiliging opheffen" is het alsnog vrij te geven.
+  ws.protect('', {
+    selectLockedCells: true,
+    selectUnlockedCells: true,
+    formatCells: false,
+    formatColumns: false,
+    formatRows: false,
+    insertColumns: false,
+    insertRows: false,
+    deleteColumns: false,
+    deleteRows: false,
+    sort: false,
+    autoFilter: false,
+    pivotTables: false,
+  })
 
   return wb
 }

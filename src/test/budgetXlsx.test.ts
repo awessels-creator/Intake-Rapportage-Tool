@@ -138,5 +138,36 @@ describe('budget .xlsx export', () => {
     })
     expect(goudOpD).toBe(true)
     expect(goudOpE).toBe(true)
+
+    // 6) header (regel 1) vet op A én B én D én E
+    expect((ws.getCell(1, 1).font as any)?.bold).toBe(true)
+    expect((ws.getCell(1, 2).font as any)?.bold).toBe(true)
+    expect((ws.getCell(1, 4).font as any)?.bold).toBe(true)
+    expect((ws.getCell(1, 5).font as any)?.bold).toBe(true)
+
+    // 7) lege regel 2 (tussen header en INKOMSTEN)
+    expect(String(ws.getCell(2, 1).value || '').trim()).toBe('')
+
+    // 8) template-rijen: géén 'maand' in E, B-formule toont leeg bij lege D,
+    //    en B vergrendeld (locked) terwijl D/E ontgrendeld (bewerkbaar) zijn.
+    let tmplGeenMaand = true, tmplBLocked = true, dUnlocked = true, eUnlocked = true, tmplGevonden = 0
+    ws.eachRow(r => {
+      const a = String(r.getCell(1).value || '')
+      const b = r.getCell(2)
+      const isFormule = b && b.type === ExcelJS.ValueType.Formula
+      // template-rij = lege A + formule in B
+      if (!a.trim() && isFormule) {
+        tmplGevonden++
+        if (String(r.getCell(5).value || '').trim() === 'maand') tmplGeenMaand = false
+        if ((b.protection as any)?.locked !== true) tmplBLocked = false
+        if ((r.getCell(4).protection as any)?.locked === true) dUnlocked = false
+        if ((r.getCell(5).protection as any)?.locked === true) eUnlocked = false
+      }
+    })
+    expect(tmplGevonden).toBeGreaterThanOrEqual(4) // 2 inkomen + 2 uitgaven templates
+    expect(tmplGeenMaand).toBe(true)
+    expect(tmplBLocked).toBe(true)
+    expect(dUnlocked).toBe(true)
+    expect(eUnlocked).toBe(true)
   })
 })
