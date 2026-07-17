@@ -100,12 +100,13 @@ export function bouwBudgetWerkboek(
   })
 
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
-  // B maandbedrag, C leeg, D invoer, E periode.
+  // B maandbedrag, C leeg, D invoer (brede kolom zodat de instructie zichtbaar
+  // is), E periode.
   ws.columns = [
     { width: 42 }, // A
     { width: 16 }, // B
     { width: 3 },  // C
-    { width: 16 }, // D
+    { width: 40 }, // D
     { width: 14 }, // E
   ]
 
@@ -143,8 +144,8 @@ export function bouwBudgetWerkboek(
 
   // Header-rij (A t/m E)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
-  ws.getCell(rij, 2).value = 'Maandbedrag (€) — automatisch'
-  ws.getCell(rij, 4).value = 'Invoer (€) — wijzig hier bij verandering'
+  ws.getCell(rij, 2).value = 'Maandbedrag (€)'
+  ws.getCell(rij, 4).value = 'Invoer (€) wijzig hier bij verandering'
   ws.getCell(rij, 5).value = 'Periode'
   rij++
   zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
