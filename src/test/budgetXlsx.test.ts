@@ -180,8 +180,7 @@ describe('budget .xlsx export', () => {
     for (const c of [1, 2, 3, 4]) {
       const w = ws.getColumn(c).width as number
       expect(w).toBeGreaterThanOrEqual(10)
-      // "Invoer -> wijzig hier bij verandering" is ~36 tekens → breedte ~38
-      if (c === 3) expect(w).toBeGreaterThan(30)
+      expect(w).toBeLessThanOrEqual(30)
     }
   })
 })
