@@ -97,4 +97,46 @@ describe('budget .xlsx export', () => {
     const buf = await wb.xlsx.writeBuffer()
     expect(buf.byteLength).toBeGreaterThan(1000)
   })
+
+  // Regressie: layout-wensen (vet, geen Cliënt-regel, outline, goud bij niet-maand)
+  test('layout: regel1 vet, geen Cliënt, Totaal/Saldo vet, outline op detailkolommen, goud bij niet-maandelijks', async () => {
+    const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
+    const ws = wb.getWorksheet('Budgetoverzicht')!
+
+    // 1) regel 1 (titel "Budgetoverzicht") vet
+    expect((ws.getCell(1, 1).font as any)?.bold).toBe(true)
+
+    // 2) geen "Cliënt:"-regel meer
+    let heeftCliënt = false
+    ws.eachRow(r => { if (String(r.getCell(1).value || '').startsWith('Cliënt')) heeftCliënt = true })
+    expect(heeftCliënt).toBe(false)
+
+    // 3) Totaal inkomen + Saldo vet (A én B)
+    let totBold = false, saldoBold = false
+    ws.eachRow(r => {
+      const a = String(r.getCell(1).value || '')
+      if (/^Totaal inkomen$/.test(a)) totBold = !!(r.getCell(1).font as any)?.bold && !!(r.getCell(2).font as any)?.bold
+      if (/^SALDO/.test(a)) saldoBold = !!(r.getCell(1).font as any)?.bold && !!(r.getCell(2).font as any)?.bold
+    })
+    expect(totBold).toBe(true)
+    expect(saldoBold).toBe(true)
+
+    // 4) uitklapbare groep: outlineLevel op detailkolommen D + E
+    expect(ws.getColumn(4).outlineLevel).toBe(1)
+    expect(ws.getColumn(5).outlineLevel).toBe(1)
+
+    // 5) goud-fill op Invoer (D) + Periode (E) bij niet-maandelijkse rij
+    let goudOpD = false, goudOpE = false
+    ws.eachRow(r => {
+      const a = String(r.getCell(1).value || '')
+      if (/levensonderhoud/i.test(a)) {
+        const fD = r.getCell(4).fill as any
+        const fE = r.getCell(5).fill as any
+        if (fD?.fgColor?.argb === 'FFFDF6E9') goudOpD = true
+        if (fE?.fgColor?.argb === 'FFFDF6E9') goudOpE = true
+      }
+    })
+    expect(goudOpD).toBe(true)
+    expect(goudOpE).toBe(true)
+  })
 })

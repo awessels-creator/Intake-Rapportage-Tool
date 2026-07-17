@@ -111,6 +111,12 @@ export function bouwBudgetWerkboek(
     { width: 4 },  // F  (▼ aanwijzer)
   ]
 
+  // Uitklapbare groep: kolommen C (leeg), D (invoer) en E (periode) + F (▼)
+  // krijgen outlineLevel 1, zodat Excel de [-]/[+]-pijltjes toont om de
+  // detailkolommen in/uit te klappen. Blijft standaard uitgeklapt (zichtbaar);
+  // de cliënt kan de groep inklappen zodat alleen Post + Maandbedrag overblijft.
+  ;[3, 4, 5, 6].forEach(c => { ws.getColumn(c).outlineLevel = 1 })
+
   let rij = 1
   // zet een tekstregel (A, optioneel B/D/E)
   const zet = (a: string, b?: string | number, d?: string | number, e?: string) => {
@@ -122,11 +128,16 @@ export function bouwBudgetWerkboek(
     return rij - 1
   }
   // zet een formule-regel: B = { formula, result }, D = invoer, E = periode (dropdown)
-  const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: PerCode) => {
+  // opties.bold -> A+B vet (voor totalen/saldo)
+  // goud (D+E) wordt automatisch toegepast als de periode niet 'maand' is.
+  const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: PerCode, opties: { bold?: boolean } = {}) => {
     ws.getCell(rij, 1).value = a
+    if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
     // GEEN leading '=' — anders schrijft ExcelJS <f>=...<f> (niet-conform) en
     // breekt Excel de berekening bij "bewerken inschakelen".
-    ws.getCell(rij, 2).value = { formula: formule.replace(/^=/, ''), result: Number(result.toFixed(2)) }
+    const bCell = ws.getCell(rij, 2)
+    bCell.value = { formula: formule.replace(/^=/, ''), result: Number(result.toFixed(2)) }
+    if (opties.bold) bCell.font = { bold: true }
     if (d !== undefined) ws.getCell(rij, 4).value = d
     if (e !== undefined) {
       const ec = ws.getCell(rij, 5)
@@ -149,6 +160,18 @@ export function bouwBudgetWerkboek(
       fc.value = '▼'
       fc.alignment = { horizontal: 'center', vertical: 'middle' }
       fc.font = { color: { argb: 'FF555555' } }
+
+      // Goud kleurtje op Invoer (D) + Periode (E) als de periode niet maandelijks is
+      // — spiegelt de goud-markering in de tool (niet-maandelijkse lasten).
+      if (e !== 'maand') {
+        const goudBg = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDF6E9' } } as any
+        const goudFont = { color: { argb: 'FF7A5010' } } as any
+        const dc = ws.getCell(rij, 4)
+        dc.fill = goudBg
+        dc.font = goudFont
+        ec.fill = goudBg
+        ec.font = goudFont
+      }
     }
     rij++
     return rij - 1
@@ -156,12 +179,11 @@ export function bouwBudgetWerkboek(
 
   // Header-rij (A t/m F)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
+  ws.getCell(rij, 1).font = { bold: true, size: 13 }
   ws.getCell(rij, 2).value = 'Maandbedrag (€)'
   ws.getCell(rij, 4).value = 'Invoer (€) -> wijzig hier bij verandering'
   ws.getCell(rij, 5).value = 'Periode'
   // F = altijd-zichtbare dropdown-aanwijzer (zie zetFormule)
-  rij++
-  zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
   rij++ // lege rij
   zet('INKOMSTEN')
 
@@ -190,7 +212,7 @@ export function bouwBudgetWerkboek(
   for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
   const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
-  zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk)
+  zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
 
   rij++ // lege rij
   zet('UITGAVEN')
@@ -231,13 +253,13 @@ export function bouwBudgetWerkboek(
   for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
   const lastEnd = rij - 1
   const totLast = lastWaarden.reduce((a, b) => a + b, 0)
-  zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast)
+  zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast, undefined, undefined, { bold: true })
 
   rij++ // lege rij
   const totInkRij = inkEnd + 1
   const totLastRij = lastEnd + 1
   const saldoRij = rij
-  zetFormule('SALDO (inkomen − uitgaven)', `=B${totInkRij}-B${totLastRij}`, totInk - totLast)
+  zetFormule('SALDO (inkomen − uitgaven)', `=B${totInkRij}-B${totLastRij}`, totInk - totLast, undefined, undefined, { bold: true })
   const saldoCell = ws.getCell(saldoRij, 2)
 
   // Nummerformaat 2 decimalen op B (maandbedrag) en D (invoer)
