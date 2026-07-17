@@ -47,3 +47,4 @@ __snapshots__/
 *.pdf
 .tmp/
 .notes/calc_jioli.py
+verify_budget.xlsx
