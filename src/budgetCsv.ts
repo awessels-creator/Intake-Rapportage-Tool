@@ -57,8 +57,9 @@ function factorVanCode(code: PerCode): number {
 // VLOOKUP naar een verborgen hulptabel (periode -> maandfactor): robuust in
 // alle Excel-versies én compatibel met formule-validators (geen array-constante).
 const PER_TABEL = 'Bureau!G1:H5' // verborgen hulptabel op het Bureau-blad
+// IFERROR zodat een lege/verkeerde periode (E) nooit #WAARDE/#N/A geeft maar 0.
 function maandFormule(rij: number): string {
-  return `D${rij}*VLOOKUP(E${rij},${PER_TABEL},2,0)`
+  return `IFERROR(D${rij}*VLOOKUP(E${rij},${PER_TABEL},2,0),0)`
 }
 
 // Betaalverkeer: maximaal 2 cijfers achter de komma
@@ -180,16 +181,29 @@ export function bouwBudgetWerkboek(
   rij++ // lege rij
   zet('UITGAVEN')
 
-  // Lasten: alle standaard categorieën (ook 0) + extra posts + 2 templates.
+  // Lasten: alleen posten die in de tool zijn ingevuld (bedrag niet leeg),
+  // plus auto/dier/kinder-specifieke posten als die van toepassing zijn.
+  // Niet-ingevulde posten weglaten — anders staan er tientallen lege rijen
+  // met #WAARDE in het bestand. Extra posts (lastenExtra) ook alleen als gevuld.
+  const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
+  const hD = state.huisdieren === 'ja'
+  const hK = state.kinderen === 'ja'
   const lasten: WerkboekRij[] = []
   LASTEN_DEF.forEach(def => {
+    if (def.autoOnly && !hA) return
+    if (def.dierOnly && !hD) return
+    if (def.kinderOnly && !hK) return
     const w = state.lastenWaarden[def.id]
-    const b = w && w.bedrag ? (parseFloat(w.bedrag) || 0) : 0
+    const bedragStr = w && w.bedrag ? w.bedrag : ''
+    if (!bedragStr) return // niet ingevuld in de tool → weglaten
+    const b = parseFloat(bedragStr) || 0
     lasten.push({ naam: def.post, bedrag: b, code: naarCode((w && w.per) || def.per) })
   })
   state.lastenExtra.forEach((e, i) => {
     const w = state.lastenWaarden[`extra_${i}`]
-    const b = w && w.bedrag ? (parseFloat(w.bedrag) || 0) : 0
+    const bedragStr = w && w.bedrag ? w.bedrag : ''
+    if (!bedragStr) return // lege extra post → weglaten
+    const b = parseFloat(bedragStr) || 0
     lasten.push({ naam: e.post || 'Eigen post', bedrag: b, code: naarCode((w && w.per) || 'mnd') })
   })
   const lastStart = rij
