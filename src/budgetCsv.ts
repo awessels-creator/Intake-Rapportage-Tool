@@ -19,8 +19,12 @@ import { LASTEN_DEF, TOESLAG_NAMEN, PER_OPTIES } from './constants'
 // zelf-referentie, dus géén kringverwijzing bij openen in Excel.
 // Twee richtingen: het maandbedrag volgt altijd uit (invoer-bedrag × periode).
 //
-// De zware `xlsx`-library wordt LAZY geladen (dynamic import) zodat die niet in
-// de initiële app-bundle terechtkomt (code-splitting, <500KB waiver).
+// Formules zijn ENGELSTALIG (SUM i.p.v. SOM, decimaal PUNT) omdat SheetJS/ExcelJS
+// een neutrale locale schrijft. Excel herkent SUM altijd (NL-Excel toont het als
+// SOM) — zo voorkomen we #NAAM bij openen.
+//
+// De zware `exceljs`-library wordt LAZY geladen (dynamic import) zodat die niet
+// in de initiële app-bundle terechtkomt (code-splitting, <500KB waiver).
 
 type WerkboekRij = {
   naam: string
@@ -33,43 +37,72 @@ function factor(per: string): number {
   const f = PER_OPTIES.find(p => p.v === per)?.f ?? 1
   return f
 }
-// NL-Excel formule (verwijst naar kolom D, de invoer-cel op dezelfde rij)
+// NL-Excel formule (verwijst naar kolom D, de invoer-cel op dezelfde rij).
+// Engelstalig + decimaal PUNT (zie boven).
 function formuleFactor(per: string): string {
   const f = factor(per)
   if (f === 1) return 'D{r}' // 1:1 (maand)
-  if (f === 4.333) return 'D{r}*4,333' // week
+  if (f === 4.333) return 'D{r}*4.333' // week
   if (f === 1 / 3) return 'D{r}/3' // kwartaal
   if (f === 1 / 12) return 'D{r}/12' // jaar
   if (f === 10 / 12) return 'D{r}*10/12' // 10-termijn
-  return `D{r}*${String(f).replace('.', ',')}`
+  return `D{r}*${String(f)}`
 }
 const perLabel = (per: string) => PER_OPTIES.find(p => p.v === per)?.l || '/mnd'
 // Betaalverkeer: maximaal 2 cijfers achter de komma
 const fmt = (n: number) => Number(n.toFixed(2))
+const numFmt2 = '#,##0.00'
 
-// Maakt een formule-cel aan MET gecachte waarde. Excel toont de waarde direct
-// (geen "bewerken" nodig) en de @-bug (implicit intersection) verdwijnt, omdat
-// de cel correct als number-formule { f, v, t:'n' } is gemarkeerd.
-// SheetJS verwacht de formule in `f` ZONDER leading '=' — die strippen we.
-function formuleCel(formule: string, waarde: number) {
-  const f = formule.startsWith('=') ? formule.slice(1) : formule
-  return { f, v: Number(waarde.toFixed(2)), t: 'n' as const }
-}
-
-// Bouwt het SheetJS-workbook-object (formules + opmaak). De `xlsx`-module
-// wordt hier NIET geïmporteerd — die geven we door zodat de caller hem lazy
-// kan laden en de workbook naar een bestand kan schrijven.
+// Bouwt het ExcelJS-workbook-object (formules + opmaak + groen/rood saldo).
+// De `exceljs`-module wordt hier NIET geïmporteerd — die geven we door zodat
+// de caller hem lazy kan laden.
 export function bouwBudgetWerkboek(
   state: FormState,
-  XLSX: typeof import('xlsx'),
-): import('xlsx').WorkBook {
-  const rows: (string | number | object)[][] = []
-  rows.push(['Budgetoverzicht', 'Maandbedrag (€)', '', 'Invoer', 'Periode'])
-  rows.push([`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`, '', '', '', ''])
+  ExcelJS: typeof import('exceljs'),
+): import('exceljs').Workbook {
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Budgetoverzicht')
 
-  // Inkomsten
-  rows.push([])
-  rows.push(['INKOMSTEN'])
+  // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
+  // B maandbedrag, C leeg, D invoer, E periode.
+  ws.columns = [
+    { width: 42 }, // A
+    { width: 16 }, // B
+    { width: 3 },  // C
+    { width: 14 }, // D
+    { width: 12 }, // E
+  ]
+
+  let rij = 1
+  // zet een tekstregel (A, optioneel B/D/E). Voor formule-cellen gebruik je
+  // zetFormule() hieronder — die zet B als { formula, result }.
+  const zet = (a: string, b?: string | number, d?: string | number, e?: string) => {
+    ws.getCell(rij, 1).value = a
+    if (b !== undefined) ws.getCell(rij, 2).value = b
+    if (d !== undefined) ws.getCell(rij, 4).value = d
+    if (e !== undefined) ws.getCell(rij, 5).value = e
+    rij++
+    return rij - 1
+  }
+  const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: string) => {
+    ws.getCell(rij, 1).value = a
+    ws.getCell(rij, 2).value = { formula: formule, result: Number(result.toFixed(2)) }
+    if (d !== undefined) ws.getCell(rij, 4).value = d
+    if (e !== undefined) ws.getCell(rij, 5).value = e
+    rij++
+    return rij - 1
+  }
+
+  // Header-rij (A t/m E) apart zetten
+  ws.getCell(rij, 1).value = 'Budgetoverzicht'
+  ws.getCell(rij, 2).value = 'Maandbedrag (€)'
+  ws.getCell(rij, 4).value = 'Invoer'
+  ws.getCell(rij, 5).value = 'Periode'
+  rij++
+  zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
+  rij++ // lege rij
+  zet('INKOMSTEN')
+
   const inkomsten: WerkboekRij[] = []
   state.inkomenData.forEach(d => {
     const bedrag = parseFloat(d.netto) || 0
@@ -81,21 +114,21 @@ export function bouwBudgetWerkboek(
       if (bedrag > 0) inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, per: 'mnd' })
     }
   })
-  const inkStart = rows.length + 1 // 1-based rij van eerste inkomst
+  const inkStart = rij
   const inkomstWaarden: number[] = []
   inkomsten.forEach(r => {
-    const rij = rows.length + 1
+    const formule = `=${formuleFactor(r.per).replace('{r}', String(rij))}`
     const w = r.bedrag * factor(r.per)
     inkomstWaarden.push(w)
-    rows.push([r.naam, formuleCel(`=${formuleFactor(r.per).replace('{r}', String(rij))}`, w), '', fmt(r.bedrag), perLabel(r.per)])
+    zetFormule(r.naam, formule, w, fmt(r.bedrag), perLabel(r.per))
   })
-  const inkEnd = rows.length
+  const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
-  rows.push(['Totaal inkomen', formuleCel(`=SOM(B${inkStart}:B${inkEnd})`, totInk), '', '', ''])
+  zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk)
 
-  // Lasten
-  rows.push([])
-  rows.push(['UITGAVEN'])
+  rij++ // lege rij
+  zet('UITGAVEN')
+
   const lasten: WerkboekRij[] = []
   LASTEN_DEF.forEach(def => {
     const w = state.lastenWaarden[def.id]
@@ -111,54 +144,45 @@ export function bouwBudgetWerkboek(
       if (b > 0) lasten.push({ naam: e.post || 'Eigen post', bedrag: b, per: w.per || 'mnd' })
     }
   })
-  const lastStart = rows.length + 1
+  const lastStart = rij
   const lastWaarden: number[] = []
   lasten.forEach(r => {
-    const rij = rows.length + 1
+    const formule = `=${formuleFactor(r.per).replace('{r}', String(rij))}`
     const w = r.bedrag * factor(r.per)
     lastWaarden.push(w)
-    rows.push([r.naam, formuleCel(`=${formuleFactor(r.per).replace('{r}', String(rij))}`, w), '', fmt(r.bedrag), perLabel(r.per)])
+    zetFormule(r.naam, formule, w, fmt(r.bedrag), perLabel(r.per))
   })
-  const lastEnd = rows.length
+  const lastEnd = rij - 1
   const totLast = lastWaarden.reduce((a, b) => a + b, 0)
-  rows.push(['Totaal uitgaven', formuleCel(`=SOM(B${lastStart}:B${lastEnd})`, totLast), '', '', ''])
+  zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast)
 
-  // Saldo
-  rows.push([])
+  rij++ // lege rij
   const totInkRij = inkEnd + 1
   const totLastRij = lastEnd + 1
-  rows.push(['SALDO (inkomen − uitgaven)', formuleCel(`=B${totInkRij}-B${totLastRij}`, totInk - totLast), '', '', ''])
+  const saldoRij = rij
+  zetFormule('SALDO (inkomen − uitgaven)', `=B${totInkRij}-B${totLastRij}`, totInk - totLast)
+  const saldoCell = ws.getCell(saldoRij, 2)
 
-  const ws = XLSX.utils.aoa_to_sheet(rows)
-  // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
-  // B maandbedrag, C leeg, D invoer, E periode.
-  ws['!cols'] = [
-    { wch: 42 }, // A
-    { wch: 16 }, // B
-    { wch: 3 },  // C
-    { wch: 14 }, // D
-    { wch: 12 }, // E
-  ]
-  // 2-decimaal nummerformaat op B (maandbedrag) en D (invoer)
-  const numFmt = '#,##0.00'
-  for (let r = 0; r < rows.length; r++) {
-    const bCell = XLSX.utils.encode_cell({ r, c: 1 })
-    const dCell = XLSX.utils.encode_cell({ r, c: 3 })
-    if (ws[bCell]) ws[bCell].z = numFmt
-    if (ws[dCell]) ws[dCell].z = numFmt
+  // Nummerformaat 2 decimalen op B (maandbedrag) en D (invoer)
+  for (let r = 1; r <= saldoRij; r++) {
+    ws.getCell(r, 2).numFmt = numFmt2
+    ws.getCell(r, 4).numFmt = numFmt2
   }
 
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Budgetoverzicht')
+  // SALDO: groen bij positief/ongebruikt, rood bij negatief budget.
+  // Voorwaardelijk nummerformaat — ExcelJS schrijft dit correct weg (anders
+  // dan SheetJS). Volgt automatisch als de inwoner bedragen wijzigt.
+  saldoCell.numFmt = '[Green]#,##0.00;[Red]-#,##0.00'
+
   return wb
 }
 
 // Trigger een download van het .xlsx-bestand (client-side, geen opslag).
-// Laadt de `xlsx`-library pas op het moment van exporteren (code-splitting).
+// Laadt de `exceljs`-library pas op het moment van exporteren (code-splitting).
 export async function downloadBudgetXLSX(state: FormState): Promise<void> {
-  const XLSX = await import('xlsx')
-  const wb = bouwBudgetWerkboek(state, XLSX)
-  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  const ExcelJS = await import('exceljs')
+  const wb = bouwBudgetWerkboek(state, ExcelJS)
+  const buf = await wb.xlsx.writeBuffer()
   const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
