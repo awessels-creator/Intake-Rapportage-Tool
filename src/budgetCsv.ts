@@ -101,13 +101,14 @@ export function bouwBudgetWerkboek(
 
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
   // B maandbedrag, C leeg, D invoer (breedte = exacte tekstlengte, geen
-  // extra ruimte), E periode (iets breder voor het ▼-pijltje in de kop).
+  // extra ruimte), E periode, F altijd-zichtbare dropdown-aanwijzer (▼).
   ws.columns = [
     { width: 42 }, // A
     { width: 16 }, // B
     { width: 3 },  // C
     { width: 42 }, // D  ("Invoer (€) -> wijzig hier bij verandering" = 42 tekens)
     { width: 12 }, // E
+    { width: 4 },  // F  (▼ aanwijzer)
   ]
 
   let rij = 1
@@ -141,16 +142,24 @@ export function bouwBudgetWerkboek(
         showInputMessage: true,
         prompt: 'Klik op het pijltje en kies de betaalperiode: ' + PER_CODES.join(', '),
       }
+      // Altijd-zichtbare dropdown-aanwijzer in kolom F (naast E). Excel toont
+      // de echte data-validation-pijl pas bij cel-selectie; dit ▼ blijft altijd
+      // staan zodat de cliënt ziet dat er een keuzeveld is.
+      const fc = ws.getCell(rij, 6)
+      fc.value = '▼'
+      fc.alignment = { horizontal: 'center', vertical: 'middle' }
+      fc.font = { color: { argb: 'FF555555' } }
     }
     rij++
     return rij - 1
   }
 
-  // Header-rij (A t/m E)
+  // Header-rij (A t/m F)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
   ws.getCell(rij, 2).value = 'Maandbedrag (€)'
   ws.getCell(rij, 4).value = 'Invoer (€) -> wijzig hier bij verandering'
-  ws.getCell(rij, 5).value = 'Periode ▼'
+  ws.getCell(rij, 5).value = 'Periode'
+  // F = altijd-zichtbare dropdown-aanwijzer (zie zetFormule)
   rij++
   zet(`Cliënt: ${state.voornaam || ''} ${state.achternaam || ''}`)
   rij++ // lege rij
