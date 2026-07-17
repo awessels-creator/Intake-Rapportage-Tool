@@ -176,11 +176,12 @@ describe('budget .xlsx export', () => {
     expect(String(ws.getCell(1, 3).value || '')).toContain('Invoer')
 
     // 10) automatische kolombreedte: elke kolom is minstens zo breed als de
-    //     langste header/inhoud (+marge), en nooit smaller dan 10 of breder dan 26.
+    //     langste header/inhoud (+marge), en nooit smaller dan 10.
     for (const c of [1, 2, 3, 4]) {
       const w = ws.getColumn(c).width as number
       expect(w).toBeGreaterThanOrEqual(10)
-      expect(w).toBeLessThanOrEqual(26)
+      // "Invoer -> wijzig hier bij verandering" is ~36 tekens → breedte ~38
+      if (c === 3) expect(w).toBeGreaterThan(30)
     }
   })
 })
