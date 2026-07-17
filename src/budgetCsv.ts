@@ -1,59 +1,77 @@
 import type { FormState } from './types'
-import { LASTEN_DEF, TOESLAG_NAMEN, PER_OPTIES } from './constants'
+import { LASTEN_DEF, TOESLAG_NAMEN } from './constants'
 
 // Genereert een BUDGETOVERZICHT als ÉCHT .xlsx (Excel) bestand — niet .csv.
 // Reden: een .csv ondersteunt geen formules, geen kolombreedte en geen
 // cel-opmaak. Excel berekent formules in een .csv NIET bij openen (ze blijven
 // als tekst staan → het saldo toont geen bedrag). Een .xlsx wél: de inwoner
-// kan bedragen wijzigen en alles (maandbedrag + totalen + saldo) rekent automatisch
-// door, net als in het vertrouwde Budgetplan .xls van de gemeente.
+// kan bedragen (kolom D) én periodes (kolom E) wijzigen en alles (maandbedrag,
+// totalen, saldo) rekent automatisch door.
 //
-// Structuur (gespiegeld aan het Budgetplan .xls):
+// Structuur (gespiegeld aan het Budgetplan .xls van de gemeente):
 //   A = Post
-//   B = Maandbedrag (€) — FORMULE, verwijst naar D (invoer) × periode-factor
+//   B = Maandbedrag (€) — FORMULE, verwijst naar D (invoer) × factor(E periode)
 //   C = (lege kolom, voor leesbaarheid)
-//   D = Invoer-bedrag (wat de consulent invulde; de inwoner kan dit wijzigen)
-//   E = Periode (label, bv. '/week')
+//   D = Invoer (€) — het veld dat de cliënt invult / wijzigt bij verandering
+//   E = Periode — dropdown (maand / week / kwartaal / jaar / 10-termijn)
 //
-// De formule staat in B en kijkt naar D (een ándere kolom, zelfde rij) → géén
+// De formule in B kijkt naar D én E (een ándere kolom, zelfde rij) → géén
 // zelf-referentie, dus géén kringverwijzing bij openen in Excel.
 // Twee richtingen: het maandbedrag volgt altijd uit (invoer-bedrag × periode).
 //
-// Formules zijn ENGELSTALIG (SUM i.p.v. SOM, decimaal PUNT) omdat SheetJS/ExcelJS
-// een neutrale locale schrijft. Excel herkent SUM altijd (NL-Excel toont het als
-// SOM) — zo voorkomen we #NAAM bij openen.
+// Formules zijn ENGELSTALIG (SUM i.p.v. SOM) en zonder leading '=' — ExcelJS
+// schrijft de formule anders als <f>=D5</f> (niet-conform OOXML) en Excel
+// breekt de berekening bij "bewerken inschakelen". Zonder '=' is het <f>D5</f>.
 //
 // De zware `exceljs`-library wordt LAZY geladen (dynamic import) zodat die niet
 // in de initiële app-bundle terechtkomt (code-splitting, <500KB waiver).
 
-type WerkboekRij = {
-  naam: string
-  bedrag: number
-  per: string
+// Periode-codes (weergegeven in kolom E, met dropdown)
+const PER_CODES = ['maand', 'week', 'kwartaal', 'jaar', '10-termijn'] as const
+type PerCode = typeof PER_CODES[number]
+
+// Tool-periode (mnd/week/kwt/jaar/10ter) -> code voor kolom E
+function naarCode(per: string): PerCode {
+  switch (per) {
+    case 'week': return 'week'
+    case 'kwt': return 'kwartaal'
+    case 'jaar': return 'jaar'
+    case '10ter': return '10-termijn'
+    default: return 'maand'
+  }
+}
+// code -> factor (maand-multiplier) voor de JS-berekening van de waarde
+function factorVanCode(code: PerCode): number {
+  switch (code) {
+    case 'week': return 52 / 12
+    case 'kwartaal': return 1 / 3
+    case 'jaar': return 1 / 12
+    case '10-termijn': return 10 / 12
+    default: return 1
+  }
 }
 
-// Multiplier van periode naar maand (voor de JS-berekening van de waarde)
-function factor(per: string): number {
-  const f = PER_OPTIES.find(p => p.v === per)?.f ?? 1
-  return f
+// Maandbedrag-formule: verwijst naar D (invoer) én E (periode). De cliënt kan
+// beide wijzigen en B volgt automatisch. Geen '=' — ExcelJS schrijft de
+// formule anders niet-conform en Excel breekt de berekening bij bewerken.
+// VLOOKUP naar een verborgen hulptabel (periode -> maandfactor): robuust in
+// alle Excel-versies én compatibel met formule-validators (geen array-constante).
+const PER_TABEL = 'Bureau!G1:H5' // verborgen hulptabel op het Bureau-blad
+function maandFormule(rij: number): string {
+  return `D${rij}*VLOOKUP(E${rij},${PER_TABEL},2,0)`
 }
-// NL-Excel formule (verwijst naar kolom D, de invoer-cel op dezelfde rij).
-// Engelstalig + decimaal PUNT (zie boven).
-function formuleFactor(per: string): string {
-  const f = factor(per)
-  if (f === 1) return 'D{r}' // 1:1 (maand)
-  if (f === 4.333) return 'D{r}*4.333' // week
-  if (f === 1 / 3) return 'D{r}/3' // kwartaal
-  if (f === 1 / 12) return 'D{r}/12' // jaar
-  if (f === 10 / 12) return 'D{r}*10/12' // 10-termijn
-  return `D{r}*${String(f)}`
-}
-const perLabel = (per: string) => PER_OPTIES.find(p => p.v === per)?.l || '/mnd'
+
 // Betaalverkeer: maximaal 2 cijfers achter de komma
 const fmt = (n: number) => Number(n.toFixed(2))
 const numFmt2 = '#,##0.00'
 
-// Bouwt het ExcelJS-workbook-object (formules + opmaak + groen/rood saldo).
+type WerkboekRij = {
+  naam: string
+  bedrag: number
+  code: PerCode
+}
+
+// Bouwt het ExcelJS-workbook-object (formules + opmaak + dropdown + rood saldo).
 // De `exceljs`-module wordt hier NIET geïmporteerd — die geven we door zodat
 // de caller hem lazy kan laden.
 export function bouwBudgetWerkboek(
@@ -63,19 +81,35 @@ export function bouwBudgetWerkboek(
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet('Budgetoverzicht')
 
+  // Verborgen hulptabel: periode -> maandfactor. De VLOOKUP in kolom B
+  // leest hieruit. Exact dezelfde strings als de dropdown in kolom E, anders
+  // geeft VLOOKUP #N/A.
+  const bureau = wb.addWorksheet('Bureau')
+  bureau.state = 'hidden'
+  const perTabel: [PerCode, number][] = [
+    ['maand', 1],
+    ['week', 52 / 12],
+    ['kwartaal', 1 / 3],
+    ['jaar', 1 / 12],
+    ['10-termijn', 10 / 12],
+  ]
+  perTabel.forEach(([code, fac], i) => {
+    bureau.getCell(i + 1, 7).value = code // G
+    bureau.getCell(i + 1, 8).value = fac  // H
+  })
+
   // Kolombreedte: A breed genoeg voor "SALDO (inkomen − uitgaven)",
   // B maandbedrag, C leeg, D invoer, E periode.
   ws.columns = [
     { width: 42 }, // A
     { width: 16 }, // B
     { width: 3 },  // C
-    { width: 14 }, // D
-    { width: 12 }, // E
+    { width: 16 }, // D
+    { width: 14 }, // E
   ]
 
   let rij = 1
-  // zet een tekstregel (A, optioneel B/D/E). Voor formule-cellen gebruik je
-  // zetFormule() hieronder — die zet B als { formula, result }.
+  // zet een tekstregel (A, optioneel B/D/E)
   const zet = (a: string, b?: string | number, d?: string | number, e?: string) => {
     ws.getCell(rij, 1).value = a
     if (b !== undefined) ws.getCell(rij, 2).value = b
@@ -84,16 +118,29 @@ export function bouwBudgetWerkboek(
     rij++
     return rij - 1
   }
-  const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: string) => {
+  // zet een formule-regel: B = { formula, result }, D = invoer, E = periode (dropdown)
+  const zetFormule = (a: string, formule: string, result: number, d?: string | number, e?: PerCode) => {
     ws.getCell(rij, 1).value = a
-    ws.getCell(rij, 2).value = { formula: formule, result: Number(result.toFixed(2)) }
+    // GEEN leading '=' — anders schrijft ExcelJS <f>=...<f> (niet-conform) en
+    // breekt Excel de berekening bij "bewerken inschakelen".
+    ws.getCell(rij, 2).value = { formula: formule.replace(/^=/, ''), result: Number(result.toFixed(2)) }
     if (d !== undefined) ws.getCell(rij, 4).value = d
-    if (e !== undefined) ws.getCell(rij, 5).value = e
+    if (e !== undefined) {
+      const ec = ws.getCell(rij, 5)
+      ec.value = e
+      ec.dataValidation = {
+        type: 'list',
+        allowBlank: true,
+        formulae: [`"${PER_CODES.join(',')}"`],
+        showErrorMessage: true,
+        error: 'Kies een van: ' + PER_CODES.join(', '),
+      }
+    }
     rij++
     return rij - 1
   }
 
-  // Header-rij (A t/m E) apart zetten
+  // Header-rij (A t/m E)
   ws.getCell(rij, 1).value = 'Budgetoverzicht'
   ws.getCell(rij, 2).value = 'Maandbedrag (€) — automatisch'
   ws.getCell(rij, 4).value = 'Invoer (€) — wijzig hier bij verandering'
@@ -103,25 +150,29 @@ export function bouwBudgetWerkboek(
   rij++ // lege rij
   zet('INKOMSTEN')
 
+  // Inkomsten: alle bronnen uit de tool (ook als bedrag 0 is, zodat de cliënt
+  // ze in Excel kan invullen) + toeslagen + 2 lege template-rijen.
   const inkomsten: WerkboekRij[] = []
   state.inkomenData.forEach(d => {
     const bedrag = parseFloat(d.netto) || 0
-    if (bedrag > 0) inkomsten.push({ naam: d.bron || 'Inkomstenbron', bedrag, per: d.invoerPer || 'mnd' })
+    inkomsten.push({ naam: d.bron || 'Inkomstenbron', bedrag, code: naarCode(d.invoerPer || 'mnd') })
   })
   Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
     if (actief) {
       const bedrag = parseFloat((state.toeslagenBedrag as Record<string, string>)[id] || '0') || 0
-      if (bedrag > 0) inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, per: 'mnd' })
+      inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'maand' })
     }
   })
   const inkStart = rij
   const inkomstWaarden: number[] = []
   inkomsten.forEach(r => {
-    const formule = `=${formuleFactor(r.per).replace('{r}', String(rij))}`
-    const w = r.bedrag * factor(r.per)
+    const formule = maandFormule(rij)
+    const w = r.bedrag * factorVanCode(r.code)
     inkomstWaarden.push(w)
-    zetFormule(r.naam, formule, w, fmt(r.bedrag), perLabel(r.per))
+    zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
+  // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
+  for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
   const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk)
@@ -129,29 +180,27 @@ export function bouwBudgetWerkboek(
   rij++ // lege rij
   zet('UITGAVEN')
 
+  // Lasten: alle standaard categorieën (ook 0) + extra posts + 2 templates.
   const lasten: WerkboekRij[] = []
   LASTEN_DEF.forEach(def => {
     const w = state.lastenWaarden[def.id]
-    if (w && w.bedrag) {
-      const b = parseFloat(w.bedrag) || 0
-      if (b > 0) lasten.push({ naam: def.post, bedrag: b, per: w.per || def.per })
-    }
+    const b = w && w.bedrag ? (parseFloat(w.bedrag) || 0) : 0
+    lasten.push({ naam: def.post, bedrag: b, code: naarCode((w && w.per) || def.per) })
   })
   state.lastenExtra.forEach((e, i) => {
     const w = state.lastenWaarden[`extra_${i}`]
-    if (w && w.bedrag) {
-      const b = parseFloat(w.bedrag) || 0
-      if (b > 0) lasten.push({ naam: e.post || 'Eigen post', bedrag: b, per: w.per || 'mnd' })
-    }
+    const b = w && w.bedrag ? (parseFloat(w.bedrag) || 0) : 0
+    lasten.push({ naam: e.post || 'Eigen post', bedrag: b, code: naarCode((w && w.per) || 'mnd') })
   })
   const lastStart = rij
   const lastWaarden: number[] = []
   lasten.forEach(r => {
-    const formule = `=${formuleFactor(r.per).replace('{r}', String(rij))}`
-    const w = r.bedrag * factor(r.per)
+    const formule = maandFormule(rij)
+    const w = r.bedrag * factorVanCode(r.code)
     lastWaarden.push(w)
-    zetFormule(r.naam, formule, w, fmt(r.bedrag), perLabel(r.per))
+    zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
+  for (let i = 0; i < 2; i++) zetFormule('', maandFormule(rij), 0, '', 'maand')
   const lastEnd = rij - 1
   const totLast = lastWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast)
@@ -171,7 +220,7 @@ export function bouwBudgetWerkboek(
 
   // SALDO: rood bij negatief budget (positief/ongebruikt blijft standaard zwart).
   // Voorwaardelijk nummerformaat — ExcelJS schrijft dit correct weg. Volgt
-  // automatisch als de inwoner bedragen wijzigt.
+  // automatisch als de inwoner bedragen of periodes wijzigt.
   saldoCell.numFmt = '#,##0.00;[Red]-#,##0.00'
 
   return wb
