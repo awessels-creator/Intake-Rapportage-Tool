@@ -204,3 +204,18 @@ export const TOESLAG_NAMEN: Record<string, string> = {
 }
 
 export const TOESLAGEN = ['huur', 'zorg', 'kinderbijslag', 'kinderopvang', 'kindgebonden', 'overig_ink']
+
+// ── REGELING-URLS (aanvraagpagina's) ────────────────────────────────────────
+// Centrale plek voor de directe aanvraag/kanaal-links per regeling. Deze worden
+// in het rapport getoond zodat de cliënt (of consulent) weet waar hij moet zijn.
+// GEEN externe koppeling: alleen URLs in het document. Bij wijziging van een
+// aanvraagpagina hoef je maar één regel hier aan te passen.
+export const REGELING_URLS: Record<string, string> = {
+  iit: 'https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/individuele-inkomenstoeslag/',
+  fdma: 'https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/',
+  kwijtschelding_gblt: 'https://www.meppel.nl/direct-regelen/belastingen-en-vergunningen/kwijtschelding-gemeentelijke-belastingen/',
+  kwijtschelding_gemeente: 'https://www.meppel.nl/direct-regelen/belastingen-en-vergunningen/kwijtschelding-gemeentelijke-belastingen/',
+  kindsupport: 'https://kindsupportmeppel.nl/',
+  voedselbank: 'https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/',
+  berekenuwrecht_bvv: 'https://www.berekenuwrecht.nl/beslagvrije-voet',
+}

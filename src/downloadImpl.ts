@@ -2,7 +2,7 @@
 // dus deze module wordt alleen geladen wanneer de gebruiker daadwerkelijk
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
-import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE } from './constants'
+import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
@@ -180,12 +180,12 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(h3('Aanvullende gemeentelijke regelingen & voorzieningen'))
   const iitTekst = state.iit === 'ja' ? 'Ja, aangevraagd / actief' : state.iit === 'nee' ? 'Nee, niet aangevraagd' : state.iit === 'check' ? 'Controleren' : state.iit === 'nvt' ? 'N.v.t.' : '—'
   const vTxt = (v: { recht: string; reden: string }) => `${v.recht === 'ja' ? 'Recht op' : v.recht === 'nee' ? 'Geen recht' : v.recht === 'nvt' ? 'N.v.t.' : 'Controleren'} — ${v.reden}`
-  children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / link'], [
-    ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), '3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. https://www.meppel.nl/'],
-    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), '<110% norm. https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/'],
-    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding_gblt), '<120% norm.'],
-    ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), 'Ondersteuning gezinnen met kinderen in Meppel. https://kindsupportmeppel.nl/'],
-    ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), 'Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/'],
+  children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / Aanvraag'], [
+    ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), `3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. Aanvragen: ${REGELING_URLS.iit}`],
+    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), `<110% norm. Aanvragen: ${REGELING_URLS.fdma}`],
+    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding_gblt), `<120% norm. Aanvragen: ${REGELING_URLS.kwijtschelding_gblt}`],
+    ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), `Ondersteuning gezinnen met kinderen in Meppel. Aanvragen: ${REGELING_URLS.kindsupport}`],
+    ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), `Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). Aanvragen: ${REGELING_URLS.voedselbank}`],
   ]))
   children.push(spacer())
 
@@ -207,6 +207,11 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(h2(`9a. Beslagvrije Voet (indicatie basis, model ${MODEL})`))
   children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
   children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
+  // 9a (vervolg). Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
+  if (beslagData.length > 0) {
+    children.push(h3('Signalering bij beslag op inkomen'))
+    children.push(para(`Er ligt beslag op het inkomen van deze cliënt. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Controleer of de beslagvrije voet correct is vastgesteld door de schuldeiser. Bij twijfel of een te laag vastgesteld bedrag: laat de beslagvrije voet opnieuw berekenen via ${REGELING_URLS.berekenuwrecht_bvv}. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
+  }
   children.push(spacer())
 
   // 10. Schulden
