@@ -354,8 +354,8 @@ describe('buildSystemAdvItems', () => {
     expect(titles(s({ tw_avp: 'nee' }))).not.toContain('AVP aanvragen')
   })
 
-  test('shows AVP reminder (afspraak) when tw_avp is aanvr', () => {
-    expect(titles(s({ tw_avp: 'aanvr' }))).toContain('AVP aanvragen (afspraak)')
+  test('shows AVP advice when tw_avp is aanvr', () => {
+    expect(titles(s({ tw_avp: 'aanvr' }))).toContain('AVP aanvragen')
   })
 
   test('shows inboedelverzekering advice when tw_inboedel is empty', () => {
@@ -370,8 +370,8 @@ describe('buildSystemAdvItems', () => {
     expect(titles(s({ tw_inboedel: 'nee' }))).not.toContain('Inboedelverzekering aanvragen')
   })
 
-  test('shows inboedel reminder (afspraak) when tw_inboedel is aanvr', () => {
-    expect(titles(s({ tw_inboedel: 'aanvr' }))).toContain('Inboedelverzekering aanvragen (afspraak)')
+  test('shows inboedel advice when tw_inboedel is aanvr', () => {
+    expect(titles(s({ tw_inboedel: 'aanvr' }))).toContain('Inboedelverzekering aanvragen')
   })
 
   test('shows opstalverzekering advice when eigen_woning ja and tw_opstal empty', () => {
@@ -382,8 +382,8 @@ describe('buildSystemAdvItems', () => {
     expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'nee' }))).not.toContain('Opstalverzekering afsluiten (koopwoning)')
   })
 
-  test('shows opstal reminder (afspraak) when eigen_woning ja and tw_opstal aanvr', () => {
-    expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'aanvr' }))).toContain('Opstalverzekering afsluiten (afspraak)')
+  test('shows opstal advice when eigen_woning ja and tw_opstal aanvr', () => {
+    expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'aanvr' }))).toContain('Opstalverzekering afsluiten')
   })
 
   test('does not show opstal when not a homeowner', () => {
@@ -403,8 +403,8 @@ describe('buildSystemAdvItems', () => {
     expect(titles(s({ tw_uitvaart: 'nee' }))).not.toContain('Uitvaartverzekering bespreken')
   })
 
-  test('shows uitvaart reminder (afspraak) when tw_uitvaart is aanvr', () => {
-    expect(titles(s({ tw_uitvaart: 'aanvr' }))).toContain('Uitvaartverzekering afsluiten (afspraak)')
+  test('shows uitvaart advice when tw_uitvaart is aanvr', () => {
+    expect(titles(s({ tw_uitvaart: 'aanvr' }))).toContain('Uitvaartverzekering afsluiten')
   })
 
   // Fallback — verschijnt alleen als er werkelijk géén enkele regel een advies oplevert.
