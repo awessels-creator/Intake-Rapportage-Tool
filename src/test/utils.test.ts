@@ -341,30 +341,60 @@ describe('buildSystemAdvItems', () => {
     expect(titles(state)).not.toContain('URGENT: Negatief besteedbaar inkomen')
   })
 
-  // Verzekeringen
-  test('shows AVP advice when tw_avp is nee', () => {
-    expect(titles(s({ tw_avp: 'nee' }))).toContain('AVP aanvragen')
+  // Verzekeringen — nieuwe logica: leeg = advies, ja/nee = geen advies, aanvr = reminder
+  test('shows AVP advice when tw_avp is empty', () => {
+    expect(titles(s({ tw_avp: '' }))).toContain('AVP aanvragen')
   })
 
   test('does not show AVP advice when tw_avp is ja', () => {
     expect(titles(s({ tw_avp: 'ja' }))).not.toContain('AVP aanvragen')
   })
 
-  test('shows inboedelverzekering advice when tw_inboedel is nee', () => {
-    expect(titles(s({ tw_inboedel: 'nee' }))).toContain('Inboedelverzekering aanvragen')
+  test('does not show AVP advice when tw_avp is nee', () => {
+    expect(titles(s({ tw_avp: 'nee' }))).not.toContain('AVP aanvragen')
   })
 
-  test('shows opstalverzekering advice when eigen_woning ja and tw_opstal nee', () => {
-    expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'nee' }))).toContain('Opstalverzekering afsluiten (koopwoning)')
+  test('shows AVP reminder (afspraak) when tw_avp is aanvr', () => {
+    expect(titles(s({ tw_avp: 'aanvr' }))).toContain('AVP aanvragen (afspraak)')
+  })
+
+  test('shows inboedelverzekering advice when tw_inboedel is empty', () => {
+    expect(titles(s({ tw_inboedel: '' }))).toContain('Inboedelverzekering aanvragen')
+  })
+
+  test('does not show inboedel advice when tw_inboedel is ja', () => {
+    expect(titles(s({ tw_inboedel: 'ja' }))).not.toContain('Inboedelverzekering aanvragen')
+  })
+
+  test('does not show inboedel advice when tw_inboedel is nee', () => {
+    expect(titles(s({ tw_inboedel: 'nee' }))).not.toContain('Inboedelverzekering aanvragen')
+  })
+
+  test('shows inboedel reminder (afspraak) when tw_inboedel is aanvr', () => {
+    expect(titles(s({ tw_inboedel: 'aanvr' }))).toContain('Inboedelverzekering aanvragen (afspraak)')
+  })
+
+  test('shows opstalverzekering advice when eigen_woning ja and tw_opstal empty', () => {
+    expect(titles(s({ eigen_woning: 'ja', tw_opstal: '' }))).toContain('Opstalverzekering afsluiten (koopwoning)')
+  })
+
+  test('does not show opstal advice when eigen_woning ja and tw_opstal nee', () => {
+    expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'nee' }))).not.toContain('Opstalverzekering afsluiten (koopwoning)')
+  })
+
+  test('shows opstal reminder (afspraak) when eigen_woning ja and tw_opstal aanvr', () => {
+    expect(titles(s({ eigen_woning: 'ja', tw_opstal: 'aanvr' }))).toContain('Opstalverzekering afsluiten (afspraak)')
   })
 
   test('does not show opstal when not a homeowner', () => {
-    expect(titles(s({ eigen_woning: 'nee', tw_opstal: 'nee' }))).not.toContain('Opstalverzekering afsluiten (koopwoning)')
+    expect(titles(s({ eigen_woning: 'nee', tw_opstal: '' }))).not.toContain('Opstalverzekering afsluiten (koopwoning)')
   })
 
-  // Fallback
+  // Fallback — verschijnt alleen als er werkelijk géén enkele regel een advies oplevert.
+  // Bij een blanco intake leveren de lege verzekeringsvelden nu wél adviezen, dus vullen
+  // we die op 'ja' (geen advies) om de fallback-conditie te testen.
   test('returns single fallback item when no rules apply', () => {
-    const items = buildSystemAdvItems(s())
+    const items = buildSystemAdvItems(s({ tw_avp: 'ja', tw_inboedel: 'ja', tw_uitvaart: 'ja', tw_opstal: 'ja' }))
     expect(items).toHaveLength(1)
     expect(items[0].t).toBe('Geen acute actiepunten')
   })

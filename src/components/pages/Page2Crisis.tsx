@@ -44,11 +44,6 @@ export default function Page2Crisis() {
         )}
         
         <div>
-          <label className={L}>Reden aanmelding / hulpvraag</label>
-          <textarea className="inp" rows={3} value={state.hulpvraag} onChange={e => set({ hulpvraag: e.target.value })} placeholder="Wat is de hulpvraag en het financiële probleem? Hoe is cliënt bij ons terechtgekomen?" />
-        </div>
-
-        <div>
           <label className={L}>Eerdere aanvragen schuldhulpverlening / WSNP / OBS / BBR?</label>
           <RadioGroup value={state.eerder_aanvr} options={[{ value: 'nee', label: 'Nee' }, { value: 'ja', label: 'Ja' }]} onChange={v => set({ eerder_aanvr: v })} />
           {state.eerder_aanvr === 'ja' && (

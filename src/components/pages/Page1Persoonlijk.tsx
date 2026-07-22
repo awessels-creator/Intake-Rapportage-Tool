@@ -14,6 +14,12 @@ export default function Page1Persoonlijk() {
   return (
     <div>
       <Card icon={<HiUsers />} title="Persoonlijke omstandigheden & Achtergrond">
+        <div className="mb-[11px]">
+          <label className={L}>Reden aanmelding / hulpvraag</label>
+          <textarea className="inp" rows={3} value={state.hulpvraag} onChange={e => set({ hulpvraag: e.target.value })} placeholder="Wat is de hulpvraag en het financiële probleem? Hoe is cliënt bij ons terechtgekomen?" />
+        </div>
+
+        <hr className="border-rule my-[13px]" />
         <div className={SL}>Woonsituatie / sociaal netwerk</div>
         <div className="mb-[11px]">
           <label className={L}>Achtergrond wonen, leven en netwerk</label>

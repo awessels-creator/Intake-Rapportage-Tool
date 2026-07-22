@@ -12,16 +12,6 @@ describe('Page2Crisis', () => {
     expect(screen.getByText('Crisis & Urgentie')).toBeInTheDocument()
   })
 
-  test('renders "Reden aanmelding / hulpvraag" field in de Crisis-card', () => {
-    renderWithState(<Page2Crisis />)
-    expect(screen.getByText('Reden aanmelding / hulpvraag')).toBeInTheDocument()
-  })
-
-  test('hulpvraag textarea is visible', () => {
-    renderWithState(<Page2Crisis />)
-    expect(screen.getByPlaceholderText(/hulpvraag/i)).toBeInTheDocument()
-  })
-
   // ── Issue #5: Bank kolom verwijderd ──────────────────────────────────────
 
   test('does not render a "Bank" column header in the bankrekeningen table', () => {
