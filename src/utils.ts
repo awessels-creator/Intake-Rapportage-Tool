@@ -103,6 +103,8 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   else if (state.tw_inboedel === 'aanvr') items.push({ p: 'low', t: 'Inboedelverzekering aanvragen (afspraak)', b: 'Advies besproken inboedelverzekering aan te vragen.', on: true, custom: false })
   if (state.eigen_woning === 'ja' && !state.tw_opstal) items.push({ p: 'med', t: 'Opstalverzekering afsluiten (koopwoning)', b: 'Bij koopwoning is opstalverzekering doorgaans verplicht.', on: true, custom: false })
   else if (state.eigen_woning === 'ja' && state.tw_opstal === 'aanvr') items.push({ p: 'med', t: 'Opstalverzekering afsluiten (afspraak)', b: 'Advies besproken opstalverzekering af te sluiten.', on: true, custom: false })
+  if (!state.tw_uitvaart) items.push({ p: 'low', t: 'Uitvaartverzekering bespreken', b: 'Uitvaartverzekering nog niet besproken. Bespreek wenselijkheid en advies aanvragen.', on: true, custom: false })
+  else if (state.tw_uitvaart === 'aanvr') items.push({ p: 'low', t: 'Uitvaartverzekering afsluiten (afspraak)', b: 'Advies besproken uitvaartverzekering af te sluiten.', on: true, custom: false })
   if (items.length === 0) items.push({ p: 'low', t: 'Geen acute actiepunten', b: 'Op basis van de ingevulde gegevens geen urgente adviezen.', on: true, custom: false })
   return items
 }

@@ -390,6 +390,23 @@ describe('buildSystemAdvItems', () => {
     expect(titles(s({ eigen_woning: 'nee', tw_opstal: '' }))).not.toContain('Opstalverzekering afsluiten (koopwoning)')
   })
 
+  // Uitvaartverzekering — nieuw: leeg = advies, ja/nee = geen advies, aanvr = advies-besproken
+  test('shows uitvaartverzekering advice when tw_uitvaart is empty', () => {
+    expect(titles(s({ tw_uitvaart: '' }))).toContain('Uitvaartverzekering bespreken')
+  })
+
+  test('does not show uitvaart advice when tw_uitvaart is ja', () => {
+    expect(titles(s({ tw_uitvaart: 'ja' }))).not.toContain('Uitvaartverzekering bespreken')
+  })
+
+  test('does not show uitvaart advice when tw_uitvaart is nee', () => {
+    expect(titles(s({ tw_uitvaart: 'nee' }))).not.toContain('Uitvaartverzekering bespreken')
+  })
+
+  test('shows uitvaart reminder (afspraak) when tw_uitvaart is aanvr', () => {
+    expect(titles(s({ tw_uitvaart: 'aanvr' }))).toContain('Uitvaartverzekering afsluiten (afspraak)')
+  })
+
   // Fallback — verschijnt alleen als er werkelijk géén enkele regel een advies oplevert.
   // Bij een blanco intake leveren de lege verzekeringsvelden nu wél adviezen, dus vullen
   // we die op 'ja' (geen advies) om de fallback-conditie te testen.
