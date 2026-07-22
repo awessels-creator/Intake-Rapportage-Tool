@@ -44,13 +44,13 @@ export default function Page3Vermogen() {
   const verzSignalen = (() => {
     const sigs: { variant: 'warn' | 'gold' | 'info'; icon: React.ReactNode; title: string; msg: string }[] = []
     if (!state.tw_avp) sigs.push({ variant: 'gold', icon: <HiOutlineBell />, title: 'AVP nog niet besproken', msg: 'Aansprakelijkheidsverzekering is niet ingevuld. Adviseer aanvragen.' })
-    else if (state.tw_avp === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'AVP afspraak', msg: 'Afgesproken AVP aan te vragen. Controleer of dit is gedaan.' })
+    else if (state.tw_avp === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'AVP advies', msg: 'Advies besproken AVP aan te vragen.' })
     if (!state.tw_inboedel) sigs.push({ variant: 'gold', icon: <HiOutlineBell />, title: 'Inboedelverzekering nog niet besproken', msg: 'Adviseer aanvragen.' })
-    else if (state.tw_inboedel === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Inboedel afspraak', msg: 'Afgesproken inboedelverzekering aan te vragen. Controleer of dit is gedaan.' })
+    else if (state.tw_inboedel === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Inboedel advies', msg: 'Advies besproken inboedelverzekering aan te vragen.' })
     if (!state.tw_uitvaart) sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Uitvaartverzekering nog niet besproken', msg: 'Bespreek wenselijkheid.' })
-    else if (state.tw_uitvaart === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Uitvaart afspraak', msg: 'Afgesproken uitvaartverzekering aan te vragen. Controleer of dit is gedaan.' })
+    else if (state.tw_uitvaart === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Uitvaart advies', msg: 'Advies besproken uitvaartverzekering aan te vragen.' })
     if (state.eigen_woning === 'ja' && !state.tw_opstal) sigs.push({ variant: 'warn', icon: <HiExclamationTriangle />, title: 'Opstalverzekering ontbreekt bij koopwoning', msg: 'Bij hypotheek doorgaans verplicht.' })
-    else if (state.eigen_woning === 'ja' && state.tw_opstal === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Opstal afspraak', msg: 'Afgesproken opstalverzekering af te sluiten. Controleer of dit is gedaan.' })
+    else if (state.eigen_woning === 'ja' && state.tw_opstal === 'aanvr') sigs.push({ variant: 'info', icon: <HiOutlineInformationCircle />, title: 'Opstal advies', msg: 'Advies besproken opstalverzekering af te sluiten.' })
     return sigs
   })()
 

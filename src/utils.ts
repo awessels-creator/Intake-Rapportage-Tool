@@ -98,11 +98,11 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   // Verzekeringen: alleen adviseren als het veld leeg is (nog niet besproken).
   // 'ja' = heeft het, 'nee' = bewust niet nodig/besproken, 'aanvr' = afspraak gemaakt (reminder).
   if (!state.tw_avp) items.push({ p: 'low', t: 'AVP aanvragen', b: 'Aansprakelijkheidsverzekering nog niet besproken. Adviseer aanvragen.', on: true, custom: false })
-  else if (state.tw_avp === 'aanvr') items.push({ p: 'low', t: 'AVP aanvragen (afspraak)', b: 'Afgesproken AVP aan te vragen. Reminder: controleer of dit daadwerkelijk is gedaan.', on: true, custom: false })
+  else if (state.tw_avp === 'aanvr') items.push({ p: 'low', t: 'AVP aanvragen (afspraak)', b: 'Advies besproken AVP aan te vragen.', on: true, custom: false })
   if (!state.tw_inboedel) items.push({ p: 'low', t: 'Inboedelverzekering aanvragen', b: 'Inboedelverzekering nog niet besproken. Adviseer aanvragen.', on: true, custom: false })
-  else if (state.tw_inboedel === 'aanvr') items.push({ p: 'low', t: 'Inboedelverzekering aanvragen (afspraak)', b: 'Afgesproken inboedelverzekering aan te vragen. Reminder: controleer of dit daadwerkelijk is gedaan.', on: true, custom: false })
+  else if (state.tw_inboedel === 'aanvr') items.push({ p: 'low', t: 'Inboedelverzekering aanvragen (afspraak)', b: 'Advies besproken inboedelverzekering aan te vragen.', on: true, custom: false })
   if (state.eigen_woning === 'ja' && !state.tw_opstal) items.push({ p: 'med', t: 'Opstalverzekering afsluiten (koopwoning)', b: 'Bij koopwoning is opstalverzekering doorgaans verplicht.', on: true, custom: false })
-  else if (state.eigen_woning === 'ja' && state.tw_opstal === 'aanvr') items.push({ p: 'med', t: 'Opstalverzekering afsluiten (afspraak)', b: 'Afgesproken opstalverzekering af te sluiten. Reminder: controleer of dit daadwerkelijk is gedaan.', on: true, custom: false })
+  else if (state.eigen_woning === 'ja' && state.tw_opstal === 'aanvr') items.push({ p: 'med', t: 'Opstalverzekering afsluiten (afspraak)', b: 'Advies besproken opstalverzekering af te sluiten.', on: true, custom: false })
   if (items.length === 0) items.push({ p: 'low', t: 'Geen acute actiepunten', b: 'Op basis van de ingevulde gegevens geen urgente adviezen.', on: true, custom: false })
   return items
 }
