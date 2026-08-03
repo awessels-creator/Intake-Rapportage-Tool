@@ -267,6 +267,11 @@ describe('buildSystemAdvItems', () => {
     expect(titles(withIncome(1060, 1000))).not.toContain('IIT — tijdsduur controleren')
   })
 
+  test('does NOT show IIT advice for a youth client (<21) even at 100-105% norm', () => {
+    // Jeugdige van 16 jaar met inkomen op bijstandsniveau: IIT is wettelijk niet van toepassing
+    expect(titles(withIncome(1020, 1000, { geboortedatum: '2010-01-01' }))).not.toContain('IIT — tijdsduur controleren')
+  })
+
   test('shows FDMA advice when income < 110% norm', () => {
     expect(titles(withIncome(1050, 1000))).toContain('FDMA aanvragen bij gemeente Meppel')
   })

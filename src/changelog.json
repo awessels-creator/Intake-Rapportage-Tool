@@ -1,6 +1,30 @@
 {
   "versions": [
     {
+      "version": "2.0.18",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst — volgorde in rapport",
+          "items": [
+            "In het .doc-rapport komen de door de snelvragenlijst gegenereerde zinnen nu eerst, daaronder de handmatige aanvulling (was andersom) — gelijk aan de volgorde in de tool"
+          ]
+        },
+        {
+          "title": "Vermogen — woonsituatie-opties uitgebreid",
+          "items": [
+            "Bij 'Eigen woning?' op tabblad Vermogen zijn nu ook 'Woont (nog) bij ouders', 'Verblijft in instelling / opvang' en 'Studentenwoning' te kiezen (naast huur- en koopwoning)"
+          ]
+        },
+        {
+          "title": "Jeugdige <21 — IIT-signaal gecorrigeerd",
+          "items": [
+            "De signaallijst (tabblad Advies) toonde bij een jeugdige <21 ten onrechte 'IIT — tijdsduur controleren'. IIT is wettelijk pas vanaf 21 jaar; dit signaal verschijnt nu niet meer voor cliënten jonger dan 21 jaar"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.17",
       "date": "2026-08-03",
       "categories": [

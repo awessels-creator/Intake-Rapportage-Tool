@@ -96,6 +96,9 @@ export default function Page3Vermogen() {
             <select className="inp" value={state.eigen_woning} onChange={e => set({ eigen_woning: e.target.value })}>
               <option value="nee">Nee, huurwoning</option>
               <option value="ja">Ja, koopwoning</option>
+              <option value="ouders">Woont (nog) bij ouders</option>
+              <option value="instelling">Verblijft in instelling / opvang</option>
+              <option value="student">Studentenwoning</option>
             </select>
           </div>
           {state.eigen_woning === 'ja' && (

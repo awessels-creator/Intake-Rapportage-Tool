@@ -52,12 +52,12 @@ function para(text: string, opts?: { bold?: boolean; color?: string; size?: numb
   return new Paragraph({ children: [new TextRun({ text: text || '—', bold: opts?.bold || false, color: opts?.color || '111111', font: 'Arial', size: opts?.size || 19 })], spacing: { before: 20, after: 20 } })
 }
 
-// Voegt handmatige tekst + gegenereerde snelvragenlijst-zinnen samen (optie A):
-// handmatig bovenaan, gegenereerd eronder, geen overschrijf.
+// Voegt gegenereerde snelvragenlijst-zinnen + handmatige tekst samen (optie A):
+// gegenereerd bovenaan, handmatige aanvulling eronder, geen overschrijf.
 function mergedQuick(manual: string, generated: string[]): string {
   const parts: string[] = []
-  if (manual && manual.trim()) parts.push(manual.trim())
   if (generated.length) parts.push(generated.join(' '))
+  if (manual && manual.trim()) parts.push(manual.trim())
   return parts.join('\n\n')
 }
 
