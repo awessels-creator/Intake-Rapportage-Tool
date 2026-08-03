@@ -9,6 +9,7 @@
           "items": [
             "Nieuw uitklapbaar zijpaneel 'Snelvragenlijst' (knop rechtsonder) met 5 secties: Achtergrond, Opleiding/Werk, Reden aanmelding, Onderneming, Inkomen",
             "Vinkjes/keuzes worden bij rapport-download samengevoegd met de handmatige tekst in de bestaande open velden (geen vinklijst zichtbaar in het .doc)",
+            "LIVE preview: op de tabbladen (Cliënt/Achtergrond, Opleiding, Reden aanmelding, Onderneming, Inkomen) verschijnt direct boven het betreffende veld de door de snelvragenlijst ingevulde zin, zodat je tijdens het gesprek al ziet wat er vastligt en kunt doorvragen",
             "Paneel staat buiten de tabbladen en is op elke pagina bruikbaar"
           ]
         }

@@ -6,6 +6,7 @@ import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
 import EuroInput from '../shared/EuroInput'
+import QuickPreview from '../QuickPreview'
 import Alert from '../shared/Alert'
 import { HiExclamationTriangle, HiOutlineClock, HiOutlineInformationCircle, HiOutlineBuildingLibrary, HiXMark, HiArrowLeft, HiArrowRight, HiPlus, HiCheckCircle } from 'react-icons/hi2'
 import { BsCashStack } from 'react-icons/bs'
@@ -281,6 +282,7 @@ export default function Page4Inkomen() {
 
         <div className="mt-3">
           <label className={L}>Toelichting inkomenssituatie</label>
+          <QuickPreview fieldKey="inkomen_toel" />
           <textarea className="inp" rows={2} value={state.inkomen_toel} onChange={e => set({ inkomen_toel: e.target.value })} placeholder="Bijzonderheden..." />
         </div>
       </Card>

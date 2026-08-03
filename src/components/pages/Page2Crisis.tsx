@@ -4,6 +4,7 @@ import type { BankItem } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
+import QuickPreview from '../QuickPreview'
 import Alert from '../shared/Alert'
 import { HiBellAlert, HiOutlineBuildingLibrary, HiOutlineLightBulb, HiOutlineBuildingOffice, HiXMark, HiArrowLeft, HiArrowRight, HiPlus } from 'react-icons/hi2'
 
@@ -148,6 +149,7 @@ export default function Page2Crisis() {
               </div>
             </div>
             <label className={L}>Toelichting onderneming / afspraken boekhouding & aangifte</label>
+            <QuickPreview fieldKey="kvk_toel" />
             <textarea className="inp" rows={2} value={state.kvk_toel} onChange={e => set({ kvk_toel: e.target.value })} placeholder="Zakelijke schulden, belastingschulden, gemaakte afspraken..." />
           </div>
         )}

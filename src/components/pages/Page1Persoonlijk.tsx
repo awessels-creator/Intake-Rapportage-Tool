@@ -2,6 +2,7 @@ import { useForm } from '../../context'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
+import QuickPreview from '../QuickPreview'
 import { HiUsers, HiArrowLeft, HiArrowRight } from 'react-icons/hi2'
 
 const L = 'block text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em]'
@@ -16,6 +17,7 @@ export default function Page1Persoonlijk() {
       <Card icon={<HiUsers />} title="Persoonlijke omstandigheden & Achtergrond">
         <div className="mb-[11px]">
           <label className={L}>Reden aanmelding / hulpvraag</label>
+          <QuickPreview fieldKey="hulpvraag" />
           <textarea className="inp" rows={3} value={state.hulpvraag} onChange={e => set({ hulpvraag: e.target.value })} placeholder="Wat is de hulpvraag en het financiële probleem? Hoe is cliënt bij ons terechtgekomen?" />
         </div>
 
@@ -23,6 +25,7 @@ export default function Page1Persoonlijk() {
         <div className={SL}>Woonsituatie / sociaal netwerk</div>
         <div className="mb-[11px]">
           <label className={L}>Achtergrond wonen, leven en netwerk</label>
+          <QuickPreview fieldKey="persoonlijk" />
           <textarea className="inp" rows={3} value={state.persoonlijk}
             onChange={e => set({ persoonlijk: e.target.value })}
             placeholder="Woonsituatie, sociaal netwerk, mantelzorg, isolement, gezondheid, relevante persoonlijke omstandigheden..." />
@@ -32,6 +35,7 @@ export default function Page1Persoonlijk() {
         <div className={SL}>Opleiding / Werk / Toekomstperspectief</div>
         <div className="mb-[11px]">
           <label className={L}>Opleidingen, werkervaring, inspanningsmogelijkheden, toekomstperspectief</label>
+          <QuickPreview fieldKey="opleiding_toel" />
           <textarea className="inp" rows={3} value={state.opleiding_toel}
             onChange={e => set({ opleiding_toel: e.target.value })}
             placeholder="Opleidingsniveau, werkervaring, kansen op de arbeidsmarkt, re-integratietraject, perspectief..." />
