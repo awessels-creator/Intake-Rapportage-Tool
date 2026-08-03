@@ -229,7 +229,7 @@ export const QUICK_SECTIONS: QuickSection[] = [
       { label: 'Woonsituatie', type: 'check', items: [
         { id: 'a_woon_eigen', label: 'Eigen woning', s: 'Inwoner woont in een eigen woning.' },
         { id: 'a_woon_huur', label: 'Huurwoning', s: 'Inwoner woont in een huurwoning.' },
-        { id: 'a_woon_ouders', label: 'Woont (nog) bij ouders', s: 'Inwoner woont (nog) bij de ouders.' },
+        { id: 'a_woon_ouders', label: 'Woont (nog) bij ouders', s: 'Inwoner woont nog bij {POSS} ouders.' },
         { id: 'a_woon_dakloos', label: 'Dak-/thuisloos', s: 'Inwoner is dak-/thuisloos.' },
         { id: 'a_woon_gedeeld', label: 'Gedeelde woning', s: 'Inwoner woont in een gedeelde woning.' },
         { id: 'a_woon_instelling', label: 'Instelling/opvang', s: 'Inwoner verblijft in een instelling of opvang (beschermd wonen inbegrepen).' },
@@ -351,6 +351,15 @@ export function buildQuickText(state: FormState): Record<string, string[]> {
   else if (state.geslacht === 'vrouw') pron = 'zij'
   else if (state.geslacht === 'non-binair' || state.aanspreektitel === 'hen') pron = 'hen'
 
+  // Bezittelijk voornaamwoord voor zinnen als 'woont nog bij {POSS} ouders'
+  let poss = 'de'
+  if (state.geslacht === 'man') poss = 'zijn'
+  else if (state.geslacht === 'vrouw') poss = 'haar'
+  else if (state.geslacht === 'non-binair' || state.aanspreektitel === 'hen') poss = 'hun'
+
+  // Hoofdletter-variant van het voornaamwoord voor vervolgzinnen ('Zij' i.p.v. 'zij')
+  const pronCap = pron.charAt(0).toUpperCase() + pron.slice(1)
+
   const out: Record<string, string[]> = {}
   for (const sec of QUICK_SECTIONS) {
     const parts: string[] = []
@@ -360,8 +369,9 @@ export function buildQuickText(state: FormState): Record<string, string[]> {
         for (const it of g.items || []) {
           if (state.quickChecks[it.id]) {
             let zin = it.s
+            if (zin.includes('{POSS}')) zin = zin.replace('{POSS}', poss)
             if (zin.includes('Inwoner')) {
-              zin = zin.replace('Inwoner', usedSubj ? pron : subj)
+              zin = zin.replace('Inwoner', usedSubj ? pronCap : subj)
               usedSubj = true
             }
             parts.push(zin)

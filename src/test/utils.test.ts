@@ -599,8 +599,8 @@ describe('buildQuickText', () => {
     const out = buildQuickText(state)
     const pers = out.persoonlijk.join(' ')
     expect(pers).toContain('Pietje verblijft in een instelling of opvang')
-    expect(pers).toContain('hij heeft sociale of buitenshuis activiteiten')
-    expect(pers).toContain('hij heeft een justitieel verleden')
+    expect(pers).toContain('Hij heeft sociale of buitenshuis activiteiten')
+    expect(pers).toContain('Hij heeft een justitieel verleden')
   })
 
   test('zonder aanspreektitel/geslacht blijft "Inwoner" (geen regressie)', () => {
@@ -618,7 +618,31 @@ describe('buildQuickText', () => {
     const out = buildQuickText(state)
     const pers = out.persoonlijk.join(' ')
     expect(pers).toContain('Mevrouw Jansen woont in een eigen woning.')
-    expect(pers).toContain('zij heeft sociale of buitenshuis activiteiten')
+    expect(pers).toContain('Zij heeft sociale of buitenshuis activiteiten')
+  })
+
+  test('geslacht vrouw + voornaam: "bij haar ouders" en vervolgzinnen met hoofdletter', () => {
+    const state = s({
+      voornaam: 'Pietje', geslacht: 'vrouw', aanspreektitel: 'voornaam',
+      quickChecks: { a_woon_ouders: true, a_soc_vrienden: true, a_soc_sport: true, a_gez_mentaal: true },
+    })
+    const out = buildQuickText(state)
+    const pers = out.persoonlijk.join(' ')
+    expect(pers).toContain('Pietje woont nog bij haar ouders.')
+    expect(pers).toContain('Zij heeft een vrienden/kennissenkring.')
+    expect(pers).toContain('Zij heeft sociale of buitenshuis activiteiten')
+    expect(pers).toContain('Er zijn mentale problemen.')
+  })
+
+  test('geslacht man + voornaam: "bij zijn ouders"', () => {
+    const state = s({
+      voornaam: 'Piet', geslacht: 'man', aanspreektitel: 'voornaam',
+      quickChecks: { a_woon_ouders: true, a_soc_sport: true },
+    })
+    const out = buildQuickText(state)
+    const pers = out.persoonlijk.join(' ')
+    expect(pers).toContain('Piet woont nog bij zijn ouders.')
+    expect(pers).toContain('Hij heeft sociale of buitenshuis activiteiten')
   })
 
   test('radio-keuzes komen als "label: waarde" in de zin', () => {
