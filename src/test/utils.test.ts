@@ -591,6 +591,36 @@ describe('buildQuickText', () => {
     expect(out.inkomen_toel).toContain('Het inkomen is wisselend of onregelmatig.')
   })
 
+  test('aanspreektitel voornaam + geslacht man: eerste zin krijgt naam, rest "hij"', () => {
+    const state = s({
+      voornaam: 'Pietje', geslacht: 'man', aanspreektitel: 'voornaam',
+      quickChecks: { a_woon_instelling: true, a_soc_sport: true, a_gez_goed: true, a_ov_justitie: true },
+    })
+    const out = buildQuickText(state)
+    const pers = out.persoonlijk.join(' ')
+    expect(pers).toContain('Pietje verblijft in een instelling of opvang')
+    expect(pers).toContain('hij heeft sociale of buitenshuis activiteiten')
+    expect(pers).toContain('hij heeft een justitieel verleden')
+  })
+
+  test('zonder aanspreektitel/geslacht blijft "Inwoner" (geen regressie)', () => {
+    const state = s({ quickChecks: { a_woon_instelling: true, a_soc_sport: true } })
+    const out = buildQuickText(state)
+    expect(out.persoonlijk.join(' ')).toContain('Inwoner verblijft in een instelling of opvang')
+    expect(out.persoonlijk.join(' ')).toContain('Inwoner heeft sociale of buitenshuis activiteiten')
+  })
+
+  test('aanspreektitel mevrouw + achternaam: "Mevrouw <naam>" als onderwerp', () => {
+    const state = s({
+      achternaam: 'Jansen', geslacht: 'vrouw', aanspreektitel: 'mevrouw',
+      quickChecks: { a_woon_eigen: true, a_soc_sport: true },
+    })
+    const out = buildQuickText(state)
+    const pers = out.persoonlijk.join(' ')
+    expect(pers).toContain('Mevrouw Jansen woont in een eigen woning.')
+    expect(pers).toContain('zij heeft sociale of buitenshuis activiteiten')
+  })
+
   test('radio-keuzes komen als "label: waarde" in de zin', () => {
     const state = s({ quickRadio: { b_opl: 'havo', b_diploma: 'ja' } })
     const out = buildQuickText(state)

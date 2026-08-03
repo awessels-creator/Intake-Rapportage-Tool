@@ -123,6 +123,23 @@ export default function Page0Client() {
           <div><label className={L}>Nationaliteit</label><input className="inp" value={state.nationaliteit} onChange={e => set({ nationaliteit: e.target.value })} placeholder="Bijv. Nederlands" /></div>
         </div>
         <div className={row2}>
+          <div>
+            <label className={L}>Geslacht</label>
+            <RadioGroup value={state.geslacht} options={[{ value: 'man', label: 'Man' }, { value: 'vrouw', label: 'Vrouw' }, { value: 'non-binair', label: 'Non-binair' }]} onChange={v => set({ geslacht: v })} />
+          </div>
+          <div>
+            <label className={L}>Gewenste aanspreektitel</label>
+            <select className="inp" value={state.aanspreektitel} onChange={e => set({ aanspreektitel: e.target.value })}>
+              <option value="">— Selecteer —</option>
+              <option value="voornaam">Voornaam</option>
+              <option value="meneer">Meneer</option>
+              <option value="mevrouw">Mevrouw</option>
+              <option value="hen">Hen</option>
+            </select>
+            <div className="text-[0.67rem] text-inkl mt-0.5">Bepaalt hoe de inwoner in het rapport wordt aangesproken (naam of voornaamwoord).</div>
+          </div>
+        </div>
+        <div className={row2}>
           <div><label className={L}>Adres</label><input className="inp" value={state.adres} onChange={e => set({ adres: e.target.value })} placeholder="Straat en huisnummer" /></div>
           <div><label className={L}>Postcode + Woonplaats</label><input className="inp" value={state.woonplaats} onChange={e => set({ woonplaats: e.target.value })} placeholder="7940 AA Meppel" /></div>
         </div>

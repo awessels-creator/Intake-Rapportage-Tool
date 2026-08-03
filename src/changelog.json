@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "2.0.21",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Aanspreekvorm in rapport (geslacht + aanspreektitel)",
+          "items": [
+            "Nieuw op tabblad Cliënt: 'Geslacht' (man/vrouw/non-binair) en 'Gewenste aanspreektitel' (voornaam / meneer / mevrouw / hen)",
+            "De snelvragenlijst-zinnen in het rapport gebruiken nu de gekozen aanspreekvorm: de eerste zin noemt de naam of titel, de vervolgzinnen het voornaamwoord (hij/zij/hen). Bijv. 'Pietje verblijft in een instelling. Hij heeft sociale activiteiten.'",
+            "Zonder invoer blijft het rapport 'Inwoner' gebruiken (geen regressie)"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.20",
       "date": "2026-08-03",
       "categories": [

@@ -33,7 +33,7 @@ export function mkInitial(): FormState {
   return {
     currentPage: 0,
     clientnr: '', voornaam: '', achternaam: '', geboortedatum: '', bsn: '',
-    burgstaat: '', nationaliteit: '', adres: '', woonplaats: '', telefoon: '',
+    burgstaat: '', nationaliteit: '', geslacht: '', aanspreektitel: '', adres: '', woonplaats: '', telefoon: '',
     email: '', leefsituatie: '', datum_intake: d,
     heeft_partner: '', partner_vnaam: '', partner_anaam: '', partner_geb: '',
     partner_bsn: '', partner_reg: '', partner_niet_reden: '',
@@ -335,13 +335,37 @@ export const QUICK_SECTIONS: QuickSection[] = [
 // nette, lopende zinnen. Per sectie één array van zinnen. Wordt bij rapportage
 // samengevoegd met de handmatige tekst in hetzelfde veld (downloadImpl.ts).
 export function buildQuickText(state: FormState): Record<string, string[]> {
+  // Aanspreekvorm: gekozen aanspreektitel (Pietje / Meneer J / Mevrouw J / Hen)
+  // of fallback 'Inwoner'. Voornaamwoord (hij/zij/hen) op basis van geslacht.
+  // Bij lege invoer blijft het oude gedrag ('Inwoner' overal) behouden.
+  const vn = (state.voornaam || '').trim()
+  const an = (state.achternaam || '').trim()
+  let subj = 'Inwoner'
+  if (state.aanspreektitel === 'voornaam') subj = vn || 'Inwoner'
+  else if (state.aanspreektitel === 'meneer') subj = `Meneer ${an}`.trim() || 'Inwoner'
+  else if (state.aanspreektitel === 'mevrouw') subj = `Mevrouw ${an}`.trim() || 'Inwoner'
+  else if (state.aanspreektitel === 'hen') subj = 'Hen'
+
+  let pron = 'Inwoner'
+  if (state.geslacht === 'man') pron = 'hij'
+  else if (state.geslacht === 'vrouw') pron = 'zij'
+  else if (state.geslacht === 'non-binair' || state.aanspreektitel === 'hen') pron = 'hen'
+
   const out: Record<string, string[]> = {}
   for (const sec of QUICK_SECTIONS) {
     const parts: string[] = []
+    let usedSubj = false
     for (const g of sec.groups) {
       if (g.type === 'check') {
         for (const it of g.items || []) {
-          if (state.quickChecks[it.id]) parts.push(it.s)
+          if (state.quickChecks[it.id]) {
+            let zin = it.s
+            if (zin.includes('Inwoner')) {
+              zin = zin.replace('Inwoner', usedSubj ? pron : subj)
+              usedSubj = true
+            }
+            parts.push(zin)
+          }
         }
       } else if (g.type === 'radio') {
         const v = state.quickRadio[g.name || '']

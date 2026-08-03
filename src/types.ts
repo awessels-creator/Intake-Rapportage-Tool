@@ -73,6 +73,8 @@ export interface FormState {
   bsn: string
   burgstaat: string
   nationaliteit: string
+  geslacht: string          // 'man' | 'vrouw' | 'non-binair' | ''
+  aanspreektitel: string    // 'voornaam' | 'meneer' | 'mevrouw' | 'hen' | ''
   adres: string
   woonplaats: string
   telefoon: string
