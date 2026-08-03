@@ -1,6 +1,18 @@
 {
   "versions": [
     {
+      "version": "2.0.24",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst — zin 'Psychotische episode(s)'",
+          "items": [
+            "De zin bij 'Psychotische episode(s)' is ingekort naar 'Er is sprake van psychotische episode(s).' (de toevoeging 'eventueel in het verleden' is vervallen; een verleden episode vult de consulent handmatig aan)"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.23",
       "date": "2026-08-03",
       "categories": [

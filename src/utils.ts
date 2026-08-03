@@ -261,7 +261,7 @@ export const QUICK_SECTIONS: QuickSection[] = [
         { id: 'a_ov_justitie', label: 'Justitieel verleden', s: 'Inwoner heeft een justitieel verleden.' },
         { id: 'a_ov_erfenis', label: 'Erfenis/boedel', s: 'Er speelt een erfenis- of boedelkwestie.' },
         { id: 'a_ov_analfabeet', label: 'Analfabeet/laaggeletterd', s: 'Inwoner is analfabeet of laaggeletterd.' },
-        { id: 'a_ov_psych', label: 'Psychotische episode(s)', s: 'Er is sprake van psychotische episode(s), eventueel in het verleden.' },
+        { id: 'a_ov_psych', label: 'Psychotische episode(s)', s: 'Er is sprake van psychotische episode(s).' },
         { id: 'a_ov_somatisch', label: 'Lichamelijk beperkt', s: 'Inwoner is lichamelijk beperkt.' },
       ] },
     ],
