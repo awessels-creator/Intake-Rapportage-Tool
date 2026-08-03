@@ -2,6 +2,14 @@
 // Elke periode bevat ALLE normen (bijstand, vermogen, vrijstelling, NIBUD, BVV).
 // Bij een normwijziging vul je één nieuwe periode toe — niets anders aanpassen.
 // De tool kiest automatisch de periode die op de huidige datum van kracht is.
+//
+// BRONNEN voor de bedragen (halfjaarlijkse update per 1 jan / 1 jul):
+//   - Bijstandsnormen (netto, excl. vakantietoeslag): Staatscourant via overheid.nl
+//     (zoek "wijziging bijstandsnormen"), of Ministerie SZW.
+//   - Vermogensvrijstelling & vrijstelling overwaarde: gemeente-beleidsregels (Meppel).
+//   - NIBUD besteedbaar budget: nibud.nl.
+//   - Beslagvrije voet (max): uwbeslagvrijevoet.nl.
+// Volledige stappen + waar-op-te-letten: zie NORMS-UPDATE.md in de repo-wortel.
 
 export interface NormPeriode {
   vanaf: string                     // datum (YYYY-MM-DD) waarop deze normen ingaan
