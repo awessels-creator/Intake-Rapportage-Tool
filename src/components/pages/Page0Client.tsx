@@ -24,8 +24,12 @@ export default function Page0Client() {
     const clientAge = lftdN(state.geboortedatum)
     const partnerAge = lftdN(state.partner_geb)
     const hasPartner = state.heeft_partner === 'ja'
+    // Jeugdige <21 met een partner van 21+ is wettelijk zelfstandig (samenwonend/gehuwd):
+    // de tool vult dan gewoon de 21+-norm in. Alleen zónder meerderjarige partner
+    // (of geen partner) geldt de jeugd-/kostendelersregeling en kiest de cliënt zelf.
+    const jeugdMetMeerderjarigePartner = clientAge >= 0 && clientAge < 21 && hasPartner && partnerAge >= 21
 
-    if (clientAge < 21) return // jonger dan 21: geen automatische 21+-norm (cliënt kiest zelf jeugd-situatie)
+    if (clientAge >= 0 && clientAge < 21 && !jeugdMetMeerderjarigePartner) return // jonger dan 21 zonder 21+ partner: geen automatische 21+-norm
 
     let newLeefsituatie = ''
     const aowAge = 67
@@ -51,7 +55,7 @@ export default function Page0Client() {
       }
     }
 
-    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie && !isJeugdOfInstelling(state.leefsituatie)) {
+    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie && (!isJeugdOfInstelling(state.leefsituatie) || jeugdMetMeerderjarigePartner)) {
       const norm = NORM[newLeefsituatie]
       set({ leefsituatie: newLeefsituatie, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
     }

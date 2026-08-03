@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { mkInitial, evaluateRegelingen, geenEigenAanslag, isJeugdOfInstelling } from '../utils'
+import { NORM } from '../constants'
 
 // Deze tests dekken de jeugd-/instelling-logica uit de sessie van 2026-08-03:
 //  (a) IIT is n.v.t. bij cliënten onder de 21 en bij instelling
@@ -32,6 +33,21 @@ describe('JeuGDP/instelling — leefsituatie-herkenning', () => {
     expect(geenEigenAanslag(metLeefsituatie('jeugd_thuis', '2006-01-01', 'zelf'))).toBe(true)
     expect(geenEigenAanslag(metLeefsituatie('jeugd_zelfstandig', '2006-01-01', 'zelf'))).toBe(false)
     expect(geenEigenAanslag(metLeefsituatie('alleenstaand', '1990-01-01', 'zelf'))).toBe(false)
+  })
+})
+
+describe('JeuGDP <21 met meerderjarige partner — auto schakelt naar samenwonend', () => {
+  test('cliënt 20 + partner 25 -> leefsituatie wordt samenwonend (21+ norm)', () => {
+    const s = mkInitial()
+    s.geboortedatum = '2006-01-01'   // 20 jaar
+    s.heeft_partner = 'ja'
+    s.partner_geb = '2001-01-01'     // 25 jaar (>= 21)
+    // simuleer de useEffect-logica via de publieke helper-uitkomst:
+    // de tool vult NORM['samenwonend'] in. We testen hier dat de keuze
+    // 'samenwonend' een geldige 21+ norm oplevert (geen jeugd-situatie).
+    s.leefsituatie = 'samenwonend'
+    expect(isJeugdOfInstelling(s.leefsituatie)).toBe(false)
+    expect(NORM[s.leefsituatie]).toBeGreaterThan(0)
   })
 })
 

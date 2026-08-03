@@ -13,10 +13,17 @@
             "Kwijtschelding GBLT/gemeente is n.v.t. zolang de cliënt geen eigen belastingaanslag heeft (woont bij ouders of in instelling) — nieuw veld 'Woont cliënt zelfstandig of bij ouders/instelling?' op tabblad Cliënt",
             "Beslagvrije voet bij jeugd/instelling: geen zelfstandige berekening, maar verwijzing naar berekenuwrecht.nl met toelichting",
             "Waarschuwingen op de tabbladen Cliënt en Inkomen maken de situatie transparant in plaats van een verkeerde (21+) norm te gebruiken"
-          ]
-        }
-      ]
-    },
+            ]
+            },
+            {
+            "title": "Jeugdige <21 met meerderjarige partner",
+            "items": [
+              "Jeugdige jonger dan 21 mét een partner van 21+ wordt wettelijk als zelfstandig (samenwonend/gehuwd) behandeld: de tool vult automatisch de reguliere 21+-norm in",
+              "De jeugd-/kostendelersregeling geldt alleen zónder meerderjarige partner; met een 21+ partner schakelt de tool netjes door naar 'samenwonend' (incl. bijbehorende regeling-checks)"
+            ]
+            }
+            ]
+            },
     {
       "version": "2.0.15",
       "date": "2026-07-16",
