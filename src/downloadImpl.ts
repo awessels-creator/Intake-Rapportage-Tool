@@ -3,7 +3,7 @@
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
-import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling } from './utils'
+import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType,
@@ -52,6 +52,15 @@ function para(text: string, opts?: { bold?: boolean; color?: string; size?: numb
   return new Paragraph({ children: [new TextRun({ text: text || '—', bold: opts?.bold || false, color: opts?.color || '111111', font: 'Arial', size: opts?.size || 19 })], spacing: { before: 20, after: 20 } })
 }
 
+// Voegt handmatige tekst + gegenereerde snelvragenlijst-zinnen samen (optie A):
+// handmatig bovenaan, gegenereerd eronder, geen overschrijf.
+function mergedQuick(manual: string, generated: string[]): string {
+  const parts: string[] = []
+  if (manual && manual.trim()) parts.push(manual.trim())
+  if (generated.length) parts.push(generated.join(' '))
+  return parts.join('\n\n')
+}
+
 function simpleTable(headers: string[], rows: string[][]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
@@ -93,6 +102,9 @@ export async function buildAndSaveWord(state: FormState) {
 
   const beoordeling = evaluateRegelingen(state)
 
+  // Snelvragenlijst: zet aangevinkte items om in zinnen per sectie (optie A)
+  const quick = buildQuickText(state)
+
   const children: (Paragraph | Table)[] = []
 
   children.push(h1('Intakerapportage Geldzorgen Schuldhulpverlening'))
@@ -124,10 +136,12 @@ export async function buildAndSaveWord(state: FormState) {
 
   // 2. Persoonlijke omstandigheden
   children.push(h2('2. Persoonlijke omstandigheden'))
-  if (state.persoonlijk) { children.push(h3('Woonsituatie / netwerk')); children.push(para(state.persoonlijk)) }
-  if (state.opleiding_toel) { children.push(h3('Opleiding / werkervaring / perspectief')); children.push(para(state.opleiding_toel)) }
+  const persT = mergedQuick(state.persoonlijk, quick.persoonlijk)
+  if (persT.trim()) { children.push(h3('Woonsituatie / netwerk')); children.push(para(persT)) }
+  const oplT = mergedQuick(state.opleiding_toel, quick.opleiding_toel)
+  if (oplT.trim()) { children.push(h3('Opleiding / werkervaring / perspectief')); children.push(para(oplT)) }
   if (state.flank === 'ja') { children.push(h3('Flankerende hulpverlening')); children.push(para(`${state.flank_inst || '—'} — ${state.flank_naam || '—'} (${state.flank_contact || '—'}) — ${state.flank_aard || '—'}`)) }
-  if (!state.persoonlijk && !state.opleiding_toel && state.flank !== 'ja') children.push(para('—'))
+  if (!persT.trim() && !oplT.trim() && state.flank !== 'ja') children.push(para('—'))
   children.push(spacer())
 
   // 3. Aanvraag & Crisis
@@ -137,7 +151,7 @@ export async function buildAndSaveWord(state: FormState) {
     ['Crisis', state.crisis === 'ja' ? 'Ja' + (crisisItems.length ? ' (' + crisisItems.join(', ') + ')' : '') + (state.crisis_toelichting ? ' — ' + state.crisis_toelichting : '') : 'Nee'],
     ['Eerdere aanvragen', state.eerder_aanvr === 'ja' ? 'Ja — ' + (state.eerder_aanvr_toel || '') : 'Nee'],
   ]))
-  children.push(h3('Reden aanmelding / hulpvraag')); children.push(para(state.hulpvraag || '—'))
+  children.push(h3('Reden aanmelding / hulpvraag')); children.push(para(mergedQuick(state.hulpvraag, quick.hulpvraag) || '—'))
   children.push(spacer())
 
   // 4. Bankrekening(en)
@@ -151,7 +165,7 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(h2('5. Onderneming'))
   const ondText = !state.ondernemer || state.ondernemer === 'nee' ? 'Geen onderneming.' : state.ondernemer === 'actief' ? `Actief — ${state.kvk_naam || '?'}, KvK: ${state.kvk_nr || '?'}` : `Gestopt — ${state.kvk_naam || '?'}, KvK: ${state.kvk_nr || '?'}, uitgeschreven: ${state.kvk_datum || '?'}`
   children.push(para(ondText))
-  if (state.ondernemer && state.ondernemer !== 'nee') { children.push(para(`Boekhouding: ${state.boekhouding || '—'} | Aangiften: ${state.aangifte || '—'}`)); if (state.kvk_toel) children.push(para(state.kvk_toel, { color: '666666' })) }
+  if (state.ondernemer && state.ondernemer !== 'nee') { children.push(para(`Boekhouding: ${state.boekhouding || '—'} | Aangiften: ${state.aangifte || '—'}`)); const kvkT = mergedQuick(state.kvk_toel, quick.kvk_toel); if (kvkT.trim()) children.push(para(kvkT, { color: '666666' })) }
   children.push(spacer())
 
   // 6. Vermogen
@@ -177,6 +191,8 @@ export async function buildAndSaveWord(state: FormState) {
   if (state.inkomenData.length > 0) { children.push(h3('Inkomstenbronnen')); children.push(simpleTable(['Bron / Werkgever', 'Type', 'Netto/mnd', 'Dienstverband', 'Beslag?'], state.inkomenData.map(d => [d.bron || '—', d.type || '—', `€ ${nl(parseFloat(d.netto) || 0)}`, d.uren || '—', d.beslag ? 'Ja' : 'Nee']))) }
   const beslagData = state.beslagData.filter(b => b.wie)
   if (beslagData.length > 0) { children.push(h3('Beslagleggende schuldeisers')); children.push(simpleTable(['Schuldeiser', 'Soort', 'Bedrag'], beslagData.map(b => [b.wie, b.soort || '—', b.bedrag ? `€ ${b.bedrag}/mnd` : 'Onbekend']))) }
+  const inkT = (quick.inkomen_toel || []).join(' ')
+  if (inkT.trim()) { children.push(h3('Toelichting inkomen')); children.push(para(inkT, { color: '666666' })) }
   children.push(spacer())
 
   // 8. Toeslagen

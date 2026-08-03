@@ -11,7 +11,8 @@ import {
   rmArr,
   mkInitial,
   mkBeslag,
-  yearsSince,
+  buildQuickText,
+  QUICK_SECTIONS,
 } from '../utils'
 import { NORM } from '../constants'
 import type { FormState } from '../types'
@@ -572,16 +573,43 @@ describe('mkBeslag', () => {
   })
 })
 
-// ─── yearsSince ──────────────────────────────────────────────────────────────
+// ─── buildQuickText (snelvragenlijst, optie A) ──────────────────────────────
 
-describe('yearsSince', () => {
-  test('returns null if date is empty', () => {
-    expect(yearsSince('')).toBeNull()
+describe('buildQuickText', () => {
+  test('zet aangevinkte checks om in rapportzinnen per sectie', () => {
+    const state = s({
+      quickChecks: { a_woon_huur: true, a_soc_vrienden: true, h_ink_wisselend: true },
+    })
+    const out = buildQuickText(state)
+    expect(out.persoonlijk).toContain('Cliënt woont in een huurwoning.')
+    expect(out.persoonlijk).toContain('Cliënt heeft een vrienden/kennissenkring.')
+    expect(out.inkomen_toel).toContain('Het inkomen is wisselend of onregelmatig.')
   })
 
-  test('calculates correct years', () => {
-    const now = new Date('2026-01-01').getTime()
-    const past = '2023-01-01'
-    expect(yearsSince(past, now)).toBeCloseTo(3, 1)
+  test('radio-keuzes komen als "label: waarde" in de zin', () => {
+    const state = s({ quickRadio: { b_opl: 'havo', b_diploma: 'ja' } })
+    const out = buildQuickText(state)
+    expect(out.opleiding_toel).toContain('Opleidingsniveau: HAVO')
+    expect(out.opleiding_toel).toContain('Diploma behaald: ja')
+  })
+
+  test('vrije tekst (opleidingsrichting) wordt overgenomen', () => {
+    const state = s({ quickFree: { b_richting: 'sociaal werk' } })
+    const out = buildQuickText(state)
+    expect(out.opleiding_toel).toContain('Opleidingsrichting: sociaal werk')
+  })
+
+  test('lege snelvragenlijst geeft lege arrays per sectie', () => {
+    const out = buildQuickText(s())
+    for (const sec of QUICK_SECTIONS) {
+      expect(out[sec.key]).toEqual([])
+    }
+  })
+
+  test('ongevinkte items en ongekozen radio\'s verschijnen niet', () => {
+    const state = s({ quickChecks: {}, quickRadio: {} })
+    const out = buildQuickText(state)
+    expect(out.persoonlijk.every(z => z.length > 0)).toBe(true)
+    expect(out.opleiding_toel).toEqual([])
   })
 })

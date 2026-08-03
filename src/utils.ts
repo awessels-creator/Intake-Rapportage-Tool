@@ -64,6 +64,7 @@ export function mkInitial(): FormState {
     cb_bewind_medisch: false, cb_bewind_schuld: false, cb_schuldhulpmaatje: false,
     cb_overig_aanvr: false, overig_aanvr_txt: '', conclusie: '',
     naam_consulent2: '', datum_rapportage: d,
+    quickChecks: {}, quickRadio: {}, quickFree: {},
   }
 }
 
@@ -208,10 +209,150 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
   return { fdma, kwijtschelding_gblt, kwijtschelding_gemeente, iit, kindsupport, voedselbank }
 }
 
-export function lftd(geb: string): string {
-  if (!geb) return '—'
-  const n = lftdN(geb)
-  return n >= 0 ? `${n} jr` : '—'
+// ── SNELVRAGENLIJST (zijpaneel, optie A) ────────────────────────────────────
+// Definitieve 5-sectie-config (Crisis/Bank/Vermogen/Schulden zijn eruit gehaald).
+// Elke check heeft een korte 'label' (chip) en volledige 's' (rapportzin).
+// Radio's hebben een 'map' (waarde -> leesbare tekst). 'free' = vrij tekstveld.
+export interface QuickItem { id: string; label: string; s: string }
+export interface QuickGroup { label: string; type: 'check' | 'radio' | 'text'; items?: QuickItem[]; map?: Record<string, string>; id?: string; name?: string }
+export interface QuickSection {
+  key: string                       // gekoppeld state-veld (bestaand open veld)
+  tabLabel: string
+  groups: QuickGroup[]
+}
+
+export const QUICK_SECTIONS: QuickSection[] = [
+  {
+    key: 'persoonlijk', tabLabel: 'Achtergrond',
+    groups: [
+      { label: 'Woonsituatie', type: 'check', items: [
+        { id: 'a_woon_eigen', label: 'Eigen woning', s: 'Cliënt woont in een eigen woning.' },
+        { id: 'a_woon_huur', label: 'Huurwoning', s: 'Cliënt woont in een huurwoning.' },
+        { id: 'a_woon_beschermd', label: 'Beschermd wonen', s: 'Cliënt verblijft in beschermd wonen.' },
+        { id: 'a_woon_dakloos', label: 'Dak-/thuisloos', s: 'Cliënt is dak-/thuisloos.' },
+        { id: 'a_woon_gedeeld', label: 'Gedeelde woning', s: 'Cliënt woont in een gedeelde woning.' },
+        { id: 'a_woon_instelling', label: 'Instelling/opvang', s: 'Cliënt verblijft in een instelling of opvang.' },
+      ] },
+      { label: 'Sociale situatie', type: 'check', items: [
+        { id: 'a_soc_isolatie', label: 'Isolement', s: 'Er is sprake van isolement of eenzaamheid.' },
+        { id: 'a_soc_mantelzorg', label: 'Mantelzorger', s: 'Cliënt is mantelzorger.' },
+        { id: 'a_soc_familie_betrokken', label: 'Familie betrokken', s: 'Familie is betrokken.' },
+        { id: 'a_soc_familie_niet', label: 'Familie niet betrokken', s: 'Familie is niet betrokken.' },
+        { id: 'a_soc_geen_familie', label: 'Geen familie', s: 'Cliënt heeft geen familie.' },
+        { id: 'a_soc_vrienden', label: 'Vrienden/kenniskring', s: 'Cliënt heeft een vrienden/kennissenkring.' },
+        { id: 'a_soc_sport', label: 'Sport/hobby/vereniging', s: 'Cliënt doet aan sport, een hobby of een vereniging.' },
+      ] },
+      { label: 'Gezondheid', type: 'check', items: [
+        { id: 'a_gez_goed', label: 'Gezond', s: 'De gezondheid is goed.' },
+        { id: 'a_gez_fysiek', label: 'Fysieke beperking/ziekte', s: 'Er is sprake van een fysieke beperking of ziekte.' },
+        { id: 'a_gez_mentaal', label: 'Mentale problemen', s: 'Er zijn mentale problemen.' },
+        { id: 'a_gez_wmo', label: 'WMO-indicatie', s: 'Cliënt heeft een WMO-indicatie.' },
+      ] },
+      { label: 'Middelengebruik / verslaving', type: 'check', items: [
+        { id: 'a_mid_geen', label: 'Geen', s: 'Er is geen sprake van middelengebruik of verslaving.' },
+        { id: 'a_mid_alcohol', label: 'Alcohol', s: 'Er is sprake van alcoholgebruik.' },
+        { id: 'a_mid_drugs', label: 'Drugs', s: 'Er is sprake van drugsgebruik.' },
+        { id: 'a_mid_gokken', label: 'Gokken', s: 'Er is sprake van gokken.' },
+        { id: 'a_mid_gaming', label: 'Gaming/internet', s: 'Er is sprake van gaming of internetgebruik.' },
+        { id: 'a_mid_hulp', label: 'Hulpverlening actief', s: 'Hulpverlening rond middelengebruik is actief.' },
+      ] },
+      { label: 'Overige aandachtspunten', type: 'check', items: [
+        { id: 'a_ov_justitie', label: 'Justitieel verleden', s: 'Cliënt heeft een justitieel verleden.' },
+        { id: 'a_ov_erfenis', label: 'Erfenis/boedel', s: 'Er speelt een erfenis- of boedelkwestie.' },
+        { id: 'a_ov_analfabeet', label: 'Analfabeet/laaggeletterd', s: 'Cliënt is analfabeet of laaggeletterd.' },
+        { id: 'a_ov_psych', label: 'Psychotische episode(s)', s: 'Er is sprake van psychotische episode(s), eventueel in het verleden.' },
+        { id: 'a_ov_somatisch', label: 'Lichamelijk beperkt', s: 'Cliënt is lichamelijk beperkt.' },
+      ] },
+    ],
+  },
+  {
+    key: 'opleiding_toel', tabLabel: 'Opleiding/Werk',
+    groups: [
+      { label: 'Opleidingsniveau', type: 'radio', name: 'b_opl', map: { geen: 'geen startkwalificatie', vmbo: 'VMBO', havo: 'HAVO', mbo1: 'MBO-1', mbo2: 'MBO-2', mbo3: 'MBO-3', mbo4: 'MBO-4', hbo: 'HBO', wo: 'WO' } },
+      { label: 'Richting / soort opleiding', type: 'text', id: 'b_richting' },
+      { label: 'Diploma behaald', type: 'radio', name: 'b_diploma', map: { ja: 'ja', nee: 'nee' } },
+      { label: 'Werkervaring', type: 'radio', name: 'b_werk', map: { geen: 'geen', minder1: 'minder dan 1 jaar', '1tot5': '1 tot 5 jaar', meer5: 'meer dan 5 jaar' } },
+      { label: 'Huidige arbeidssituatie', type: 'check', items: [
+        { id: 'b_arbeid_werkzaam', label: 'Werkzaam', s: 'Cliënt is werkzaam.' },
+        { id: 'b_arbeid_ww', label: 'WW', s: 'Cliënt ontvangt een WW-uitkering.' },
+        { id: 'b_arbeid_wia', label: 'WIA/WAO', s: 'Cliënt ontvangt een WIA- of WAO-uitkering.' },
+        { id: 'b_arbeid_zw', label: 'Ziektewet', s: 'Cliënt ontvangt een Ziektewet-uitkering.' },
+        { id: 'b_arbeid_zzp', label: 'ZZP', s: "Cliënt is zzp'er." },
+        { id: 'b_arbeid_geen', label: 'Niet werkzaam', s: 'Cliënt is niet werkzaam.' },
+      ] },
+      { label: 'Type contract', type: 'radio', name: 'b_contract', map: { vast: 'vast contract', tijdelijk: 'tijdelijk contract', detachering: 'detachering', geen: 'geen contract' } },
+      { label: 'Toekomstperspectief', type: 'check', items: [
+        { id: 'b_persp_goed', label: 'Goed perspectief', s: 'Het toekomstperspectief is goed.' },
+        { id: 'b_persp_beperkt', label: 'Beperkt perspectief', s: 'Het toekomstperspectief is beperkt.' },
+        { id: 'b_persp_reintegratie', label: 'Re-integratietraject', s: 'Er loopt een re-integratietraject.' },
+        { id: 'b_persp_onbekend', label: 'Onbekend', s: 'Het toekomstperspectief is onbekend.' },
+      ] },
+    ],
+  },
+  {
+    key: 'hulpvraag', tabLabel: 'Reden aanmelding',
+    groups: [
+      { label: 'Reden aanmelding', type: 'check', items: [
+        { id: 'd_reden_schulden', label: 'Schulden/betalingsproblemen', s: 'Reden van aanmelding: schulden of betalingsproblemen.' },
+        { id: 'd_reden_inkomen', label: 'Te laag inkomen', s: 'Reden van aanmelding: een te laag inkomen.' },
+        { id: 'd_reden_crisis', label: 'Crisissituatie', s: 'Reden van aanmelding: een crisissituatie.' },
+        { id: 'd_reden_anders', label: 'Anders', s: 'Reden van aanmelding: anders.' },
+      ] },
+      { label: 'Herkomst aanmelding', type: 'check', items: [
+        { id: 'd_via_zelf', label: 'Zelf gemeld', s: 'Aanmelding: cliënt heeft zichzelf gemeld.' },
+        { id: 'd_via_intern', label: 'Interne doorverwijzing', s: 'Aanmelding via interne doorverwijzing.' },
+        { id: 'd_via_zorg', label: 'Via zorgaanbieder', s: 'Aanmelding via doorverwijzing door een zorgaanbieder.' },
+      ] },
+    ],
+  },
+  {
+    key: 'kvk_toel', tabLabel: 'Onderneming',
+    groups: [
+      { label: 'Bedrijfsituatie', type: 'check', items: [
+        { id: 'f_kvn_schulden', label: 'Zakelijke schulden', s: 'Er zijn zakelijke schulden.' },
+        { id: 'f_kvn_priveschulden', label: 'Privé-schulden', s: 'Er zijn privé-schulden.' },
+        { id: 'f_kvn_belasting', label: 'Belastingschulden', s: 'Er zijn belastingschulden.' },
+        { id: 'f_kvn_boekhouding', label: 'Boekhouding niet op orde', s: 'De boekhouding is niet op orde.' },
+        { id: 'f_kvn_uren', label: '>1225 uur/jaar (BBZ)', s: 'Er wordt meer dan 1225 uur per jaar in het bedrijf gewerkt (BBZ mogelijk).' },
+      ] },
+    ],
+  },
+  {
+    key: 'inkomen_toel', tabLabel: 'Inkomen',
+    groups: [
+      { label: 'Inkomenssituatie', type: 'check', items: [
+        { id: 'h_ink_stabiel', label: 'Stabiel inkomen', s: 'Het inkomen is stabiel.' },
+        { id: 'h_ink_wisselend', label: 'Wisselend/onregelmatig', s: 'Het inkomen is wisselend of onregelmatig.' },
+        { id: 'h_ink_aanvulling', label: 'Aanvulling nodig', s: 'Een aanvulling van het inkomen is nodig.' },
+        { id: 'h_ink_toeslag', label: 'Toeslag mogelijk', s: 'Een aanvullende toeslag is mogelijk.' },
+      ] },
+    ],
+  },
+]
+
+// Zet de aangevinkte items / keuzes / vrije tekst van de snelvragenlijst om in
+// nette, lopende zinnen. Per sectie één array van zinnen. Wordt bij rapportage
+// samengevoegd met de handmatige tekst in hetzelfde veld (downloadImpl.ts).
+export function buildQuickText(state: FormState): Record<string, string[]> {
+  const out: Record<string, string[]> = {}
+  for (const sec of QUICK_SECTIONS) {
+    const parts: string[] = []
+    for (const g of sec.groups) {
+      if (g.type === 'check') {
+        for (const it of g.items || []) {
+          if (state.quickChecks[it.id]) parts.push(it.s)
+        }
+      } else if (g.type === 'radio') {
+        const v = state.quickRadio[g.name || '']
+        if (v && g.map && g.map[v]) parts.push(`${g.label}: ${g.map[v]}`)
+      } else if (g.type === 'text' && g.id) {
+        const v = (state.quickFree[g.id] || '').trim()
+        if (v) parts.push(g.id === 'b_richting' ? `Opleidingsrichting: ${v}` : v)
+      }
+    }
+    out[sec.key] = parts
+  }
+  return out
 }
 
 // ── JEUGDAFTREKKING & INSTELLING ────────────────────────────────────────────
@@ -241,6 +382,12 @@ export function lftdN(geb: string): number {
   let a = t.getFullYear() - d.getFullYear()
   if (t < new Date(t.getFullYear(), d.getMonth(), d.getDate())) a--
   return a
+}
+
+export function lftd(geb: string): string {
+  if (!geb) return '—'
+  const n = lftdN(geb)
+  return n >= 0 ? `${n} jr` : '—'
 }
 
 export function getTotaalInkomen(state: FormState): number {

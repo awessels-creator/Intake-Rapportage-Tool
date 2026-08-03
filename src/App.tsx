@@ -14,6 +14,7 @@ import Page6Lasten from './components/pages/Page6Lasten'
 import Page7Schulden from './components/pages/Page7Schulden'
 import Page8Regelcheck from './components/pages/Page8Regelcheck'
 import Page9Advies from './components/pages/Page9Advies'
+import QuickPanel from './components/QuickPanel'
 
 const PAGES = [
   Page0Client, Page1Persoonlijk, Page2Crisis, Page3Vermogen, Page4Inkomen,
@@ -39,6 +40,7 @@ function AppInner() {
         <PageComponent />
       </div>
       <Changelog />
+      <QuickPanel />
       {herstelVraag && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-paper rounded-lg border border-rule shadow-lg max-w-md w-full p-5">

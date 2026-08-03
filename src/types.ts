@@ -185,4 +185,9 @@ export interface FormState {
   conclusie: string
   naam_consulent2: string
   datum_rapportage: string
+  // Snelvragenlijst (zijpaneel) — vinkjes/keuzes worden bij rapportage samengevoegd
+  // met de handmatige tekst in de bestaande open velden (optie A, geen overschrijf).
+  quickChecks: Record<string, boolean>   // id -> aangevinkt?
+  quickRadio: Record<string, string>      // naam -> gekozen waarde
+  quickFree: Record<string, string>       // id -> vrije tekst (bijv. opleidingsrichting)
 }

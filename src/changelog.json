@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "2.0.17",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst (zijpaneel, optie A)",
+          "items": [
+            "Nieuw uitklapbaar zijpaneel 'Snelvragenlijst' (knop rechtsonder) met 5 secties: Achtergrond, Opleiding/Werk, Reden aanmelding, Onderneming, Inkomen",
+            "Vinkjes/keuzes worden bij rapport-download samengevoegd met de handmatige tekst in de bestaande open velden (geen vinklijst zichtbaar in het .doc)",
+            "Paneel staat buiten de tabbladen en is op elke pagina bruikbaar"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.16",
       "date": "2026-08-03",
       "categories": [

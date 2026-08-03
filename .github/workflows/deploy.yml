@@ -61,3 +61,30 @@ jobs:
           publish_dir: ./dist
           destination_dir: juli-2026
           keep_files: true
+
+  deploy-snelvragenlijst:
+    if: github.ref == 'refs/heads/feat/snelvragenlijst'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          VITE_BASE_URL: /Intake-Rapportage-Tool/juli-2026-snelvragenlijst/
+
+      - name: Deploy snelvragenlijst test to /juli-2026-snelvragenlijst
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: juli-2026-snelvragenlijst
+          keep_files: true
