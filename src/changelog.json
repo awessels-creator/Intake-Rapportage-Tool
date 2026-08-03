@@ -1,6 +1,27 @@
 {
   "versions": [
     {
+      "version": "2.0.19",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Leefsituatie & woont_bij (jeugd/instelling)",
+          "items": [
+            "Leefsituatie-volgorde: de jeugd- en instelling-opties staan logisch onderaan (na de 21+ en pensioen-opties)",
+            "Het veld 'Woont cliënt zelfstandig of bij ouders/instelling?' is bij jeugd/instelling niet meer dubbel in te vullen: de keuze volgt automatisch uit de leefsituatie (woont_bij wordt mee ingevuld). Het veld blijft wel zichtbaar voor 21+ cliënten die (tijdelijk) bij ouders wonen"
+          ]
+        },
+        {
+          "title": "Snelvragenlijst — terminologie & woonsituatie",
+          "items": [
+            "Alle zinnen in de snelvragenlijst gebruiken nu 'inwoner' in plaats van 'cliënt'",
+            "Achtergrond / Woonsituatie: 'Woont (nog) bij ouders' toegevoegd; 'Beschermd wonen' vervallen (valt onder 'Instelling/opvang')",
+            "Sport/hobby/vereniging-zin herschreven naar: 'Inwoner heeft sociale of buitenshuis activiteiten (sport, hobby, vereniging).'"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.18",
       "date": "2026-08-03",
       "categories": [

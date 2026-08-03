@@ -586,8 +586,8 @@ describe('buildQuickText', () => {
       quickChecks: { a_woon_huur: true, a_soc_vrienden: true, h_ink_wisselend: true },
     })
     const out = buildQuickText(state)
-    expect(out.persoonlijk).toContain('Cliënt woont in een huurwoning.')
-    expect(out.persoonlijk).toContain('Cliënt heeft een vrienden/kennissenkring.')
+    expect(out.persoonlijk).toContain('Inwoner woont in een huurwoning.')
+    expect(out.persoonlijk).toContain('Inwoner heeft een vrienden/kennissenkring.')
     expect(out.inkomen_toel).toContain('Het inkomen is wisselend of onregelmatig.')
   })
 

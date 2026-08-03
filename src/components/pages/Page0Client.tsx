@@ -59,6 +59,12 @@ export default function Page0Client() {
       const norm = NORM[newLeefsituatie]
       set({ leefsituatie: newLeefsituatie, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
     }
+
+    // Bij jeugd/instelling bepaalt de leefsituatie al waar de cliënt woont:
+    // koppel woont_bij automatisch zodat het niet dubbel hoeft te worden ingevuld.
+    if (state.leefsituatie === 'jeugd_thuis') set({ woont_bij: 'ouders' })
+    else if (state.leefsituatie === 'jeugd_zelfstandig') set({ woont_bij: 'zelf' })
+    else if (state.leefsituatie === 'instelling') set({ woont_bij: 'instelling' })
   }, [state.geboortedatum, state.partner_geb, state.heeft_partner, state.leefsituatie, set])
 
   const isPensioen = state.leefsituatie.startsWith('pensioen')
@@ -156,7 +162,7 @@ export default function Page0Client() {
           </div>
           <div><label className={L}>Datum intakegesprek</label><input type="date" className="inp" value={state.datum_intake} onChange={e => set({ datum_intake: e.target.value })} /></div>
         </div>
-        {state.leefsituatie && (
+        {state.leefsituatie && !isJeugdOfInstelling(state.leefsituatie) && (
           <div className={row2}>
             <div>
               <label className={L}>Woont cliënt zelfstandig of (nog) bij ouders / instelling?</label>
