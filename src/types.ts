@@ -75,6 +75,7 @@ export interface FormState {
   nationaliteit: string
   geslacht: string          // 'man' | 'vrouw' | 'non-binair' | ''
   aanspreektitel: string    // 'voornaam' | 'meneer' | 'mevrouw' | 'hen' | ''
+  aanspreek_vorm: string    // bij 'hen': 'je' | 'u' | 'uw' | '' (keuze beleefdheid)
   adres: string
   woonplaats: string
   telefoon: string

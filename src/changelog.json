@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "2.0.23",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Aanspreekvorm — zichtbaar in rapport + Hen-subkeuze",
+          "items": [
+            "Bij 'Geslacht' staat nu een lichtgrijze notitie dat dit niet in de rapportage komt (bepaalt enkel hij/zij/hen)",
+            "Aanspreektitel is gekoppeld aan beleefdheid: Voornaam → je/jij, Meneer/Mevrouw → u, Hen → keuze je/jij, u of uw",
+            "De gekozen aanspreekvorm komt zichtbaar in de rapportage (tabblad Cliëntgegevens, rij 'Aanspreekvorm') — zo is in één oogopslag te zien dat dit in het intakegesprek is besproken"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.22",
       "date": "2026-08-03",
       "categories": [

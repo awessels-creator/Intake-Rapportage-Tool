@@ -3,7 +3,7 @@
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
-import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText } from './utils'
+import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText, aanspreekVorm } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType,
@@ -112,12 +112,14 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(spacer())
 
   // 1. Cliëntgegevens
+  const aanspreek = aanspreekVorm(state)
   children.push(h2('1. Cliëntgegevens'))
   children.push(ntTable([
     ['Cliëntnummer', state.clientnr || '—'], ['Naam', naam], ['Geboortedatum', state.geboortedatum || '—'],
     ['BSN', state.bsn || '—'], ['Burgerlijke staat', state.burgstaat || '—'], ['Nationaliteit', state.nationaliteit || '—'],
     ['Adres', state.adres || '—'], ['Woonplaats', state.woonplaats || '—'], ['Leefsituatie', ls || '—'],
     ['Woont bij / zelfstandig', state.woont_bij ? ({ zelf: 'Zelfstandig', ouders: 'Bij ouders', instelling: 'Instelling' } as Record<string, string>)[state.woont_bij] || state.woont_bij : '—'],
+    ['Aanspreekvorm', aanspreek],
     ['E-mailadres', state.email || '—'], ['Telefoonnummer', state.telefoon || '—'],
   ]))
   // Bij jeugd/instelling: vermelding van de (handmatig ingevulde) norm + bron

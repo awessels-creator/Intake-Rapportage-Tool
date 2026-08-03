@@ -12,6 +12,7 @@ import {
   mkInitial,
   mkBeslag,
   buildQuickText,
+  aanspreekVorm,
   QUICK_SECTIONS,
 } from '../utils'
 import { NORM } from '../constants'
@@ -643,6 +644,17 @@ describe('buildQuickText', () => {
     const pers = out.persoonlijk.join(' ')
     expect(pers).toContain('Piet woont nog bij zijn ouders.')
     expect(pers).toContain('Hij heeft sociale of buitenshuis activiteiten')
+  })
+
+  test('aanspreekVorm: voornaam→je/jij, meneer/mevrouw→u, hen→keuze', () => {
+    expect(aanspreekVorm(s({ aanspreektitel: 'voornaam' }))).toBe('je / jij')
+    expect(aanspreekVorm(s({ aanspreektitel: 'meneer' }))).toBe('u')
+    expect(aanspreekVorm(s({ aanspreektitel: 'mevrouw' }))).toBe('u')
+    expect(aanspreekVorm(s({ aanspreektitel: 'hen', aanspreek_vorm: 'je' }))).toBe('je / jij')
+    expect(aanspreekVorm(s({ aanspreektitel: 'hen', aanspreek_vorm: 'u' }))).toBe('u')
+    expect(aanspreekVorm(s({ aanspreektitel: 'hen', aanspreek_vorm: 'uw' }))).toBe('uw')
+    expect(aanspreekVorm(s({ aanspreektitel: 'hen' }))).toBe('—')
+    expect(aanspreekVorm(s({}))).toBe('—')
   })
 
   test('radio-keuzes komen als "label: waarde" in de zin', () => {

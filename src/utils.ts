@@ -33,7 +33,7 @@ export function mkInitial(): FormState {
   return {
     currentPage: 0,
     clientnr: '', voornaam: '', achternaam: '', geboortedatum: '', bsn: '',
-    burgstaat: '', nationaliteit: '', geslacht: '', aanspreektitel: '', adres: '', woonplaats: '', telefoon: '',
+    burgstaat: '', nationaliteit: '', geslacht: '', aanspreektitel: '', aanspreek_vorm: '', adres: '', woonplaats: '', telefoon: '',
     email: '', leefsituatie: '', datum_intake: d,
     heeft_partner: '', partner_vnaam: '', partner_anaam: '', partner_geb: '',
     partner_bsn: '', partner_reg: '', partner_niet_reden: '',
@@ -388,6 +388,17 @@ export function buildQuickText(state: FormState): Record<string, string[]> {
     out[sec.key] = parts
   }
   return out
+}
+
+// Aanspreekvorm zoals die zichtbaar komt in de rapportage (tabblad Cliëntgegevens).
+// Gekoppeld aan beleefdheid: Voornaam → je/jij, Meneer/Mevrouw → u, Hen → keuze.
+export function aanspreekVorm(state: FormState): string {
+  if (state.aanspreektitel === 'voornaam') return 'je / jij'
+  if (state.aanspreektitel === 'meneer' || state.aanspreektitel === 'mevrouw') return 'u'
+  if (state.aanspreektitel === 'hen') {
+    return ({ je: 'je / jij', u: 'u', uw: 'uw' } as Record<string, string>)[state.aanspreek_vorm] || '—'
+  }
+  return '—'
 }
 
 // ── JEUGDAFTREKKING & INSTELLING ────────────────────────────────────────────

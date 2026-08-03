@@ -126,17 +126,29 @@ export default function Page0Client() {
           <div>
             <label className={L}>Geslacht</label>
             <RadioGroup value={state.geslacht} options={[{ value: 'man', label: 'Man' }, { value: 'vrouw', label: 'Vrouw' }, { value: 'non-binair', label: 'Non-binair' }]} onChange={v => set({ geslacht: v })} />
+            <div className="text-[0.67rem] text-warn mt-0.5">Wordt niet overgenomen in de rapportage (bepaalt enkel het voornaamwoord hij/zij/hen).</div>
           </div>
           <div>
             <label className={L}>Gewenste aanspreektitel</label>
             <select className="inp" value={state.aanspreektitel} onChange={e => set({ aanspreektitel: e.target.value })}>
               <option value="">— Selecteer —</option>
-              <option value="voornaam">Voornaam</option>
-              <option value="meneer">Meneer</option>
-              <option value="mevrouw">Mevrouw</option>
-              <option value="hen">Hen</option>
+              <option value="voornaam">Voornaam (je / jij)</option>
+              <option value="meneer">Meneer (u)</option>
+              <option value="mevrouw">Mevrouw (u)</option>
+              <option value="hen">Hen (keuze: je / u / uw)</option>
             </select>
-            <div className="text-[0.67rem] text-inkl mt-0.5">Bepaalt hoe de inwoner in het rapport wordt aangesproken (naam of voornaamwoord).</div>
+            <div className="text-[0.67rem] text-inkl mt-0.5">Bepaalt hoe de inwoner in het rapport wordt aangesproken. Komt zichtbaar in de rapportage (besproken in intake).</div>
+            {state.aanspreektitel === 'hen' && (
+              <div className="mt-[7px]">
+                <label className={L}>Aanspreekvorm bij Hen</label>
+                <select className="inp" value={state.aanspreek_vorm} onChange={e => set({ aanspreek_vorm: e.target.value })}>
+                  <option value="">— Selecteer —</option>
+                  <option value="je">je / jij</option>
+                  <option value="u">u</option>
+                  <option value="uw">uw</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
         <div className={row2}>
