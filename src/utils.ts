@@ -37,7 +37,7 @@ export function mkInitial(): FormState {
     email: '', leefsituatie: '', datum_intake: d,
     heeft_partner: '', partner_vnaam: '', partner_anaam: '', partner_geb: '',
     partner_bsn: '', partner_reg: '', partner_niet_reden: '',
-    kinderen: '', kinderenData: [],
+    kinderen: '', kinderenData: [], woont_bij: '',
     persoonlijk: '', opleiding_toel: '', flank: '', flank_inst: '', flank_naam: '',
     flank_contact: '', flank_aard: '',
     naam_consulent: '', crisis: '', cr_water: false, cr_energie: false,
@@ -52,7 +52,7 @@ export function mkInitial(): FormState {
     vermogen_toel: '', tw_avp: '', tw_inboedel: '', tw_opstal: '',
     tw_uitvaart: '', tw_zorgaanv: '', tw_wanbet: '',
     huisdieren: '', huisdieren_oms: '',
-    bijstandsnorm: '', inkomenData: [mkInk()],
+    bijstandsnorm: '', norm_bron: '', inkomenData: [mkInk()],
     alim_ontvangen: '', alim_partner: '', alim_kind: '', alim_lbio: '',
     iit: '', iit_datum: '', beslagData: [], inkomen_toel: '',
     toeslagenActief: {}, toeslagenBedrag: {}, toeslagenBeslag: {}, toeslagenNaam: {},
@@ -142,6 +142,9 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
   const ls = state.leefsituatie
   const hK = state.kinderen === 'ja'
   const isPensioen = ls.startsWith('pensioen')
+  const isJeugd = lftdN(state.geboortedatum) >= 0 && lftdN(state.geboortedatum) < 21
+  const isJeugdInst = isJeugdOfInstelling(ls)
+  const geenAanslag = geenEigenAanslag(state)
   const tot = getTotaalLasten(state)
   const best = ink - tot
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0) + state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
@@ -162,22 +165,28 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
 
   // Kwijtschelding GBLT — inkomen <120% norm
   let kwijtschelding_gblt: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
-  if (norm && ink) {
+  if (geenAanslag) {
+    kwijtschelding_gblt = { recht: 'nvt', reden: 'Geen eigen belastingaanslag (woont bij ouders of in een instelling).' }
+  } else if (norm && ink) {
     if (pct >= 120) kwijtschelding_gblt = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
     else kwijtschelding_gblt = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
   }
 
   // Kwijtschelding gemeentelijke belastingen — inkomen <120% norm (zelfde toets, apart vast te leggen)
   let kwijtschelding_gemeente: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
-  if (norm && ink) {
+  if (geenAanslag) {
+    kwijtschelding_gemeente = { recht: 'nvt', reden: 'Geen eigen belastingaanslag (woont bij ouders of in een instelling).' }
+  } else if (norm && ink) {
     if (pct >= 120) kwijtschelding_gemeente = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (≥120%).` }
     else kwijtschelding_gemeente = { recht: 'ja', reden: `Inkomen ${pct.toFixed(0)}% norm (<120%).` }
   }
 
-  // IIT — >=3 jaar aaneengesloten <=105% norm, niet voor pensioengerechtigden
+  // IIT — >=3 jaar aaneengesloten <=105% norm, niet voor pensioengerechtigden, niet onder de 21 jaar
   let iit: RegelingVoorstel = { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' }
   if (norm && ink) {
     if (isPensioen) iit = { recht: 'nvt', reden: 'Niet voor pensioengerechtigden.' }
+    else if (isJeugd) iit = { recht: 'nvt', reden: 'Niet voor cliënten jonger dan 21 jaar.' }
+    else if (isJeugdInst) iit = { recht: 'nvt', reden: 'Niet van toepassing bij instelling/jeugd-onder-21-situatie.' }
     else if (pct > 105) iit = { recht: 'nee', reden: `Inkomen ${pct.toFixed(0)}% norm (>105%).` }
     else iit = { recht: 'check', reden: `Inkomen ${pct.toFixed(0)}% norm (≤105%) — controleer 3-jaars-termijn (IIT-datum).` }
   }
@@ -203,6 +212,27 @@ export function lftd(geb: string): string {
   if (!geb) return '—'
   const n = lftdN(geb)
   return n >= 0 ? `${n} jr` : '—'
+}
+
+// ── JEUGDAFTREKKING & INSTELLING ────────────────────────────────────────────
+// Leefsituaties waarbij de cliënt NIET onder de reguliere (21+) bijstandsnorm
+// valt. De tool rekent hier GEEN zelfstandige norm of beslagvrije voet uit,
+// maar vraagt de consulent de juiste norm in te vullen (met bron) en laat de
+// regeling-checks (IIT, kwijtschelding) waar nodig op n.v.t. staan.
+export const JEUGDP_LEEFSITUATIES = ['jeugd_thuis', 'jeugd_zelfstandig', 'instelling'] as const
+export type JeugdLeefsituatie = typeof JEUGDP_LEEFSITUATIES[number]
+
+export function isJeugdOfInstelling(ls: string): boolean {
+  return (JEUGDP_LEEFSITUATIES as readonly string[]).includes(ls)
+}
+
+// Cliënt heeft geen eigen belastingaanslag (woont bij ouders of in instelling)
+// → kwijtschelding GBLT/gemeente is niet van toepassing.
+export function geenEigenAanslag(state: FormState): boolean {
+  if (state.leefsituatie === 'instelling') return true
+  if (state.leefsituatie === 'jeugd_thuis') return true
+  if (state.woont_bij === 'ouders' || state.woont_bij === 'instelling') return true
+  return false
 }
 
 export function lftdN(geb: string): number {

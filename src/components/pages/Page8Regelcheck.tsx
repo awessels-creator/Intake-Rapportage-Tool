@@ -5,10 +5,9 @@ import { getTotaalInkomen, getTotaalLasten, yearsSince } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
-import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle, HiMiniXCircle } from 'react-icons/hi2'
-import { HiOutlineFaceSmile } from 'react-icons/hi2'
+import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle, HiMiniXCircle, HiOutlineFaceSmile } from 'react-icons/hi2'
 import { MdOutlineHandshake } from 'react-icons/md'
-import { evaluateRegelingen } from '../../utils'
+import { evaluateRegelingen, geenEigenAanslag, isJeugdOfInstelling, lftdN } from '../../utils'
 import type { RegelingVoorstel } from '../../utils'
 
 const L = 'block text-[.76rem] text-inkl mb-0.5 font-medium'
@@ -47,10 +46,14 @@ export default function Page8Regelcheck() {
   const ink = getTotaalInkomen(state)
   const ls = state.leefsituatie
   const isPensioen = ls.startsWith('pensioen')
+  const isJeugdInst = isJeugdOfInstelling(ls)
+  const leeftijd8 = lftdN(state.geboortedatum)
+  const onder21 = leeftijd8 >= 0 && leeftijd8 < 21
   const hK = state.kinderen === 'ja'
   const pct = norm ? (ink / norm) * 100 : 0
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0)
   const grens = VGRENS[ls] || 8000
+  const geenAanslag = geenEigenAanslag(state)
   const tot = getTotaalLasten(state)
   const best = ink - tot
   const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (ls === 'samenwonend' || ls === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
@@ -72,22 +75,22 @@ export default function Page8Regelcheck() {
       n: 'Individuele Inkomenstoeslag (IIT)',
       norm: '3 jr ≤105% norm; niet voor pensioengerechtigden',
       sit: isPensioen ? 'Pensioengerechtigde' : `${pct.toFixed(0)}%`,
-      r: isPensioen ? 'nvt' : !norm || !ink ? 'twijfel' : pct >= 105 ? 'nee' : iitDatumOntbreekt ? 'twijfel' : iitJr >= 3 ? 'ja' : 'twijfel',
-      t: isPensioen ? 'N.v.t.' : pct >= 105 ? 'Inkomen boven 105%' : iitDatumOntbreekt ? 'Startdatum IIT niet ingevuld bij Inkomen — invullen om termijn te bepalen' : iitJr >= 3 ? <div className="flex items-center gap-1"><HiCheck className="text-ok" /> 3 jaar bereikt — aanvragen!</div> : `${iitJr.toFixed(1)} jr — nog ${(3 - iitJr).toFixed(1)} jr te gaan`,
+      r: (isPensioen || onder21 || isJeugdInst) ? 'nvt' : !norm || !ink ? 'twijfel' : pct >= 105 ? 'nee' : iitDatumOntbreekt ? 'twijfel' : iitJr >= 3 ? 'ja' : 'twijfel',
+      t: (isPensioen || onder21 || isJeugdInst) ? 'N.v.t. (niet voor pensioengerechtigden, jeugd <21 of instelling)' : pct >= 105 ? 'Inkomen boven 105%' : iitDatumOntbreekt ? 'Startdatum IIT niet ingevuld bij Inkomen — invullen om termijn te bepalen' : iitJr >= 3 ? <div className="flex items-center gap-1"><HiCheck className="text-ok" /> 3 jaar bereikt — aanvragen!</div> : `${iitJr.toFixed(1)} jr — nog ${(3 - iitJr).toFixed(1)} jr te gaan`,
     },
     {
       n: 'Kwijtschelding GBLT',
       norm: '< 120% norm, vermogen binnen grens',
       sit: `${pct.toFixed(0)}%`,
-      r: norm && ink ? pct < 120 && sp <= grens ? 'ja' : pct >= 120 ? 'nee' : 'twijfel' : 'twijfel',
-      t: pct >= 120 ? 'Inkomen ≥120%' : sp > grens ? 'Vermogen boven grens' : 'Voldoet — aanvragen bij GBLT',
+      r: geenAanslag ? 'nvt' : norm && ink ? pct < 120 && sp <= grens ? 'ja' : pct >= 120 ? 'nee' : 'twijfel' : 'twijfel',
+      t: geenAanslag ? 'Geen eigen belastingaanslag (woont bij ouders / instelling) — n.v.t.' : pct >= 120 ? 'Inkomen ≥120%' : sp > grens ? 'Vermogen boven grens' : 'Voldoet — aanvragen bij GBLT',
     },
     {
       n: 'Kwijtschelding gemeentelijke belastingen',
       norm: '< 120% norm, vermogen binnen grens',
       sit: `${pct.toFixed(0)}%`,
-      r: norm && ink ? pct < 120 && sp <= grens ? 'ja' : pct >= 120 ? 'nee' : 'twijfel' : 'twijfel',
-      t: pct >= 120 ? 'Inkomen ≥120%' : 'Aanvragen bij gemeente Meppel',
+      r: geenAanslag ? 'nvt' : norm && ink ? pct < 120 && sp <= grens ? 'ja' : pct >= 120 ? 'nee' : 'twijfel' : 'twijfel',
+      t: geenAanslag ? 'Geen eigen belastingaanslag (woont bij ouders / instelling) — n.v.t.' : pct >= 120 ? 'Inkomen ≥120%' : 'Aanvragen bij gemeente Meppel',
     },
     {
       n: 'Huurtoeslag',

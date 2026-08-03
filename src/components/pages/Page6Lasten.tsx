@@ -1,7 +1,7 @@
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
 import { LASTEN_DEF, PER_OPTIES, type LastenDef } from '../../constants'
-import { getTotaalInkomen, getTotaalLasten, getMndBedrag } from '../../utils'
+import { getTotaalInkomen, getTotaalLasten, getMndBedrag, isJeugdOfInstelling } from '../../utils'
 import { downloadBudgetXLSX } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
@@ -219,7 +219,21 @@ export default function Page6Lasten() {
         </button>
       </Card>
 
-      {bvv && (
+      {isJeugdOfInstelling(ls) ? (
+        <div className="bg-white rounded-xl border border-warn-border shadow-sm p-4 mb-4">
+          <Alert variant="warn" icon={<HiExclamationTriangle />} title="Beslagvrije voet niet geautomatiseerd">
+            Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
+          </Alert>
+          <a
+            href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
+          >
+            <HiArrowTopRightOnSquare className="inline-block" /> Controleer de beslagvrije voet via berekenuwrecht.nl
+          </a>
+        </div>
+      ) : bvv && (
         <div className="bg-white rounded-xl border border-rule shadow-sm p-4 mb-4">
           <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, jul 2026)</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

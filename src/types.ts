@@ -88,6 +88,13 @@ export interface FormState {
   partner_niet_reden: string
   kinderen: string
   kinderenData: KindItem[]
+  // Specifiek voor jeugdigen / instelling
+  // 'woont_bij': bij wie/cliché woont de cliënt (bepaalt o.a. recht op kwijtschelding eigen aanslag)
+  //   ''      = niet van toepassing
+  //   'ouders'= woont (nog) thuis bij (een van de) ouders — géén eigen belastingaanslag
+  //   'instelling' = verblijft in een instelling (beschermd wonen, kliniek, etc.)
+  //   'zelf'  = zelfstandig (eigen huur/hypotheek)
+  woont_bij: string
   // Page 1
   persoonlijk: string
   opleiding_toel: string
@@ -136,6 +143,7 @@ export interface FormState {
   huisdieren_oms: string
   // Page 4
   bijstandsnorm: string
+  norm_bron: string
   inkomenData: InkomenItem[]
   alim_ontvangen: string
   alim_partner: string

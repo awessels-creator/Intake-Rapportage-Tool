@@ -1,6 +1,23 @@
 {
   "versions": [
     {
+      "version": "2.0.16",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "JeuGDP, kostendelersnorm & instelling",
+          "items": [
+            "Nieuwe leefsituaties: 'Jeugdige <21 — woont thuis bij ouders', 'Jeugdige <21 — zelfstandig wonend' en 'Verblijft in een instelling (zak-/kleedgeldnorm)'",
+            "Bij deze situaties rekent de tool GEEN bijstandsnorm of beslagvrije voet uit — de consulent vult de juiste (verlaagde) norm in met bron",
+            "IIT is automatisch n.v.t. bij cliënten jonger dan 21 jaar en bij instelling (wettelijk 21+)",
+            "Kwijtschelding GBLT/gemeente is n.v.t. zolang de cliënt geen eigen belastingaanslag heeft (woont bij ouders of in instelling) — nieuw veld 'Woont cliënt zelfstandig of bij ouders/instelling?' op tabblad Cliënt",
+            "Beslagvrije voet bij jeugd/instelling: geen zelfstandige berekening, maar verwijzing naar berekenuwrecht.nl met toelichting",
+            "Waarschuwingen op de tabbladen Cliënt en Inkomen maken de situatie transparant in plaats van een verkeerde (21+) norm te gebruiken"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.15",
       "date": "2026-07-16",
       "categories": [

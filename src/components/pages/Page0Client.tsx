@@ -1,6 +1,6 @@
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
-import { lftd, lftdN, updArr, rmArr, bsn11Proef } from '../../utils'
+import { lftd, lftdN, updArr, rmArr, bsn11Proef, isJeugdOfInstelling } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
@@ -25,7 +25,7 @@ export default function Page0Client() {
     const partnerAge = lftdN(state.partner_geb)
     const hasPartner = state.heeft_partner === 'ja'
 
-    if (clientAge < 21) return // jonger dan 21, geen automatische aanpassing
+    if (clientAge < 21) return // jonger dan 21: geen automatische 21+-norm (cliënt kiest zelf jeugd-situatie)
 
     let newLeefsituatie = ''
     const aowAge = 67
@@ -51,7 +51,7 @@ export default function Page0Client() {
       }
     }
 
-    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie) {
+    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie && !isJeugdOfInstelling(state.leefsituatie)) {
       const norm = NORM[newLeefsituatie]
       set({ leefsituatie: newLeefsituatie, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
     }
@@ -135,15 +135,38 @@ export default function Page0Client() {
               <option value="pensioen_alleen">Pensioengerechtigde — alleenstaand</option>
               <option value="pensioen_paar">Pensioengerechtigde — beiden AOW-gerechtigd</option>
               <option value="pensioen_gemengd">Pensioengerechtigde — partner jonger dan AOW-leeftijd</option>
+              <option value="jeugd_thuis">Jeugdige &lt;21 — woont (nog) thuis bij ouders</option>
+              <option value="jeugd_zelfstandig">Jeugdige &lt;21 — zelfstandig wonend</option>
+              <option value="instelling">Verblijft in een instelling (zak-/kleedgeldnorm)</option>
             </select>
             {state.leefsituatie && NORM[state.leefsituatie] && (
               <div className="text-[0.67rem] text-accent mt-0.5 font-medium">
                 Auto-ingevuld: €{NORM[state.leefsituatie].toLocaleString('nl-NL')} ({NORMPERIODE.label}, aanpasbaar)
               </div>
             )}
+            {isJeugdOfInstelling(state.leefsituatie) && (
+              <Alert variant="warn" icon={<HiExclamationTriangle />} title="Jeugd / instelling — norm niet automatisch">
+                Voor deze situatie rekent de tool GEEN bijstandsnorm uit. Vul op tabblad Inkomen de juiste (verlaagde) norm in, met de bron (bijv. PW-tabel of berekenuwrecht.nl). IIT is niet van toepassing (&lt;21 jaar / instelling). Kwijtschelding GBLT/gemeente is n.v.t. zolang er geen eigen belastingaanslag is.
+              </Alert>
+            )}
           </div>
           <div><label className={L}>Datum intakegesprek</label><input type="date" className="inp" value={state.datum_intake} onChange={e => set({ datum_intake: e.target.value })} /></div>
         </div>
+        {state.leefsituatie && (
+          <div className={row2}>
+            <div>
+              <label className={L}>Woont cliënt zelfstandig of (nog) bij ouders / instelling?</label>
+              <select className="inp" value={state.woont_bij} onChange={e => set({ woont_bij: e.target.value })}>
+                <option value="">— Selecteer —</option>
+                <option value="zelf">Zelfstandig (eigen huur/hypotheek)</option>
+                <option value="ouders">Woont (nog) thuis bij ouders</option>
+                <option value="instelling">Verblijft in een instelling</option>
+              </select>
+              <div className="text-[0.67rem] text-inkl mt-0.5">Bepalt of cliënt een eigen belastingaanslag heeft (en dus recht op kwijtschelding).</div>
+            </div>
+            <div />
+          </div>
+        )}
 
         {isPensioen && (
           <Alert variant="info" icon={<MdOutlineElderly />} title="Pensioengerechtigde">

@@ -3,7 +3,7 @@
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
-import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen } from './utils'
+import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType,
@@ -105,8 +105,13 @@ export async function buildAndSaveWord(state: FormState) {
     ['Cliëntnummer', state.clientnr || '—'], ['Naam', naam], ['Geboortedatum', state.geboortedatum || '—'],
     ['BSN', state.bsn || '—'], ['Burgerlijke staat', state.burgstaat || '—'], ['Nationaliteit', state.nationaliteit || '—'],
     ['Adres', state.adres || '—'], ['Woonplaats', state.woonplaats || '—'], ['Leefsituatie', ls || '—'],
+    ['Woont bij / zelfstandig', state.woont_bij ? ({ zelf: 'Zelfstandig', ouders: 'Bij ouders', instelling: 'Instelling' } as Record<string, string>)[state.woont_bij] || state.woont_bij : '—'],
     ['E-mailadres', state.email || '—'], ['Telefoonnummer', state.telefoon || '—'],
   ]))
+  // Bij jeugd/instelling: vermelding van de (handmatig ingevulde) norm + bron
+  if (isJeugdOfInstelling(ls)) {
+    children.push(para(`Let op: jeugd-/instelling-situatie. Ingevulde bijstandsnorm: € ${norm ? norm.toLocaleString('nl-NL') : '—'}/mnd${state.norm_bron ? ` (bron: ${state.norm_bron})` : ' (geen bron opgegeven)'}.`, { color: '9D3D1D', size: 18 }))
+  }
   if (state.heeft_partner === 'ja') {
     children.push(h3('Partner'))
     children.push(ntTable([['Naam', `${state.partner_vnaam || ''} ${state.partner_anaam || ''}`], ['Geboortedatum', state.partner_geb || '—'], ['BSN partner', state.partner_bsn || '—'], ['In regeling?', state.partner_reg || '—']]))
@@ -204,13 +209,21 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(para(`Kwijtschelding GBLT: ${state.kwgt || '—'} | Kwijtschelding gemeente: ${state.kwgm || '—'}`)); children.push(spacer())
 
   // 9a. Beslagvrije Voet
-  children.push(h2(`9a. Beslagvrije Voet (indicatie basis, model ${MODEL})`))
-  children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
-  children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
+  children.push(h2(`9a. Beslagvrije Voet${isJeugdOfInstelling(ls) ? ' — NIET geautomatiseerd' : ` (indicatie basis, model ${MODEL})`}`))
+  if (isJeugdOfInstelling(ls)) {
+    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
+  } else {
+    children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
+    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
+  }
   // 9a (vervolg). Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
   if (beslagData.length > 0) {
     children.push(h3('Signalering bij beslag op inkomen'))
-    children.push(para(`Er ligt beslag op het inkomen van deze cliënt. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Controleer of de beslagvrije voet correct is vastgesteld door de schuldeiser. Bij twijfel of een te laag vastgesteld bedrag: laat de beslagvrije voet opnieuw berekenen via ${REGELING_URLS.berekenuwrecht_bvv}. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
+    if (isJeugdOfInstelling(ls)) {
+      children.push(para(`Er ligt beslag op het inkomen van deze cliënt. Vanwege de jeugd-/instelling-situatie is de beslagvrije voet niet automatisch berekend. Laat de beslagvrije voet vaststellen via ${REGELING_URLS.berekenuwrecht_bvv} op basis van de verlaagde norm en de feitelijke woonsituatie. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
+    } else {
+      children.push(para(`Er ligt beslag op het inkomen van deze cliënt. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Controleer of de beslagvrije voet correct is vastgesteld door de schuldeiser. Bij twijfel of een te laag vastgesteld bedrag: laat de beslagvrije voet opnieuw berekenen via ${REGELING_URLS.berekenuwrecht_bvv}. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
+    }
   }
   children.push(spacer())
 

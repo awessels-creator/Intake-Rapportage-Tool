@@ -1,7 +1,7 @@
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
 import { BIJSTAND_LABELS } from '../../constants'
-import { getTotaalInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince } from '../../utils'
+import { getTotaalInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince, isJeugdOfInstelling, lftdN } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
@@ -24,6 +24,9 @@ export default function Page4Inkomen() {
   const pct = norm && ink ? (ink / norm) * 100 : 0
   const isPensioen = state.leefsituatie.startsWith('pensioen')
   const heeftBeslag = state.inkomenData.some(d => d.beslag)
+  const isJeugdInst = isJeugdOfInstelling(state.leefsituatie)
+  const leeftijd = lftdN(state.geboortedatum)
+  const onder21 = leeftijd >= 0 && leeftijd < 21
 
   const badgeColor = pct < 100 ? 'var(--color-warn-dark)' : pct < 105 ? 'var(--color-ok-dark)' : pct < 120 ? 'var(--color-gold-dark)' : 'var(--color-info-text)'
   const badgeBg = pct < 100 ? 'var(--color-warns)' : pct < 105 ? 'var(--color-oks)' : pct < 120 ? 'var(--color-golds)' : 'var(--color-infos)'
@@ -50,7 +53,14 @@ export default function Page4Inkomen() {
         <div className={row2}>
           <div>
             <label className={L}>Bijstandsnorm (netto/mnd)</label>
-            {state.leefsituatie && NORM[state.leefsituatie] ? (
+            {isJeugdInst ? (
+              <div className="mt-1.5">
+                <div className="text-[0.77rem] text-warn font-semibold mb-1">Geen automatische norm — vul de juiste (verlaagde) norm in</div>
+                <input type="number" className="inp" placeholder="0" value={state.bijstandsnorm} onChange={e => set({ bijstandsnorm: e.target.value })} />
+                <input className="inp mt-1" placeholder="Bron norm (bijv. PW-tabel, berekenuwrecht.nl)" value={state.norm_bron || ''} onChange={e => set({ norm_bron: e.target.value })} />
+                <div className="text-[0.67rem] text-inkl mt-0.5">Bij jeugd &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool rekent deze niet zelf uit.</div>
+              </div>
+            ) : state.leefsituatie && NORM[state.leefsituatie] ? (
               <div className="text-[0.9rem] font-semibold text-ink py-1.5">
                 €{NORM[state.leefsituatie].toLocaleString('nl-NL')} excl. VT
                 <span className="text-[0.7rem] text-inkl font-normal ml-2">(€{Math.round(NORM[state.leefsituatie] * 1.05).toLocaleString('nl-NL')} incl. VT)</span>
@@ -229,7 +239,7 @@ export default function Page4Inkomen() {
           </div>
         )}
 
-        {(pct <= 120 && !isPensioen && norm > 0 && ink > 0) && (
+        {(pct <= 120 && !isPensioen && !isJeugdInst && !onder21 && norm > 0 && ink > 0) && (
           <div>
             <hr className="border-rule my-3" />
             <div className={row2}>
