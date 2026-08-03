@@ -139,14 +139,14 @@ export default function Page0Client() {
               set({ leefsituatie: ls, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
             }}>
               <option value="">— Selecteer —</option>
+              <option value="jeugd_thuis">Jeugdige &lt;21 — woont (nog) thuis bij ouders</option>
+              <option value="jeugd_zelfstandig">Jeugdige &lt;21 — zelfstandig wonend</option>
               <option value="alleenstaand">Alleenstaand (21+)</option>
               <option value="alleenstaande_ouder">Alleenstaande ouder (21+)</option>
               <option value="samenwonend">Samenwonend / Gehuwd</option>
               <option value="pensioen_alleen">Pensioengerechtigde — alleenstaand</option>
               <option value="pensioen_paar">Pensioengerechtigde — beiden AOW-gerechtigd</option>
               <option value="pensioen_gemengd">Pensioengerechtigde — partner jonger dan AOW-leeftijd</option>
-              <option value="jeugd_thuis">Jeugdige &lt;21 — woont (nog) thuis bij ouders</option>
-              <option value="jeugd_zelfstandig">Jeugdige &lt;21 — zelfstandig wonend</option>
               <option value="instelling">Verblijft in een instelling (zak-/kleedgeldnorm)</option>
             </select>
             {state.leefsituatie && NORM[state.leefsituatie] && (
@@ -162,21 +162,6 @@ export default function Page0Client() {
           </div>
           <div><label className={L}>Datum intakegesprek</label><input type="date" className="inp" value={state.datum_intake} onChange={e => set({ datum_intake: e.target.value })} /></div>
         </div>
-        {state.leefsituatie && !isJeugdOfInstelling(state.leefsituatie) && (
-          <div className={row2}>
-            <div>
-              <label className={L}>Woont cliënt zelfstandig of (nog) bij ouders / instelling?</label>
-              <select className="inp" value={state.woont_bij} onChange={e => set({ woont_bij: e.target.value })}>
-                <option value="">— Selecteer —</option>
-                <option value="zelf">Zelfstandig (eigen huur/hypotheek)</option>
-                <option value="ouders">Woont (nog) thuis bij ouders</option>
-                <option value="instelling">Verblijft in een instelling</option>
-              </select>
-              <div className="text-[0.67rem] text-inkl mt-0.5">Bepalt of cliënt een eigen belastingaanslag heeft (en dus recht op kwijtschelding).</div>
-            </div>
-            <div />
-          </div>
-        )}
 
         {isPensioen && (
           <Alert variant="info" icon={<MdOutlineElderly />} title="Pensioengerechtigde">

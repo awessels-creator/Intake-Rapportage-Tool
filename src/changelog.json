@@ -1,6 +1,19 @@
 {
   "versions": [
     {
+      "version": "2.0.20",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Leefsituatie — volgorde & woont_bij-veld verwijderd",
+          "items": [
+            "De jeugd-opties (Jeugdige <21) staan nu bovenaan in de leefsituatie-select; de instelling-optie blijft onderaan",
+            "Het veld 'Woont cliënt zelfstandig of bij ouders/instelling?' is uit de interface verwijderd. De woonplek volgt nu automatisch uit de leefsituatie (jeugd_thuis → bij ouders, jeugd_zelfstandig → zelfstandig, instelling → instelling); de kwijtschelding-check en rapport-regel gebruiken die automatische waarde"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.0.19",
       "date": "2026-08-03",
       "categories": [
