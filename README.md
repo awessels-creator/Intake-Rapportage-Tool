@@ -31,7 +31,6 @@ Veiligheid en privacy zijn cruciaal bij het werken met financiële cliëntgegeve
 ## Auteurs
 
 - **Annika Wessels:** Concept, ontwerp, inhoudelijke ontwikkeling en initiële realisatie. Gemaakt als persoonlijk project, niet in opdracht van de Gemeente Meppel.
-- **Joris Hummel:** Technische realisatie en onderhoud van de code.
 
 ## Licentie
 
