@@ -1,0 +1,411 @@
+{
+  "versions": [
+    {
+      "version": "2.0.24",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst — zin 'Psychotische episode(s)'",
+          "items": [
+            "De zin bij 'Psychotische episode(s)' is ingekort naar 'Er is sprake van psychotische episode(s).' (de toevoeging 'eventueel in het verleden' is vervallen; een verleden episode vult de consulent handmatig aan)"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.23",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Aanspreekvorm — zichtbaar in rapport + Hen-subkeuze",
+          "items": [
+            "Bij 'Geslacht' staat nu een lichtgrijze notitie dat dit niet in de rapportage komt (bepaalt enkel hij/zij/hen)",
+            "Aanspreektitel is gekoppeld aan beleefdheid: Voornaam → je/jij, Meneer/Mevrouw → u, Hen → keuze je/jij, u of uw",
+            "De gekozen aanspreekvorm komt zichtbaar in de rapportage (tabblad Cliëntgegevens, rij 'Aanspreekvorm') — zo is in één oogopslag te zien dat dit in het intakegesprek is besproken"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.22",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Aanspreekvorm — verfijning",
+          "items": [
+            "Vervolgzinnen in het rapport beginnen nu met een hoofdletter voornaamwoord (bijv. 'Zij heeft...' in plaats van 'zij heeft...')",
+            "Zin 'woont (nog) bij ouders' wordt 'woont nog bij [zijn/haar/hun] ouders' op basis van het gekozen geslacht",
+            "Voorbeeld (vrouw, voornaam Pietje): 'Pietje woont nog bij haar ouders. Zij heeft een vrienden/kennissenkring. Zij heeft sociale of buitenshuis activiteiten. Er zijn mentale problemen.'"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.21",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Aanspreekvorm in rapport (geslacht + aanspreektitel)",
+          "items": [
+            "Nieuw op tabblad Cliënt: 'Geslacht' (man/vrouw/non-binair) en 'Gewenste aanspreektitel' (voornaam / meneer / mevrouw / hen)",
+            "De snelvragenlijst-zinnen in het rapport gebruiken nu de gekozen aanspreekvorm: de eerste zin noemt de naam of titel, de vervolgzinnen het voornaamwoord (hij/zij/hen). Bijv. 'Pietje verblijft in een instelling. Hij heeft sociale activiteiten.'",
+            "Zonder invoer blijft het rapport 'Inwoner' gebruiken (geen regressie)"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.20",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Leefsituatie — volgorde & woont_bij-veld verwijderd",
+          "items": [
+            "De jeugd-opties (Jeugdige <21) staan nu bovenaan in de leefsituatie-select; de instelling-optie blijft onderaan",
+            "Het veld 'Woont cliënt zelfstandig of bij ouders/instelling?' is uit de interface verwijderd. De woonplek volgt nu automatisch uit de leefsituatie (jeugd_thuis → bij ouders, jeugd_zelfstandig → zelfstandig, instelling → instelling); de kwijtschelding-check en rapport-regel gebruiken die automatische waarde"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.19",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Leefsituatie & woont_bij (jeugd/instelling)",
+          "items": [
+            "Leefsituatie-volgorde: de jeugd- en instelling-opties staan logisch onderaan (na de 21+ en pensioen-opties)",
+            "Het veld 'Woont cliënt zelfstandig of bij ouders/instelling?' is bij jeugd/instelling niet meer dubbel in te vullen: de keuze volgt automatisch uit de leefsituatie (woont_bij wordt mee ingevuld). Het veld blijft wel zichtbaar voor 21+ cliënten die (tijdelijk) bij ouders wonen"
+          ]
+        },
+        {
+          "title": "Snelvragenlijst — terminologie & woonsituatie",
+          "items": [
+            "Alle zinnen in de snelvragenlijst gebruiken nu 'inwoner' in plaats van 'cliënt'",
+            "Achtergrond / Woonsituatie: 'Woont (nog) bij ouders' toegevoegd; 'Beschermd wonen' vervallen (valt onder 'Instelling/opvang')",
+            "Sport/hobby/vereniging-zin herschreven naar: 'Inwoner heeft sociale of buitenshuis activiteiten (sport, hobby, vereniging).'"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.18",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst — volgorde in rapport",
+          "items": [
+            "In het .doc-rapport komen de door de snelvragenlijst gegenereerde zinnen nu eerst, daaronder de handmatige aanvulling (was andersom) — gelijk aan de volgorde in de tool"
+          ]
+        },
+        {
+          "title": "Vermogen — woonsituatie-opties uitgebreid",
+          "items": [
+            "Bij 'Eigen woning?' op tabblad Vermogen zijn nu ook 'Woont (nog) bij ouders', 'Verblijft in instelling / opvang' en 'Studentenwoning' te kiezen (naast huur- en koopwoning)"
+          ]
+        },
+        {
+          "title": "Jeugdige <21 — IIT-signaal gecorrigeerd",
+          "items": [
+            "De signaallijst (tabblad Advies) toonde bij een jeugdige <21 ten onrechte 'IIT — tijdsduur controleren'. IIT is wettelijk pas vanaf 21 jaar; dit signaal verschijnt nu niet meer voor cliënten jonger dan 21 jaar"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.17",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "Snelvragenlijst (zijpaneel, optie A)",
+          "items": [
+            "Nieuw uitklapbaar zijpaneel 'Snelvragenlijst' (knop rechtsonder) met 5 secties: Achtergrond, Opleiding/Werk, Reden aanmelding, Onderneming, Inkomen",
+            "Vinkjes/keuzes worden bij rapport-download samengevoegd met de handmatige tekst in de bestaande open velden (geen vinklijst zichtbaar in het .doc)",
+            "LIVE preview: op de tabbladen (Cliënt/Achtergrond, Opleiding, Reden aanmelding, Onderneming, Inkomen) verschijnt direct boven het betreffende veld de door de snelvragenlijst ingevulde zin, zodat je tijdens het gesprek al ziet wat er vastligt en kunt doorvragen",
+            "Paneel staat buiten de tabbladen en is op elke pagina bruikbaar"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.16",
+      "date": "2026-08-03",
+      "categories": [
+        {
+          "title": "JeuGDP, kostendelersnorm & instelling",
+          "items": [
+            "Nieuwe leefsituaties: 'Jeugdige <21 — woont thuis bij ouders', 'Jeugdige <21 — zelfstandig wonend' en 'Verblijft in een instelling (zak-/kleedgeldnorm)'",
+            "Bij deze situaties rekent de tool GEEN bijstandsnorm of beslagvrije voet uit — de consulent vult de juiste (verlaagde) norm in met bron",
+            "IIT is automatisch n.v.t. bij cliënten jonger dan 21 jaar en bij instelling (wettelijk 21+)",
+            "Kwijtschelding GBLT/gemeente is n.v.t. zolang de cliënt geen eigen belastingaanslag heeft (woont bij ouders of in instelling) — nieuw veld 'Woont cliënt zelfstandig of bij ouders/instelling?' op tabblad Cliënt",
+            "Beslagvrije voet bij jeugd/instelling: geen zelfstandige berekening, maar verwijzing naar berekenuwrecht.nl met toelichting",
+            "Waarschuwingen op de tabbladen Cliënt en Inkomen maken de situatie transparant in plaats van een verkeerde (21+) norm te gebruiken"
+            ]
+            },
+            {
+            "title": "Jeugdige <21 met meerderjarige partner",
+            "items": [
+              "Jeugdige jonger dan 21 mét een partner van 21+ wordt wettelijk als zelfstandig (samenwonend/gehuwd) behandeld: de tool vult automatisch de reguliere 21+-norm in",
+              "De jeugd-/kostendelersregeling geldt alleen zónder meerderjarige partner; met een 21+ partner schakelt de tool netjes door naar 'samenwonend' (incl. bijbehorende regeling-checks)"
+            ]
+            }
+            ]
+            },
+    {
+      "version": "2.0.15",
+      "date": "2026-07-16",
+      "categories": [
+        {
+          "title": "Onderhoudbaarheid & Toekomstbestendig",
+          "items": [
+            "Alle financiële normen (bijstand, vermogen, vrijstelling overwaarde, NIBUD, BVV) gebundeld in één bron in constants.ts met periode-structuur — normwijziging is nu één edit",
+            "Zichtbare normtabellen op Inkomen- en Vermogen-tab genereren nu uit de centrale bron (geen dubbele/verouderde getallen meer)",
+            "Bijstandsnorm-label toont automatisch de geldige periode (bijv. '2e helft 2026')"
+          ]
+        },
+        {
+          "title": "Model-identificatie (halfjaarlijkse normen)",
+          "items": [
+            "Elke normperiode heeft nu een stabiele model-code (bv. '2026-2') — zichtbaar als badge in de TopBar",
+            "Het model staat ook in de rapport-ondertekening, de sectiekoppen (Inkomen, BVV) en de bestandsnaam van de download",
+            "Documentatie in constants.ts: normen bijwerken per 1-1 / 1-7 is één nieuwe periode toevoegen"
+          ]
+        },
+        {
+          "title": "Model-preview (toekomstige normen bekijken)",
+          "items": [
+            "Dropdown in de TopBar toont alle beschikbare modellen (bv. 2026-2, 2027-1) — kies er een om de tabellen, badge, rapport en bestandsnaam tijdelijk op die set te zetten",
+            "Handig om vóór de ingangsdatum te controleren hoe een nieuwe normenset eruitziet; 'live'-knop zet terug naar het actuele model",
+            "Preview is sessie-only: bij herladen staat de tool weer op de datum-geldige set"
+          ]
+        },
+        {
+          "title": "Performance",
+          "items": [
+            "Word-export (docx, ~370KB) wordt nu lazy geladen bij de download-knop — initiële app-bundle gehalveerd van ~750KB naar ~378KB"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.14",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Adviezen & Actiepunten",
+          "items": [
+            "Uitgevinkte adviezen worden nu bewaard als u naar een andere pagina navigeert en terugkomt",
+            "Eigen actiepunten hebben nu een bewerkbare naam in plaats van de vaste tekst 'Eigen actiepunt'"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.13",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Nieuw: samenvatting financiële situatie in het rapport met inkomen, lasten, besteedbaar en schulden",
+            "Aanvraag type dienstverlening staat nu in een eigen overzichtelijke sectie in het rapport",
+            "De crisisgegevens en aanvraag zijn beter van elkaar gescheiden"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.12",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Inkomen",
+          "items": [
+            "Weekinkomen invoeren is nu mogelijk: selecteer 'Per week' per inkomstenbron",
+            "Optie om aan te geven of het weekbedrag inclusief 8% vakantiegeld is — het maandbedrag wordt automatisch berekend",
+            "Het berekende maandbedrag wordt live naast het weekbedrag getoond"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.11",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Berekeningen",
+          "items": [
+            "Toeslagen (huurtoeslag, zorgtoeslag, WKB, KOT, overige inkomsten) worden nu meegeteld in het totale inkomen",
+            "Kinderbijslag telt bewust niet mee, omdat dit een kwartaalbedrag is",
+            "Het besteedbaar inkomen op tabblad 7 en in het rapport is hierdoor nauwkeuriger"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.10",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Toeslagen",
+          "items": [
+            "Bijzondere bijstand en AIO zijn verwijderd uit de toeslagenlijst",
+            "Nieuw: 'Overige inkomsten' toegevoegd met een vrij in te vullen omschrijving",
+            "Overige inkomsten worden meegeteld als inkomen"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.9",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vermogen & Verzekeringen",
+          "items": [
+            "Wanbetalersregeling (CAK) is toegevoegd als apart veld naast de aanvullende zorgverzekering",
+            "Waarschuwing bij actieve wanbetalersregeling",
+            "Toelichting op vermogen en verzekeringen verschijnt nu ook in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.8",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Bankrekeningen",
+          "items": [
+            "De 'Bank'-kolom is verwijderd uit de tabel — de bank is al af te lezen uit de IBAN",
+            "Nieuw: gezamenlijk toelichting-veld onderaan de bankkaart voor afspraken en bijzonderheden",
+            "De toelichting verschijnt in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.7",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Aanvraag & Crisis",
+          "items": [
+            "Reden aanmelding / hulpvraag staat nu in een eigen sectie, los van de crisisgegevens",
+            "De aanvraag voor dienstverlening is prominenter weergegeven in het rapport"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.6",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Cliëntgegevens in het rapport tonen nu een overzichtelijke 2-kolomstabel",
+            "Persoonsgegevens en contactgegevens zijn visueel gescheiden",
+            "Cliëntnummer is als eerste rij toegevoegd aan het overzicht"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.5",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Rapport",
+          "items": [
+            "Minder lege ruimte tussen secties in het gedownloade Word-rapport",
+            "Sectieheaders staan dichter bij de bijbehorende inhoud"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.4",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Bijstandsnormen",
+          "items": [
+            "Normen gecorrigeerd naar excl. vakantietoeslag (alleenstaand €1.331,42, samenwonend €1.902,09)",
+            "De tool selecteert automatisch de juiste normen bij toekomstige halfjaarlijkse wijzigingen",
+            "Referentietabel en automatisch ingevulde hint zijn bijgewerkt"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.3",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vaste Lasten",
+          "items": [
+            "Label 'Levensonderhoud (NIBUD-richtlijn)' gewijzigd naar 'Kosten levensonderhoud/huishoudgeld'",
+            "De NIBUD-richtlijn blijft zichtbaar als hint in het opmerking-invulveld"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.2",
+      "date": "2026-05-22",
+      "categories": [
+        {
+          "title": "Vaste Lasten Overzicht",
+          "items": [
+            "Het totaal inkomen wordt nu zichtbaar getoond boven de vaste lasten, zodat de volledige berekening leesbaar is",
+            "De driestappe weergave toont: totaal inkomen → totaal lasten → besteedbaar inkomen",
+            "Een scheidingslijn maakt het verschil tussen lasten en besteedbaar inkomen visueel duidelijker"
+          ]
+        },
+        {
+          "title": "Rapport",
+          "items": [
+            "Het gedownloade Word-rapport bevat nu ook de inkomenregel in de lastentabel"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.1",
+      "date": "2024-05-22",
+      "categories": [
+        {
+          "title": "Gebruikerservaring",
+          "items": [
+            "De bovenbalk is opgeschoond voor een rustiger en moderner beeld",
+            "Informatie die niet langer relevant was is verwijderd uit de interface",
+            "Teksten in de navigatie zijn beter leesbaar gemaakt"
+          ]
+        },
+        {
+          "title": "Algemeen",
+          "items": [
+            "De applicatie is bijgewerkt naar de nieuwste standaarden",
+            "Kleine verbeteringen in de stabiliteit van de tool"
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2024-05-21",
+      "categories": [
+        {
+          "title": "Nieuwe Basis",
+          "items": [
+            "De volledige techniek achter de tool is vernieuwd voor een snellere ervaring",
+            "Het uiterlijk is gemoderniseerd met een nieuw kleurenpalet en betere indeling",
+            "Verbeterde ondersteuning voor het invullen van gegevens op verschillende schermen",
+            "De tool reageert sneller en soepeler tijdens het navigeren door de pagina's"
+          ]
+        }
+      ]
+    }
+  ]
+}
