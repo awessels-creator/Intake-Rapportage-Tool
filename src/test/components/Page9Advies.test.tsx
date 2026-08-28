@@ -29,10 +29,10 @@ describe('Page9Advies', () => {
     renderWithState(<Page9Advies />, {
       inkomenData: [ink('1500')],
     })
-    // Summary shows "Inkomen" label and the formatted amount somewhere on the page
-    expect(screen.getByText('Inkomen')).toBeInTheDocument()
+    // Summary shows "Inkomen (vóór beslag)" label and the formatted amount somewhere on the page
+    expect(screen.getByText('Inkomen (vóór beslag)')).toBeInTheDocument()
     // The amount is formatted in Dutch locale: 1.500 or 1500
-    const inkCell = screen.getByText('Inkomen').closest('div')?.parentElement
+    const inkCell = screen.getByText('Inkomen (vóór beslag)').closest('div')?.parentElement
     expect(inkCell?.textContent).toMatch(/1[.,\s]?500/)
   })
 

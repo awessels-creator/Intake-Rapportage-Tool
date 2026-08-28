@@ -48,6 +48,10 @@ function h3(text: string): Paragraph {
   return new Paragraph({ children: [new TextRun({ text, bold: true, size: 20, color: GRAY, font: 'Arial' })], spacing: { before: 120, after: 40 } })
 }
 
+function h4(text: string): Paragraph {
+  return new Paragraph({ children: [new TextRun({ text, bold: true, size: 19, color: '777777', font: 'Arial' })], spacing: { before: 80, after: 30 } })
+}
+
 function para(text: string, opts?: { bold?: boolean; color?: string; size?: number }): Paragraph {
   return new Paragraph({ children: [new TextRun({ text: text || '—', bold: opts?.bold || false, color: opts?.color || '111111', font: 'Arial', size: opts?.size || 19 })], spacing: { before: 20, after: 20 } })
 }
@@ -71,17 +75,17 @@ function simpleTable(headers: string[], rows: string[][]): Table {
   })
 }
 
-function ntRow(label: string, value: string): TableRow {
+function ntRow(label: string, value: string, valueColor?: string): TableRow {
   return new TableRow({
     children: [
       new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: label, color: GRAY, font: 'Arial', size: 19 })] })], width: { size: 30, type: WidthType.PERCENTAGE }, borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } } }),
-      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: value || '—', color: '111111', font: 'Arial', size: 19 })] })], width: { size: 70, type: WidthType.PERCENTAGE }, borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: value || '—', color: valueColor || '111111', font: 'Arial', size: 19 })] })], width: { size: 70, type: WidthType.PERCENTAGE }, borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } } }),
     ],
   })
 }
 
-function ntTable(rows: [string, string][]): Table {
-  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: rows.map(([l, v]) => ntRow(l, v)) })
+function ntTable(rows: [string, string, string?][]): Table {
+  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: rows.map(([l, v, c]) => ntRow(l, v, c)) })
 }
 
 export async function buildAndSaveWord(state: FormState) {
@@ -191,25 +195,35 @@ export async function buildAndSaveWord(state: FormState) {
   if (state.alim_ontvangen === 'ja') inkRows.push(['Alimentatie ontvangen', `Partner: €${state.alim_partner || '0'}/mnd | Kind: €${state.alim_kind || '0'}/mnd | Via LBIO: ${state.alim_lbio || '—'}`])
   children.push(ntTable(inkRows))
   if (state.inkomenData.length > 0) { children.push(h3('Inkomstenbronnen')); children.push(simpleTable(['Bron / Werkgever', 'Type', 'Netto/mnd', 'Dienstverband', 'Beslag?'], state.inkomenData.map(d => [d.bron || '—', d.type || '—', `€ ${nl(parseFloat(d.netto) || 0)}`, d.uren || '—', d.beslag ? 'Ja' : 'Nee']))) }
-  const beslagData = state.beslagData.filter(b => b.wie)
-  if (beslagData.length > 0) { children.push(h3('Beslagleggende schuldeisers')); children.push(simpleTable(['Schuldeiser', 'Soort', 'Bedrag'], beslagData.map(b => [b.wie, b.soort || '—', b.bedrag ? `€ ${b.bedrag}/mnd` : 'Onbekend']))) }
+  // Toon beslag ook als alleen het bedrag is ingevuld (naam schuldeiser mag leeg zijn)
+  const beslagData = state.beslagData.filter(b => (b.wie && b.wie.trim()) || (b.bedrag && b.bedrag.trim()))
+  if (beslagData.length > 0) { children.push(h3('Beslagleggende schuldeisers')); children.push(simpleTable(['Schuldeiser', 'Soort', 'Bedrag'], beslagData.map(b => [b.wie && b.wie.trim() ? b.wie : 'Onbekend', b.soort || '—', b.bedrag && b.bedrag.trim() ? `€ ${b.bedrag}/mnd` : 'Onbekend']))) }
   const inkT = (quick.inkomen_toel || []).join(' ')
   if (inkT.trim()) { children.push(h3('Toelichting inkomen')); children.push(para(inkT, { color: '666666' })) }
+  // Beslagvrije Voet — direct onder Inkomen, zodat beslag en BVV bij elkaar staan
+  children.push(h3(`Beslagvrije Voet${isJeugdOfInstelling(ls) ? ' — NIET geautomatiseerd' : ` (indicatie basis, model ${MODEL})`}`))
+  if (isJeugdOfInstelling(ls)) {
+    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
+  } else {
+    children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
+    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
+  }
+  // Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
+  if (beslagData.length > 0) {
+    children.push(h4('Signalering bij beslag op inkomen'))
+    children.push(para(`Er ligt beslag op het inkomen van deze inwoner. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Is de beslagvrije voet gecontroleerd?`, { color: '666666', size: 18 }))
+    const bvStatus = state.bv_gecontroleerd
+    const bvLabel = bvStatus === 'ja' ? 'Ja' : bvStatus === 'nee' ? 'Nee' : bvStatus === 'fout' ? 'Ja, maar niet correct toegepast' : '— (niet ingevuld)'
+    children.push(ntTable([['Beslagvrije voet gecontroleerd?', bvLabel]]))
+    if (bvStatus === 'fout' && (state.bv_toel || '').trim()) {
+      children.push(para(`Toelichting: ${state.bv_toel.trim()}`, { color: '666666', size: 18 }))
+    }
+  }
   children.push(spacer())
 
   // 8. Toeslagen
   children.push(h2('8. Toeslagen'))
   children.push(simpleTable(['Regeling', 'Status', 'Bedrag', 'Beslag?'], TOESLAGEN.map(t => { const actief = state.toeslagenActief[t]; const v = state.toeslagenBedrag[t]; const bes = state.toeslagenBeslag[t]; const rijnaam = t === 'overig_ink' && state.toeslagenNaam?.[t] ? state.toeslagenNaam[t] : TOESLAG_NAMEN[t]; return [rijnaam, actief ? 'Actief' : '—', actief && v ? `€ ${parseFloat(v).toLocaleString('nl-NL')}` : '—', actief && bes ? 'Ja' : 'Nee'] })))
-  children.push(h3('Aanvullende gemeentelijke regelingen & voorzieningen'))
-  const iitTekst = state.iit === 'ja' ? 'Ja, aangevraagd / actief' : state.iit === 'nee' ? 'Nee, niet aangevraagd' : state.iit === 'check' ? 'Controleren' : state.iit === 'nvt' ? 'N.v.t.' : '—'
-  const vTxt = (v: { recht: string; reden: string }) => `${v.recht === 'ja' ? 'Recht op' : v.recht === 'nee' ? 'Geen recht' : v.recht === 'nvt' ? 'N.v.t.' : 'Controleren'} — ${v.reden}`
-  children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / Aanvraag'], [
-    ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), `3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. Aanvragen: ${REGELING_URLS.iit}`],
-    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), `<110% norm. Aanvragen: ${REGELING_URLS.fdma}`],
-    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding_gblt), `<120% norm. Aanvragen: ${REGELING_URLS.kwijtschelding_gblt}`],
-    ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), `Ondersteuning gezinnen met kinderen in Meppel. Aanvragen: ${REGELING_URLS.kindsupport}`],
-    ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), `Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). Aanvragen: ${REGELING_URLS.voedselbank}`],
-  ]))
   children.push(spacer())
 
   // 9. Vaste Lasten
@@ -226,25 +240,6 @@ export async function buildAndSaveWord(state: FormState) {
   }))
   children.push(para(`Kwijtschelding GBLT: ${state.kwgt || '—'} | Kwijtschelding gemeente: ${state.kwgm || '—'}`)); children.push(spacer())
 
-  // 9a. Beslagvrije Voet
-  children.push(h2(`9a. Beslagvrije Voet${isJeugdOfInstelling(ls) ? ' — NIET geautomatiseerd' : ` (indicatie basis, model ${MODEL})`}`))
-  if (isJeugdOfInstelling(ls)) {
-    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
-  } else {
-    children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
-    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via berekenuwrecht.nl/beslagvrije-voet.', { color: '666666', size: 16 }))
-  }
-  // 9a (vervolg). Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
-  if (beslagData.length > 0) {
-    children.push(h3('Signalering bij beslag op inkomen'))
-    if (isJeugdOfInstelling(ls)) {
-      children.push(para(`Er ligt beslag op het inkomen van deze cliënt. Vanwege de jeugd-/instelling-situatie is de beslagvrije voet niet automatisch berekend. Laat de beslagvrije voet vaststellen via ${REGELING_URLS.berekenuwrecht_bvv} op basis van de verlaagde norm en de feitelijke woonsituatie. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
-    } else {
-      children.push(para(`Er ligt beslag op het inkomen van deze cliënt. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Controleer of de beslagvrije voet correct is vastgesteld door de schuldeiser. Bij twijfel of een te laag vastgesteld bedrag: laat de beslagvrije voet opnieuw berekenen via ${REGELING_URLS.berekenuwrecht_bvv}. Of en hoe wordt gecorrigeerd, hangt af van de zelfredzaamheid van de cliënt en de verdere doorverwijzing.`, { color: '666666', size: 18 }))
-    }
-  }
-  children.push(spacer())
-
   // 10. Schulden
   children.push(h2('10. Schulden'))
   const schuldenData = state.schuldenData.filter(s => s.s || s.b)
@@ -256,19 +251,37 @@ export async function buildAndSaveWord(state: FormState) {
 
   // 11. Samenvatting
   children.push(h2('11. Samenvatting Financiële Situatie'))
-  children.push(ntTable([['Totaal inkomen', `€ ${nl(ink)}/mnd${norm ? ` (${pct.toFixed(0)}% van bijstandsnorm)` : ''}`], ['Totaal vaste lasten', `€ ${nl(tot)}/mnd`], ['Besteedbaar inkomen', `€ ${best.toFixed(2)}/mnd ${best < 0 ? 'NEGATIEF' : 'OK'}`], ['Totaal schulden (indicatief)', `€ ${nl(schulden)}`]]))
+  children.push(ntTable([
+    ['Totaal inkomen', `€ ${nl(ink)}/mnd${norm ? ` (${pct.toFixed(0)}% van bijstandsnorm)` : ''}`],
+    ['Totaal vaste lasten', `€ ${nl(tot)}/mnd`],
+    ['Besteedbaar inkomen', `€ ${best.toFixed(2)}/mnd (${best < 0 ? 'negatief' : 'positief'})`, best < 0 ? RED : DARK_GREEN],
+    ['Totaal schulden (indicatief)', `€ ${nl(schulden)}`],
+  ]))
+  children.push(spacer())
+
+  // 12. Aanvullende gemeentelijke regelingen & voorzieningen
+  children.push(h2('12. Aanvullende gemeentelijke regelingen & voorzieningen'))
+  const iitTekst = state.iit === 'ja' ? 'Ja, aangevraagd / actief' : state.iit === 'nee' ? 'Nee, niet aangevraagd' : state.iit === 'check' ? 'Controleren' : state.iit === 'nvt' ? 'N.v.t.' : '—'
+  const vTxt = (v: { recht: string; reden: string }) => `${v.recht === 'ja' ? 'Recht op' : v.recht === 'nee' ? 'Geen recht' : v.recht === 'nvt' ? 'N.v.t.' : 'Controleren'} — ${v.reden}`
+  children.push(simpleTable(['Regeling', 'Status', 'Voorstel (automatisch)', 'Criteria / Aanvraag'], [
+    ['Individuele Inkomenstoeslag (IIT)', iitTekst, vTxt(beoordeling.iit), `3 jaar aaneengesloten ≤105% norm; niet voor pensioengerechtigden. Aanvragen: ${REGELING_URLS.iit}`],
+    ['FDMA (Fonds Deelname Maatschappelijke Activiteiten)', state.fdma || '—', vTxt(beoordeling.fdma), `<110% norm. Aanvragen: ${REGELING_URLS.fdma}`],
+    ['Kwijtschelding GBLT + gemeente', `${state.kwgt || '—'} / ${state.kwgm || '—'}`, vTxt(beoordeling.kwijtschelding_gblt), `<120% norm. Aanvragen: ${REGELING_URLS.kwijtschelding_gblt}`],
+    ['Kindsupport Meppel', state.kindsupport || '—', vTxt(beoordeling.kindsupport), `Ondersteuning gezinnen met kinderen in Meppel. Aanvragen: ${REGELING_URLS.kindsupport}`],
+    ['Voedselbank Meppel', state.voedselbank || '—', vTxt(beoordeling.voedselbank), `Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). Aanvragen: ${REGELING_URLS.voedselbank}`],
+  ]))
   children.push(spacer())
 
   // 12. Dienstverlening
-  children.push(h2('12. Aanvraag Type Dienstverlening'))
+  children.push(h2('13. Aanvraag Type Dienstverlening'))
   const diensten: [string, string][] = (['budgetbeheer', 'schuldregeling', 'bewind_medisch', 'bewind_schuld', 'schuldhulpmaatje'] as const).filter(k => state[`cb_${k}` as keyof FormState]).map(k => [{ budgetbeheer: 'Budgetbeheer', schuldregeling: 'Schuldregeling', bewind_medisch: 'Beschermingsbewind (medisch)', bewind_schuld: 'Schuldenbewind', schuldhulpmaatje: 'Schuldhulpmaatje/Humanitas' }[k] || k, 'Ja'])
   if (state.cb_overig_aanvr && state.overig_aanvr_txt) diensten.push([`Overig: ${state.overig_aanvr_txt}`, 'Ja'])
   if (diensten.length > 0) children.push(simpleTable(['Dienst', 'Aangevraagd'], diensten))
   else children.push(para('Geen dienstverlening geselecteerd.'))
   children.push(spacer())
 
-  // 13. Adviezen
-  children.push(h2('13. Adviezen & Actiepunten'))
+  // 14. Adviezen
+  children.push(h2('14. Adviezen & Actiepunten'))
   const advItems = state.advItems.filter(a => a.on)
   if (advItems.length > 0) {
     advItems.forEach(a => {
@@ -278,7 +291,7 @@ export async function buildAndSaveWord(state: FormState) {
     })
   } else children.push(para('Geen adviezen.'))
 
-  if (state.conclusie) { children.push(h2('14. Conclusie / Afspraken / Afsluiting')); state.conclusie.split('\n').forEach(line => children.push(para(line))) }
+  if (state.conclusie) { children.push(h2('15. Conclusie / Afspraken / Afsluiting')); state.conclusie.split('\n').forEach(line => children.push(para(line))) }
 
   children.push(spacer())
   children.push(new Paragraph({ children: [new TextRun({ text: `Rapportage: ${new Date().toLocaleDateString('nl-NL')} | Consulent: ${consulent} | Cliëntnr: ${state.clientnr || '—'} | Model: ${MODEL} (${NORMPERIODE.label}) | Vertrouwelijk — Geldzorgen Schuldhulpverlening Meppel`, color: '888888', size: 17, font: 'Arial' })], spacing: { before: 200 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR } } }))

@@ -54,7 +54,7 @@ export function mkInitial(): FormState {
     huisdieren: '', huisdieren_oms: '',
     bijstandsnorm: '', norm_bron: '', inkomenData: [mkInk()],
     alim_ontvangen: '', alim_partner: '', alim_kind: '', alim_lbio: '',
-    iit: '', iit_datum: '', beslagData: [], inkomen_toel: '',
+    iit: '', iit_datum: '', beslagData: [], bv_gecontroleerd: '', bv_toel: '', inkomen_toel: '',
     toeslagenActief: {}, toeslagenBedrag: {}, toeslagenBeslag: {}, toeslagenNaam: {},
     lastenWaarden: { eigenrisico: { bedrag: String(EIGEN_RISICO_JAAR), per: 'jaar', opm: '' } }, lastenExtra: [],
     schuldenData: [mkSchuld()],
@@ -64,7 +64,7 @@ export function mkInitial(): FormState {
     cb_bewind_medisch: false, cb_bewind_schuld: false, cb_schuldhulpmaatje: false,
     cb_overig_aanvr: false, overig_aanvr_txt: '', conclusie: '',
     naam_consulent2: '', datum_rapportage: d,
-    quickChecks: {}, quickRadio: {}, quickFree: {},
+    quickChecks: {}, quickRadio: {}, quickFree: {}, quickToel: {},
   }
 }
 
@@ -79,7 +79,7 @@ export function buildSystemAdvItems(state: FormState): AdviesItem[] {
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0) + state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
   const grens = VGRENS[ls] || 8000
   const tot = getTotaalLasten(state)
-  const best = ink - tot
+  const best = getBeschikbaarInkomen(state) - tot
 
   const items: AdviesItem[] = []
   if (norm && ink) {
@@ -148,7 +148,7 @@ export function evaluateRegelingen(state: FormState): RegelingBeoordeling {
   const isJeugdInst = isJeugdOfInstelling(ls)
   const geenAanslag = geenEigenAanslag(state)
   const tot = getTotaalLasten(state)
-  const best = ink - tot
+  const best = getBeschikbaarInkomen(state) - tot
   const sp = (parseFloat(state.spaargeld) || 0) + (parseFloat(state.overig_verm) || 0) + (parseFloat(state.beleggingen) || 0) + (parseFloat(state.overigVermogenBedrag) || 0) + state.voertuigen.reduce((s, v) => s + (parseFloat(v.waarde) || 0), 0)
   const grens = VGRENS[ls] || 8000
   const overwaarde = parseFloat(state.overwaarde) || 0
@@ -374,12 +374,19 @@ export function buildQuickText(state: FormState): Record<string, string[]> {
               zin = zin.replace('Inwoner', usedSubj ? pronCap : subj)
               usedSubj = true
             }
+            const toel = (state.quickToel[it.id] || '').trim()
+            if (toel) zin += (zin.endsWith('.') ? ' Toelichting: ' : ' toelichting: ') + toel
             parts.push(zin)
           }
         }
       } else if (g.type === 'radio') {
         const v = state.quickRadio[g.name || '']
-        if (v && g.map && g.map[v]) parts.push(`${g.label}: ${g.map[v]}`)
+        if (v && g.map && g.map[v]) {
+          let zin = `${g.label}: ${g.map[v]}`
+          const toel = (state.quickToel[g.name || ''] || '').trim()
+          if (toel) zin += (zin.endsWith('.') ? ' Toelichting: ' : ' toelichting: ') + toel
+          parts.push(zin)
+        }
       } else if (g.type === 'text' && g.id) {
         const v = (state.quickFree[g.id] || '').trim()
         if (v) parts.push(g.id === 'b_richting' ? `Opleidingsrichting: ${v}` : v)
@@ -445,6 +452,20 @@ export function getTotaalInkomen(state: FormState): number {
     .filter(([key, actief]) => actief && !TOESLAGEN_EXCL.includes(key))
     .reduce((s, [key]) => s + (parseFloat(state.toeslagenBedrag[key] || '0') || 0), 0)
   return bronnen + alimPart + alimKind + toeslagenInk
+}
+
+// Totaal bedrag aan beslag dat maandelijks op het inkomen ligt (per beslaglegger,
+// alleen ingevulde bedragen). Wordt afgetrokken van het inkomen om het
+// DAADWERKELIJK beschikbare bedrag te bepalen.
+export function getBeslagTotaal(state: FormState): number {
+  return state.beslagData.reduce((s, b) => s + (parseFloat(b.bedrag) || 0), 0)
+}
+
+// Het bedrag dat de cliënt daadwerkelijk op de rekening ontvangt / vrij te
+// besteden heeft: totaal inkomen minus het op dat inkomen gelegde beslag.
+// Dit is het bedrag dat telt voor het besteedbaar inkomen en het budgetplan.
+export function getBeschikbaarInkomen(state: FormState): number {
+  return getTotaalInkomen(state) - getBeslagTotaal(state)
 }
 
 export function getTotaalLasten(state: FormState): number {

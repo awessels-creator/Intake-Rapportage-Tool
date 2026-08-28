@@ -155,6 +155,8 @@ export interface FormState {
   iit: string
   iit_datum: string
   beslagData: BeslagItem[]
+  bv_gecontroleerd: 'ja' | 'nee' | 'fout' | ''
+  bv_toel: string
   inkomen_toel: string
   // Page 5
   toeslagenActief: Record<string, boolean>
@@ -193,4 +195,5 @@ export interface FormState {
   quickChecks: Record<string, boolean>   // id -> aangevinkt?
   quickRadio: Record<string, string>      // naam -> gekozen waarde
   quickFree: Record<string, string>       // id -> vrije tekst (bijv. opleidingsrichting)
+  quickToel: Record<string, string>       // id/naam -> korte toelichting per vinkje/keuze
 }

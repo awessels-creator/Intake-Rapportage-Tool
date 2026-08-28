@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { mkInitial, getTotaalInkomen, getTotaalLasten, evaluateRegelingen, buildSystemAdvItems } from '../utils'
+import { mkInitial, getTotaalInkomen, getTotaalLasten, getBeslagTotaal, getBeschikbaarInkomen, evaluateRegelingen, buildSystemAdvItems } from '../utils'
 
 // Helper: zet een realistische basis (alleenstaand, norm 1348,49)
 function base() {
@@ -106,12 +106,37 @@ describe('Financiële logica — mogelijke bugs', () => {
     expect(getTotaalInkomen(s)).toBeCloseTo(2166.67, 1)
   })
 
-  // ── Punt 5: kinderbijslag telt niet als inkomen ────────────────────────────
-  test('kinderbijslag telt NIET mee in getTotaalInkomen', () => {
-    const s = base()
+  // ── NIEUW: beslag wordt afgetrokken van beschikbaar inkomen ────────────────
+  test('beslag verlaagt het beschikbaar inkomen (niet het totaal-inkomen)', () => {
+    const s: any = base()
+    s.inkomenData = [{ bron: 'Werk', type: 'loon', netto: '2500', uren: '', beslag: true, invoerPer: 'mnd', inclVak: false, weekBedrag: '' }]
+    s.beslagData = [{ wie: 'Deurwaarder X', soort: 'loonbeslag', bedrag: '300' }]
+    // totaal inkomen blijft het bruto-netto (voor regelingstoetsen)
+    expect(getTotaalInkomen(s)).toBeCloseTo(2500, 2)
+    // beslagtotaal = 300
+    expect(getBeslagTotaal(s)).toBeCloseTo(300, 2)
+    // beschikbaar = 2500 - 300 = 2200
+    expect(getBeschikbaarInkomen(s)).toBeCloseTo(2200, 2)
+  })
+
+  test('besteedbaar inkomen in advies houdt rekening met beslag', () => {
+    const s: any = base()
+    s.inkomenData = [{ bron: 'Werk', type: 'loon', netto: '2500', uren: '', beslag: true, invoerPer: 'mnd', inclVak: false, weekBedrag: '' }]
+    s.beslagData = [{ wie: 'Deurwaarder X', soort: 'loonbeslag', bedrag: '300' }]
+    s.lastenWaarden = { ...s.lastenWaarden, huur: { bedrag: '1000', per: 'mnd', opm: '' } }
+    const items = buildSystemAdvItems(s)
+    // besteedbaar = 2200 - 1000 = 1200, niet 1500 (zonder beslag)
+    const neg = items.find(i => /Negatief besteedbaar/.test(i.t))
+    expect(neg).toBeUndefined() // 1200 > 0, dus geen negatief-signaal
+  })
+
+  // ── NIEUW: alimentatie telt mee als inkomen ────────────────────────────────
+  test('partner- en kinderalimentatie tellen mee in getTotaalInkomen', () => {
+    const s: any = base()
     s.inkomenData = [{ bron: 'Werk', type: 'loon', netto: '1000', uren: '', beslag: false, invoerPer: 'mnd', inclVak: false, weekBedrag: '' }]
-    s.toeslagenActief = { kinderbijslag: true }
-    s.toeslagenBedrag = { kinderbijslag: '100' }
-    expect(getTotaalInkomen(s)).toBeCloseTo(1000, 2) // geen +100
+    s.alim_ontvangen = 'ja'
+    s.alim_partner = '200'
+    s.alim_kind = '150'
+    expect(getTotaalInkomen(s)).toBeCloseTo(1350, 2) // 1000 + 200 + 150
   })
 })

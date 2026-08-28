@@ -19,7 +19,7 @@ describe('Page4Inkomen', () => {
 
   test('renders the income source table header', () => {
     renderWithState(<Page4Inkomen />)
-    expect(screen.getByText('Netto/mnd')).toBeInTheDocument()
+    expect(screen.getByText('Netto/mnd *')).toBeInTheDocument()
   })
 
   // ── Income percentage badge ───────────────────────────────────────────────

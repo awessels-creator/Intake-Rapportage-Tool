@@ -1,7 +1,7 @@
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
 import { BIJSTAND_LABELS } from '../../constants'
-import { getTotaalInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince, isJeugdOfInstelling, lftdN } from '../../utils'
+import { getTotaalInkomen, getBeslagTotaal, getBeschikbaarInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince, isJeugdOfInstelling, lftdN } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
@@ -98,7 +98,7 @@ export default function Page4Inkomen() {
 
         <div className="overflow-x-auto">
           <table className="tbl">
-            <thead><tr><th>Bron / Werkgever / Instantie</th><th>Type inkomen</th><th>Invoer per</th><th>Netto/mnd</th><th>Dienstverband / uren</th><th>Beslag?</th><th></th></tr></thead>
+            <thead><tr><th>Bron / Werkgever / Instantie</th><th>Type inkomen</th><th>Invoer per</th><th>Netto/mnd *</th><th>Dienstverband / uren</th><th>Beslag?</th><th></th></tr></thead>
             <tbody>
               {state.inkomenData.map((d, i) => {
                 const berekenMnd = (): number => {
@@ -170,6 +170,9 @@ export default function Page4Inkomen() {
             </tbody>
           </table>
         </div>
+        <p className="text-[0.7rem] text-inkl mt-2">
+          * Vul hier het netto bedrag in dat de cliënt ontvangt <strong>vóórdat</strong> er beslag op wordt gelegd (bruto-netto). Zet bij "Beslag?" het vinkje aan en vul het beslagbedrag in; de tool trekt dat automatisch af voor het beschikbaar inkomen, het besteedbaar inkomen en het budgetplan. Weet de cliënt het beslagbedrag niet? Laat die het opzoeken, of zet "bij benadering" in de toelichting bij de beslaglegger.
+        </p>
         <button
           type="button"
           className="flex items-center gap-1.5 mt-2 text-[0.78rem] text-accent border border-accent/40 rounded px-3 py-1 hover:bg-accents cursor-pointer"
@@ -182,7 +185,17 @@ export default function Page4Inkomen() {
         {heeftBeslag && (
           <div className="mt-2">
             <Alert variant="gold" icon={<HiExclamationTriangle />} title="Beslag gelegd — beslagvrije voet controleren">
-              Vul beslagleggers in zodat the BVV correct kan worden beoordeeld.
+              Vul beslagleggers in zodat de BVV correct kan worden beoordeeld.
+              {(() => {
+                const beslag = getBeslagTotaal(state)
+                const beschikbaar = getBeschikbaarInkomen(state)
+                if (beslag <= 0) return null
+                return (
+                  <span className="block mt-1 font-semibold">
+                    Totaal beslag: €{nl(beslag)}/mnd · Daadwerkelijk beschikbaar inkomen: €{nl(beschikbaar)}/mnd
+                  </span>
+                )
+              })()}
             </Alert>
             <div className="overflow-x-auto mt-2">
               <table className="tbl">
@@ -220,6 +233,31 @@ export default function Page4Inkomen() {
               <HiPlus />
               Beslaglegger toevoegen
             </button>
+            {/* Vraag: is de beslagvrije voet gecontroleerd? */}
+            <div className="mt-3 p-2.5 bg-warm rounded-lg border border-rule">
+              <div className={L}>Is de beslagvrije voet gecontroleerd?</div>
+              <RadioGroup
+                value={state.bv_gecontroleerd}
+                options={[
+                  { value: 'ja', label: 'Ja' },
+                  { value: 'nee', label: 'Nee' },
+                  { value: 'fout', label: 'Ja, maar niet correct toegepast' },
+                ]}
+                onChange={v => set({ bv_gecontroleerd: v as 'ja' | 'nee' | 'fout' | '' })}
+              />
+              {state.bv_gecontroleerd === 'fout' && (
+                <div className="mt-2">
+                  <label className={L}>Toelichting (bijv. herberekening aangevraagd door wie / nog te doen):</label>
+                  <textarea
+                    className="ta"
+                    rows={2}
+                    value={state.bv_toel}
+                    placeholder="Bijv.: herberekening aangevraagd bij schuldeiser op 1-9-2026, nog niet ontvangen. Of: nog in te dienen door consulent."
+                    onChange={e => set({ bv_toel: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -238,6 +276,11 @@ export default function Page4Inkomen() {
               <RadioGroup value={state.alim_lbio} options={[{ value: 'ja', label: 'Ja' }, { value: 'nee', label: 'Nee' }]} onChange={v => set({ alim_lbio: v })} />
             </div>
           </div>
+        )}
+        {state.alim_ontvangen === 'ja' && (
+          <p className="text-[0.7rem] text-inkl mb-2">
+            Let op: als de alimentatie is vastgesteld maar (nog) niet daadwerkelijk wordt ontvangen, vermeld dat dan in de toelichting bij "Inkomenssituatie" hieronder of bij de betreffende bron. De tool rekent het bedrag wél mee als inkomen.
+          </p>
         )}
 
         {(pct <= 120 && !isPensioen && !isJeugdInst && !onder21 && norm > 0 && ink > 0) && (

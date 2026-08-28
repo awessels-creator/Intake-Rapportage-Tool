@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
-import { LASTEN_DEF, PER_OPTIES, type LastenDef } from '../../constants'
-import { getTotaalInkomen, getTotaalLasten, getMndBedrag, isJeugdOfInstelling } from '../../utils'
+import { LASTEN_DEF, PER_OPTIES, TOESLAG_NAMEN, type LastenDef } from '../../constants'
+import { getTotaalInkomen, getTotaalLasten, getBeslagTotaal, getBeschikbaarInkomen, getMndBedrag, isJeugdOfInstelling, nl } from '../../utils'
 import { downloadBudgetXLSX } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
@@ -25,10 +26,31 @@ export default function Page6Lasten() {
   const ls = state.leefsituatie
   const nibud = NIBUD[ls]
   const ink = getTotaalInkomen(state)
+  const beslag = getBeslagTotaal(state)
+  const beschikbaar = getBeschikbaarInkomen(state)
   const tot = getTotaalLasten(state)
   const norm = parseFloat(state.bijstandsnorm) || 0
-  const best = ink - tot
+  const best = beschikbaar - tot
   const pct = norm && ink ? (ink / norm) * 100 : 0
+
+  const [inkDetail, setInkDetail] = useState(false)
+  const inkDetailRegels: { naam: string; bedrag: number }[] = []
+  state.inkomenData.forEach(d => {
+    const b = parseFloat(d.netto) || 0
+    if (b > 0) inkDetailRegels.push({ naam: d.bron || 'Inkomstenbron', bedrag: b })
+  })
+  Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
+    if (actief) {
+      const b = parseFloat((state.toeslagenBedrag as Record<string, string>)[id] || '0') || 0
+      if (b > 0) inkDetailRegels.push({ naam: (TOESLAG_NAMEN as Record<string, string>)[id] || id, bedrag: b })
+    }
+  })
+  if (state.alim_ontvangen === 'ja') {
+    const ap = parseFloat(state.alim_partner) || 0
+    if (ap > 0) inkDetailRegels.push({ naam: 'Partneralimentatie', bedrag: ap })
+    const ak = parseFloat(state.alim_kind) || 0
+    if (ak > 0) inkDetailRegels.push({ naam: 'Kinderalimentatie', bedrag: ak })
+  }
 
   const allDef: ExtendedLastenDef[] = [
     ...LASTEN_DEF,
@@ -178,9 +200,55 @@ export default function Page6Lasten() {
         </button>
 
         {ink > 0 && (
-          <div className="flex justify-between items-center mt-3 p-2.5 bg-warm rounded-lg border border-rule">
-            <span className="font-semibold text-[0.88rem]">Totaal inkomen (incl. toeslagen)</span>
-            <span className="font-bold text-[0.97rem]">€ {ink.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+          <div className="mt-3 p-2.5 bg-warm rounded-lg border border-rule">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[0.88rem]">Totaal inkomen (incl. toeslagen)</span>
+              <span className="font-bold text-[0.97rem]">€ {ink.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInkDetail(o => !o)}
+              className="mt-1 text-[0.72rem] text-accent font-medium underline decoration-dotted underline-offset-2 hover:text-accent-dark cursor-pointer"
+            >
+              {inkDetail ? '▾ Verberg wat eronder zit' : '▸ Toon wat eronder zit (Totaal inkomen incl. toeslagen)'}
+            </button>
+            {inkDetail && (
+              <div className="mt-2 rounded border border-rule bg-white p-2">
+                <table className="w-full text-[0.73rem]">
+                  <thead>
+                    <tr className="text-inkl border-b border-rule">
+                      <th className="text-left font-normal pb-1">Omschrijving</th>
+                      <th className="text-right font-normal pb-1">Bedrag/mnd</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inkDetailRegels.length === 0 && (
+                      <tr><td colSpan={2} className="py-1 text-inkl italic">Nog geen inkomsten ingevuld.</td></tr>
+                    )}
+                    {inkDetailRegels.map((r, i) => (
+                      <tr key={i}>
+                        <td className="py-0.5">{r.naam}</td>
+                        <td className="py-0.5 text-right">€ {nl(r.bedrag, 2)}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t border-rule font-semibold">
+                      <td className="py-0.5">Som</td>
+                      <td className="py-0.5 text-right">€ {nl(ink, 2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {beslag > 0 && (
+              <div className="flex justify-between items-center mt-2 text-warn-dark">
+                <span className="font-semibold text-[0.84rem]">Beslag op inkomen (−)</span>
+                <span className="font-bold text-[0.92rem]">− € {beslag.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center mt-1 border-t border-rule pt-1.5">
+              <span className="font-semibold text-[0.86rem]">Beschikbaar inkomen</span>
+              <span className="font-bold text-[0.95rem] text-accent-dark">€ {beschikbaar.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+            </div>
           </div>
         )}
 
@@ -193,7 +261,7 @@ export default function Page6Lasten() {
           <>
             <div className="border-t border-rule mt-1"></div>
             <div className={`flex justify-between items-center mt-1 p-2.5 rounded-lg border ${best < 0 ? 'bg-warns border-warn-border' : 'bg-accents border-accent-border'}`}>
-              <span className="font-semibold text-[0.88rem]">Besteedbaar (inkomen − lasten)</span>
+              <span className="font-semibold text-[0.88rem]">Besteedbaar (inkomen − beslag − lasten)</span>
               <span className={`font-bold text-[0.97rem] ${best < 0 ? 'text-warn-dark' : 'text-accent-dark'}`}>
                 € {best.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
               </span>

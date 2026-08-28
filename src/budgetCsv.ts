@@ -56,13 +56,15 @@ function factorVanCode(code: PerCode): number {
 // alle Excel-versies én compatibel met formule-validators (geen array-constante).
 const PER_TABEL = 'Bureau!G1:H5' // verborgen hulptabel op het Bureau-blad
 // IFERROR zodat een lege/verkeerde periode (D) nooit #WAARDE/#N/A geeft maar 0.
+// De formule MOET met '=' beginnen, anders schrijft ExcelJS hem niet als echte
+// formule weg en rekent Excel niet door bij bewerken door de inwoner.
 function maandFormule(rij: number): string {
-  return `IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0)`
+  return `=IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0)`
 }
 // Variant voor lege template-rijen: toont "" (leeg) zolang C leeg is, en vult
 // automatisch als de cliënt C invult. Voorkomt "0,00" in ongebruikte rijen.
 function maandFormuleLeeg(rij: number): string {
-  return `IF(C${rij}="","",IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0))`
+  return `=IF(C${rij}="","",IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0))`
 }
 
 // Betaalverkeer: maximaal 2 cijfers achter de komma
@@ -120,11 +122,13 @@ export function bouwBudgetWerkboek(
   const zetFormule = (a: string, formule: string, result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean } = {}) => {
     ws.getCell(rij, 1).value = a
     if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
-    // GEEN leading '=' — anders schrijft ExcelJS <f>=...<f> (niet-conform) en
-    // breekt Excel de berekening bij "bewerken inschakelen".
+    // FORMULE MET LEADING '=': ExcelJS schrijft die correct weg als <f>=...<f>,
+    // en Excel rekent hem door bij bewerken door de inwoner. ZONDER '=' leest
+    // Excel de cel niet als formule en blijft de waarde statisch staan.
     const bCell = ws.getCell(rij, 2)
-    bCell.value = { formula: formule.replace(/^=/, ''), result: Number(result.toFixed(2)) }
-    bCell.protection = { locked: true } // B vergrendeld
+    const formuleStr = formule.startsWith('=') ? formule : `=${formule}`
+    bCell.value = { formula: formuleStr, result: Number(result.toFixed(2)) }
+    bCell.protection = { locked: true } // B vergrendeld (geen effect zonder ws.protect)
     if (opties.bold) bCell.font = { bold: true }
     if (c !== undefined) {
       const cc = ws.getCell(rij, 3)
@@ -190,6 +194,14 @@ export function bouwBudgetWerkboek(
       inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'maand' })
     }
   })
+  // Alimentatie (partner + kind) als aparte inkomstenrijen — alleen als de cliënt
+  // aangeeft alimentatie te ontvangen en er een bedrag is ingevuld.
+  if (state.alim_ontvangen === 'ja') {
+    const ap = parseFloat(state.alim_partner) || 0
+    if (ap > 0) inkomsten.push({ naam: 'Partneralimentatie', bedrag: ap, code: 'maand' })
+    const ak = parseFloat(state.alim_kind) || 0
+    if (ak > 0) inkomsten.push({ naam: 'Kinderalimentatie', bedrag: ak, code: 'maand' })
+  }
   const inkStart = rij
   const inkomstWaarden: number[] = []
   inkomsten.forEach(r => {
@@ -203,6 +215,15 @@ export function bouwBudgetWerkboek(
   const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
+
+  // Beslag op inkomen (−): trekt het totaal gelegde beslag af van het inkomen,
+  // zodat het budgetplan het DAADWERKELIJK beschikbare bedrag laat zien.
+  // Alleen tonen als er beslag is (bedrag > 0).
+  const beslagTotaalX = state.beslagData.reduce((s, b) => s + (parseFloat(b.bedrag) || 0), 0)
+  let beslagRij = -1
+  if (beslagTotaalX > 0) {
+    beslagRij = zetFormule('Beslag op inkomen (−)', `=-${fmt(beslagTotaalX)}`, -beslagTotaalX, undefined, undefined, { bold: true })
+  }
 
   rij++ // lege rij
   zet('UITGAVEN')
@@ -249,7 +270,8 @@ export function bouwBudgetWerkboek(
   const totInkRij = inkEnd + 1
   const totLastRij = lastEnd + 1
   const saldoRij = rij
-  zetFormule('SALDO (inkomen − uitgaven)', `=B${totInkRij}-B${totLastRij}`, totInk - totLast, undefined, undefined, { bold: true })
+  const saldoFormule = beslagRij > 0 ? `=B${totInkRij}-B${beslagRij}-B${totLastRij}` : `=B${totInkRij}-B${totLastRij}`
+  zetFormule('SALDO (inkomen − beslag − uitgaven)', saldoFormule, totInk - beslagTotaalX - totLast, undefined, undefined, { bold: true })
   const saldoCell = ws.getCell(saldoRij, 2)
 
   // Nummerformaat 2 decimalen op B (maandbedrag) en C (invoer)
@@ -296,24 +318,12 @@ export function bouwBudgetWerkboek(
     ws.getColumn(c).width = Math.min(Math.max(max + 2, floor), cap)
   }
 
-  // Bladbeveiliging: kolom B (de maandbedrag-formules) is vergrendeld, zodat de
-  // cliënt hem niet per ongeluk kan overschrijven en de doorrekening breekt.
-  // C (invoer) en D (periode) zijn ontgrendeld en blijven bewerkbaar. Zonder
-  // wachtwoord: via "Blad beveiliging opheffen" is het alsnog vrij te geven.
-  ws.protect('', {
-    selectLockedCells: true,
-    selectUnlockedCells: true,
-    formatCells: false,
-    formatColumns: false,
-    formatRows: false,
-    insertColumns: false,
-    insertRows: false,
-    deleteColumns: false,
-    deleteRows: false,
-    sort: false,
-    autoFilter: false,
-    pivotTables: false,
-  })
+  // Bladbeveiliging verwijderd: de inwoner moet het bestand zelfstandig kunnen
+  // bewerken (inkomen/lasten wijzigen) en de formules in kolom B moeten dan
+  // automatisch doorrekenen. Een vergrendeld blad blokkeert dat, ook zonder
+  // wachtwoord. Kolom B (maandbedrag-formules) is wel als vergrendeld gemarkeerd
+  // (locked), maar zonder ws.protect() heeft dat geen effect — de cliënt kan
+  // alles aanpassen, wat precies de bedoeling is.
 
   return wb
 }

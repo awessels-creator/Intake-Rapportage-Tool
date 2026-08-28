@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from '../../context'
-import { getTotaalInkomen, getTotaalLasten, nl } from '../../utils'
+import { getTotaalInkomen, getTotaalLasten, getBeschikbaarInkomen, nl } from '../../utils'
 import type { AdviesItem } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -68,7 +68,8 @@ export default function Page9Advies() {
 
   const ink = getTotaalInkomen(state)
   const tot = getTotaalLasten(state)
-  const best = ink - tot
+  const beschikbaar = getBeschikbaarInkomen(state)
+  const best = beschikbaar - tot
   const norm = parseFloat(state.bijstandsnorm) || 0
   const pct = norm && ink ? (ink / norm) * 100 : 0
   const schulden = state.schuldenData.reduce((s, d) => s + (parseFloat(d.b) || 0), 0)
@@ -108,19 +109,26 @@ export default function Page9Advies() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: 'Cliënt', value: naam },
-            { label: 'Inkomen', value: `€ ${nl(ink)}/mnd` },
+            { label: 'Inkomen (vóór beslag)', value: `€ ${nl(ink)}/mnd` },
+            { label: 'Beschikbaar (na beslag)', value: `€ ${nl(beschikbaar)}/mnd`, colored: true },
             { label: 'Niveau norm', value: pct > 0 ? pct.toFixed(0) + '%' : '—' },
             { label: 'Vaste lasten', value: `€ ${nl(tot)}/mnd` },
             { label: 'Besteedbaar', value: `€ ${nl(best)}/mnd`, colored: true },
             { label: 'Totaal schulden', value: `€ ${nl(schulden)}` },
-          ].map(item => (
-            <div key={item.label} className="bg-warm rounded-lg p-2.5 border border-rule">
-              <div className="text-[0.7rem] text-inkl">{item.label}</div>
-              <div className={`font-semibold text-[0.88rem] mt-0.5 ${item.colored ? best < 0 ? 'text-warn' : 'text-ok' : 'text-ink'}`}>
-                {item.value}
+          ].map(item => {
+            const getal = item.label === 'Beschikbaar (na beslag)' ? beschikbaar
+              : item.label === 'Besteedbaar' ? best
+              : null
+            const kleur = getal !== null ? (getal < 0 ? 'text-warn' : 'text-ok') : 'text-ink'
+            return (
+              <div key={item.label} className="bg-warm rounded-lg p-2.5 border border-rule">
+                <div className="text-[0.7rem] text-inkl">{item.label}</div>
+                <div className={`font-semibold text-[0.88rem] mt-0.5 ${item.colored ? kleur : 'text-ink'}`}>
+                  {item.value}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

@@ -20,6 +20,9 @@ export default function QuickPanel() {
   const setFree = (id: string, value: string) => {
     set({ quickFree: { ...state.quickFree, [id]: value } })
   }
+  const setToel = (id: string, value: string) => {
+    set({ quickToel: { ...state.quickToel, [id]: value } })
+  }
   const toggleSectie = (key: string) => {
     setOpenKeys(prev => ({ ...prev, [key]: !prev[key] }))
   }
@@ -87,18 +90,28 @@ export default function QuickPanel() {
                             {(g.items || []).map(it => {
                               const on = !!state.quickChecks[it.id]
                               return (
-                                <label
-                                  key={it.id}
-                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[0.72rem] cursor-pointer transition-all ${on ? 'border-accent bg-accents text-accent-dark font-semibold' : 'border-rule bg-white text-ink hover:border-accent'}`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    className="accent-accent w-[13px] h-[13px]"
-                                    checked={on}
-                                    onChange={() => toggleCheck(it.id)}
-                                  />
-                                  {it.label}
-                                </label>
+                                <div key={it.id} className="flex flex-col">
+                                  <label
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[0.72rem] cursor-pointer transition-all ${on ? 'border-accent bg-accents text-accent-dark font-semibold' : 'border-rule bg-white text-ink hover:border-accent'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      className="accent-accent w-[13px] h-[13px]"
+                                      checked={on}
+                                      onChange={() => toggleCheck(it.id)}
+                                    />
+                                    {it.label}
+                                  </label>
+                                  {on && (
+                                    <input
+                                      type="text"
+                                      className="mt-1 w-full border-[1.5px] border-rule rounded-[6px] text-[0.7rem] px-2 py-1 focus:outline-none focus:border-accent"
+                                      placeholder="Toelichting (optioneel)"
+                                      value={state.quickToel[it.id] || ''}
+                                      onChange={e => setToel(it.id, e.target.value)}
+                                    />
+                                  )}
+                                </div>
                               )
                             })}
                           </div>
@@ -108,19 +121,29 @@ export default function QuickPanel() {
                             {Object.entries(g.map || {}).map(([val, lbl]) => {
                               const on = state.quickRadio[g.name || ''] === val
                               return (
-                                <label
-                                  key={val}
-                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[0.72rem] cursor-pointer transition-all ${on ? 'border-accent bg-accents text-accent-dark font-semibold' : 'border-rule bg-white text-ink hover:border-accent'}`}
-                                >
-                                  <input
-                                    type="radio"
-                                    name={g.name}
-                                    className="accent-accent w-[13px] h-[13px]"
-                                    checked={on}
-                                    onChange={() => setRadio(g.name || '', val)}
-                                  />
-                                  {lbl}
-                                </label>
+                                <div key={val} className="flex flex-col">
+                                  <label
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[0.72rem] cursor-pointer transition-all ${on ? 'border-accent bg-accents text-accent-dark font-semibold' : 'border-rule bg-white text-ink hover:border-accent'}`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={g.name}
+                                      className="accent-accent w-[13px] h-[13px]"
+                                      checked={on}
+                                      onChange={() => setRadio(g.name || '', val)}
+                                    />
+                                    {lbl}
+                                  </label>
+                                  {on && (
+                                    <input
+                                      type="text"
+                                      className="mt-1 w-full border-[1.5px] border-rule rounded-[6px] text-[0.7rem] px-2 py-1 focus:outline-none focus:border-accent"
+                                      placeholder="Toelichting (optioneel)"
+                                      value={state.quickToel[g.name || ''] || ''}
+                                      onChange={e => setToel(g.name || '', e.target.value)}
+                                    />
+                                  )}
+                                </div>
                               )
                             })}
                           </div>
