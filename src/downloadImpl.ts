@@ -211,6 +211,7 @@ export async function buildAndSaveWord(state: FormState) {
   }
   // Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
   if (beslagData.length > 0) {
+    children.push(spacer())
     children.push(h4('Signalering bij beslag op inkomen'))
     children.push(para(`Er ligt beslag op het inkomen van deze inwoner. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Is de beslagvrije voet gecontroleerd?`, { color: '666666', size: 18 }))
     children.push(spacer())
