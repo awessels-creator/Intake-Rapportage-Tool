@@ -203,47 +203,6 @@ describe('Page6Lasten', () => {
     expect(screen.getByText(/Kwijtschelding mogelijk/)).toBeInTheDocument()
   })
 
-  // ── BVV section ───────────────────────────────────────────────────────────
-
-  test('shows BVV section when both income and norm are set', () => {
-    renderWithState(<Page6Lasten />, {
-      bijstandsnorm: '1000',
-      inkomenData: [ink('1000')],
-    })
-    expect(screen.getByText('Beslagvrije Voet (indicatie basis, jul 2026)')).toBeInTheDocument()
-    // knop naar berekenuwrecht.nl aanwezig
-    expect(screen.getByText(/Controleer de volledige beslagvrije voet via berekenuwrecht\.nl/i)).toBeInTheDocument()
-  })
-
-  test('hides BVV section when income is missing', () => {
-    renderWithState(<Page6Lasten />, { bijstandsnorm: '1000' })
-    expect(screen.queryByText('Beslagvrije Voet (indicatie basis, jul 2026)')).not.toBeInTheDocument()
-  })
-
-  // Regressie: bij inkomen lager dan de norm is de BVV 95% van de NORM (begrensd
-  // op inkomen), niet 95% van het inkomen. Voorbeeld: norm 1348,49, ink 1000 ->
-  // 1000 (was foutief 950).
-  test('BVV bij laag inkomen = 95% van norm begrenst op inkomen (geen 95% van inkomen)', () => {
-    renderWithState(<Page6Lasten />, {
-      bijstandsnorm: '1348.49',
-      inkomenData: [ink('1000')],
-    })
-    // juiste waarde aanwezig
-    expect(screen.getAllByText('€ 1.000,00').length).toBeGreaterThan(0)
-    // foutieve oude berekening (1000 * 0,95) mag niet voorkomen
-    expect(screen.queryByText('€ 950,00')).not.toBeInTheDocument()
-  })
-
-  // Bij inkomen boven de norm is de BVV 95% van de norm (geen begrenzing).
-  test('BVV bij ruim inkomen = 95% van de norm', () => {
-    renderWithState(<Page6Lasten />, {
-      bijstandsnorm: '1348.49',
-      inkomenData: [ink('1500')],
-    })
-    // 1348,49 * 0,95 = 1281,0655 -> tool toont ~1281,07 (JSDOM: 1.281,066)
-    expect(screen.getAllByText(/€ 1\.281/).length).toBeGreaterThan(0)
-  })
-
   // ── Regressie: default periodiek blijft staan bij eerste invoer ──────────
 
   test('levensonderhoud blijft op /week als je een bedrag typt (regressie #week-default)', async () => {

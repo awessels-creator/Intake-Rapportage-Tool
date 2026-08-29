@@ -48,3 +48,6 @@ __snapshots__/
 .tmp/
 .notes/calc_jioli.py
 verify_budget.xlsx
+
+# Vite build cache
+.vite/

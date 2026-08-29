@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
 import { LASTEN_DEF, PER_OPTIES, TOESLAG_NAMEN, type LastenDef } from '../../constants'
-import { getTotaalInkomen, getTotaalLasten, getBeslagTotaal, getBeschikbaarInkomen, getMndBedrag, isJeugdOfInstelling, nl } from '../../utils'
+import { getTotaalInkomen, getTotaalLasten, getBeslagTotaal, getBeschikbaarInkomen, getMndBedrag, nl } from '../../utils'
 import { downloadBudgetXLSX } from '../../budgetCsv'
 import type { LastenWaarde } from '../../types'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
-import { HiOutlineHome, HiOutlineLightBulb, HiExclamationTriangle, HiXMark, HiArrowLeft, HiArrowRight, HiArrowSmallRight, HiPlus, HiArrowTopRightOnSquare } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineLightBulb, HiExclamationTriangle, HiXMark, HiArrowLeft, HiArrowRight, HiArrowSmallRight, HiPlus } from 'react-icons/hi2'
 
 interface ExtendedLastenDef extends LastenDef {
   extra?: boolean
@@ -18,7 +18,7 @@ interface ExtendedLastenDef extends LastenDef {
 
 export default function Page6Lasten() {
   const { state, set, goTo } = useForm()
-  const { NIBUD, BVV_MAX } = useNormen()
+  const { NIBUD } = useNormen()
 
   const hA = state.voertuigen.some(v => v.kenteken || v.merk || (parseFloat(v.waarde) || 0) > 0)
   const hD = state.huisdieren === 'ja'
@@ -92,20 +92,6 @@ export default function Page6Lasten() {
     if (twUitv === 'nee' && uitvBdr > 0) msgs.push({ variant: 'warn', icon: <HiExclamationTriangle />, title: 'Tegenstrijdigheid: uitvaartverzekering', msg: 'Op tabblad Vermogen staat uitvaartverzekering op "Nee", maar er is een bedrag ingevuld.' })
     if (twUitv === 'ja' && uitvBdr === 0) msgs.push({ variant: 'gold', icon: <HiOutlineLightBulb />, title: 'Uitvaartverzekering: geen bedrag ingevuld', msg: 'Verzekering is aanwezig maar geen lasten ingevuld. Bijv. premie via derden?' })
     return msgs
-  })()
-
-  // BVV indicatie: basis = 95% van de bijstandsnorm, begrenst op het inkomen.
-  // Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) tellen
-  // hier niet mee - de volledige berekening loopt via berekenuwrecht.nl.
-  const bvv = (() => {
-    if (!ink || !norm) return null
-    const basisBvv = norm * 0.95
-    const bvv_ber = Math.min(basisBvv, ink)
-    const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
-    const bvv_max = BVV_MAX[maxKey] || BVV_MAX['alleenstaand']
-    const bvv_val = Math.min(bvv_ber, bvv_max)
-    const inhoud = ink - bvv_val
-    return { bvv_ber, bvv_max, bvv_val, inhoud }
   })()
 
   return (
@@ -286,52 +272,6 @@ export default function Page6Lasten() {
           <HiOutlineHome /> Exporteer budgetoverzicht (voor inwoner, .xlsx)
         </button>
       </Card>
-
-      {isJeugdOfInstelling(ls) ? (
-        <div className="bg-white rounded-xl border border-warn-border shadow-sm p-4 mb-4">
-          <Alert variant="warn" icon={<HiExclamationTriangle />} title="Beslagvrije voet niet geautomatiseerd">
-            Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
-          </Alert>
-          <a
-            href="https://www.berekenuwrecht.nl/beslagvrije-voet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
-          >
-            <HiArrowTopRightOnSquare className="inline-block" /> Controleer de beslagvrije voet via berekenuwrecht.nl
-          </a>
-        </div>
-      ) : bvv && (
-        <div className="bg-white rounded-xl border border-rule shadow-sm p-4 mb-4">
-          <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, jul 2026)</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'Berekende BVV', value: bvv.bvv_ber },
-              { label: 'Wettelijk maximum', value: bvv.bvv_max },
-              { label: 'Toe te passen BVV', value: bvv.bvv_val },
-              { label: 'Max. voor beslag beschikbaar', value: bvv.inhoud, colored: true },
-            ].map(item => (
-              <div key={item.label} className="bg-warm rounded-lg p-2.5 border border-rule">
-                <div className="text-[0.7rem] text-inkl mb-1">{item.label}</div>
-                <div className={`font-bold text-[0.9rem] ${item.colored ? (bvv.inhoud > 0 ? 'text-accent' : 'text-warn') : 'text-ink'}`}>
-                  € {item.value.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-[0.7rem] text-inkl mt-2">
-            Dit is de basis-beslagvrije voet: 95% van de bijstandsnorm, begrenst op het inkomen. Opslagen zoals heffingskorting, kindgebonden budget en woonkosten zijn niet meegeteld.
-          </div>
-          <a
-            href="https://www.berekenuwrecht.nl/beslagvrije-voet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
-          >
-            <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via berekenuwrecht.nl
-          </a>
-        </div>
-      )}
 
       <NavRow
         onBack={() => goTo(5)}

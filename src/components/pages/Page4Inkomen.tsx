@@ -8,7 +8,7 @@ import RadioGroup from '../shared/RadioGroup'
 import EuroInput from '../shared/EuroInput'
 import QuickPreview from '../QuickPreview'
 import Alert from '../shared/Alert'
-import { HiExclamationTriangle, HiOutlineClock, HiOutlineInformationCircle, HiOutlineBuildingLibrary, HiXMark, HiArrowLeft, HiArrowRight, HiPlus, HiCheckCircle } from 'react-icons/hi2'
+import { HiExclamationTriangle, HiOutlineClock, HiOutlineInformationCircle, HiOutlineBuildingLibrary, HiXMark, HiArrowLeft, HiArrowRight, HiPlus, HiCheckCircle, HiArrowTopRightOnSquare } from 'react-icons/hi2'
 import { BsCashStack } from 'react-icons/bs'
 
 const L = 'block text-[.76rem] text-inkl mb-0.5 font-medium'
@@ -18,7 +18,7 @@ const row3 = 'grid grid-cols-3 gap-3 mb-3'
 
 export default function Page4Inkomen() {
   const { state, set, goTo } = useForm()
-  const { NORM, NORMPERIODE } = useNormen()
+  const { NORM, NORMPERIODE, BVV_MAX } = useNormen()
 
   const norm = parseFloat(state.bijstandsnorm) || 0
   const ink = getTotaalInkomen(state)
@@ -28,6 +28,18 @@ export default function Page4Inkomen() {
   const isJeugdInst = isJeugdOfInstelling(state.leefsituatie)
   const leeftijd = lftdN(state.geboortedatum)
   const onder21 = leeftijd >= 0 && leeftijd < 21
+  const ls = state.leefsituatie
+  const hK = state.kinderen === 'ja'
+  const bvv = (() => {
+    if (!ink || !norm) return null
+    const basisBvv = norm * 0.95
+    const bvv_ber = Math.min(basisBvv, ink)
+    const maxKey = ls === 'samenwonend' && hK ? 'samenwonend_kind' : ls
+    const bvv_max = BVV_MAX[maxKey] || BVV_MAX['alleenstaand']
+    const bvv_val = Math.min(bvv_ber, bvv_max)
+    const inhoud = ink - bvv_val
+    return { bvv_ber, bvv_max, bvv_val, inhoud }
+  })()
 
   const badgeColor = pct < 100 ? 'var(--color-warn-dark)' : pct < 105 ? 'var(--color-ok-dark)' : pct < 120 ? 'var(--color-gold-dark)' : 'var(--color-info-text)'
   const badgeBg = pct < 100 ? 'var(--color-warns)' : pct < 105 ? 'var(--color-oks)' : pct < 120 ? 'var(--color-golds)' : 'var(--color-infos)'
@@ -233,6 +245,55 @@ export default function Page4Inkomen() {
               <HiPlus />
               Beslaglegger toevoegen
             </button>
+          </div>
+        )}
+
+            {isJeugdOfInstelling(ls) ? (
+              <div className="mt-3 bg-white rounded-xl border border-warn-border shadow-sm p-4">
+                <Alert variant="warn" icon={<HiExclamationTriangle />} title="Beslagvrije voet niet geautomatiseerd">
+                  Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
+                </Alert>
+                <a
+                  href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
+                >
+                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de beslagvrije voet via berekenuwrecht.nl
+                </a>
+              </div>
+            ) : bvv && (
+              <div className="mt-3 bg-white rounded-xl border border-rule shadow-sm p-4">
+                <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, jul 2026)</div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Berekende BVV', value: bvv.bvv_ber },
+                    { label: 'Wettelijk maximum', value: bvv.bvv_max },
+                    { label: 'Toe te passen BVV', value: bvv.bvv_val },
+                    { label: 'Max. voor beslag beschikbaar', value: bvv.inhoud, colored: true },
+                  ].map(item => (
+                    <div key={item.label} className="bg-warm rounded-lg p-2.5 border border-rule">
+                      <div className="text-[0.7rem] text-inkl mb-1">{item.label}</div>
+                      <div className={`font-bold text-[0.9rem] ${item.colored ? (bvv.inhoud > 0 ? 'text-accent' : 'text-warn') : 'text-ink'}`}>
+                        € {item.value.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-[0.7rem] text-inkl mt-2">
+                  Dit is de basis-beslagvrije voet: 95% van de bijstandsnorm, begrenst op het inkomen. Opslagen zoals heffingskorting, kindgebonden budget en woonkosten zijn niet meegeteld.
+                </div>
+                <a
+                  href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
+                >
+                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via berekenuwrecht.nl
+                </a>
+              </div>
+            )}
+
             {/* Vraag: is de beslagvrije voet gecontroleerd? */}
             <div className="mt-3 p-2.5 bg-warm rounded-lg border border-rule">
               <div className={L}>Is de beslagvrije voet gecontroleerd?</div>
@@ -258,8 +319,6 @@ export default function Page4Inkomen() {
                 </div>
               )}
             </div>
-          </div>
-        )}
 
         <hr className="border-rule my-3" />
         <div className={SL}>Alimentatie als inkomstenbron</div>
