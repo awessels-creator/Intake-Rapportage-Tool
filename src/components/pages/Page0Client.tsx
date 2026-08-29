@@ -185,7 +185,7 @@ export default function Page0Client() {
             )}
             {isJeugdOfInstelling(state.leefsituatie) && (
               <Alert variant="warn" icon={<HiExclamationTriangle />} title="Jeugd / instelling — norm niet automatisch">
-                Voor deze situatie rekent de tool GEEN bijstandsnorm uit. Vul op tabblad Inkomen de juiste (verlaagde) norm in, met de bron (bijv. PW-tabel of berekenuwrecht.nl). IIT is niet van toepassing (&lt;21 jaar / instelling). Kwijtschelding GBLT/gemeente is n.v.t. zolang er geen eigen belastingaanslag is.
+                Voor deze situatie rekent de tool GEEN bijstandsnorm uit. Vul op tabblad Inkomen de juiste (verlaagde) norm in, met de bron (bijv. PW-tabel of overheid.nl). IIT is niet van toepassing (&lt;21 jaar / instelling). Kwijtschelding GBLT/gemeente is n.v.t. zolang er geen eigen belastingaanslag is.
               </Alert>
             )}
           </div>

@@ -225,5 +225,5 @@ export const REGELING_URLS: Record<string, string> = {
   kwijtschelding_gemeente: 'https://www.meppel.nl/direct-regelen/belastingen-en-vergunningen/kwijtschelding-gemeentelijke-belastingen/',
   kindsupport: 'https://kindsupportmeppel.nl/',
   voedselbank: 'https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/',
-  berekenuwrecht_bvv: 'https://www.berekenuwrecht.nl/beslagvrije-voet',
+  beslagvrije_voet_url: 'https://www.uwbeslagvrijevoet.nl/',
 }

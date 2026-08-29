@@ -70,7 +70,7 @@ export default function Page4Inkomen() {
               <div className="mt-1.5">
                 <div className="text-[0.77rem] text-warn font-semibold mb-1">Geen automatische norm — vul de juiste (verlaagde) norm in</div>
                 <input type="number" className="inp" placeholder="0" value={state.bijstandsnorm} onChange={e => set({ bijstandsnorm: e.target.value })} />
-                <input className="inp mt-1" placeholder="Bron norm (bijv. PW-tabel, berekenuwrecht.nl)" value={state.norm_bron || ''} onChange={e => set({ norm_bron: e.target.value })} />
+                <input className="inp mt-1" placeholder="Bron norm (bijv. PW-tabel, overheid.nl)" value={state.norm_bron || ''} onChange={e => set({ norm_bron: e.target.value })} />
                 <div className="text-[0.67rem] text-inkl mt-0.5">Bij jeugd &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool rekent deze niet zelf uit.</div>
               </div>
             ) : state.leefsituatie && NORM[state.leefsituatie] ? (
@@ -251,15 +251,15 @@ export default function Page4Inkomen() {
             {isJeugdOfInstelling(ls) ? (
               <div className="mt-3 bg-white rounded-xl border border-warn-border shadow-sm p-4">
                 <Alert variant="warn" icon={<HiExclamationTriangle />} title="Beslagvrije voet niet geautomatiseerd">
-                  Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via berekenuwrecht.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
+                  Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via uwbeslagvrijevoet.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
                 </Alert>
                 <a
-                  href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+                  href="https://www.uwbeslagvrijevoet.nl/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
                 >
-                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de beslagvrije voet via berekenuwrecht.nl
+                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de beslagvrije voet via uwbeslagvrijevoet.nl
                 </a>
               </div>
             ) : bvv && (
@@ -284,12 +284,12 @@ export default function Page4Inkomen() {
                   Dit is de basis-beslagvrije voet: 95% van de bijstandsnorm, begrenst op het inkomen. Opslagen zoals heffingskorting, kindgebonden budget en woonkosten zijn niet meegeteld.
                 </div>
                 <a
-                  href="https://www.berekenuwrecht.nl/beslagvrije-voet"
+                  href="https://www.uwbeslagvrijevoet.nl/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
                 >
-                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via berekenuwrecht.nl
+                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via uwbeslagvrijevoet.nl
                 </a>
               </div>
             )}

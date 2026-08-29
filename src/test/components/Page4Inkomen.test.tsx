@@ -192,8 +192,8 @@ describe('Page4Inkomen', () => {
       inkomenData: [ink('1000')],
     })
     expect(screen.getByText('Beslagvrije Voet (indicatie basis, jul 2026)')).toBeInTheDocument()
-    // knop naar berekenuwrecht.nl aanwezig
-    expect(screen.getByText(/Controleer de volledige beslagvrije voet via berekenuwrecht\.nl/i)).toBeInTheDocument()
+    // knop naar uwbeslagvrijevoet.nl aanwezig
+    expect(screen.getByText(/Controleer de volledige beslagvrije voet via uwbeslagvrijevoet\.nl/i)).toBeInTheDocument()
   })
 
   test('hides BVV section when income is missing', () => {
