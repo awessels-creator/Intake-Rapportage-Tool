@@ -17,7 +17,7 @@ describe('Rapport — regeling-links (punt 5/b)', () => {
   })
 
   test('alle regeling-links zijn gevuld en wijzen naar een geldige pagina', () => {
-    const sleutels = ['iit', 'fdma', 'kwijtschelding_gblt', 'kwijtschelding_gemeente', 'kindsupport', 'voedselbank', 'beslagvrije_voet_url']
+    const sleutels = ['iit', 'fdma', 'kwijtschelding_gblt', 'kwijtschelding_gemeente', 'kindsupport', 'voedselbank']
     for (const k of sleutels) {
       const url = REGELING_URLS[k]
       expect(url, `REGELING_URLS.${k} mag niet leeg zijn`).toBeTruthy()
