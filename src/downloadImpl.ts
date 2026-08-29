@@ -203,13 +203,15 @@ export async function buildAndSaveWord(state: FormState) {
   // Beslagvrije Voet — direct onder Inkomen, zodat beslag en BVV bij elkaar staan
   children.push(h3(`Beslagvrije Voet${isJeugdOfInstelling(ls) ? ' — NIET geautomatiseerd' : ` (indicatie basis, model ${MODEL})`}`))
   if (isJeugdOfInstelling(ls)) {
-    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via uwbeslagvrijevoet.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
+    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via bereken.uwbeslagvrijevoet.nl/calculate aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
   } else {
     children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
-    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via uwbeslagvrijevoet.nl.', { color: '666666', size: 16 }))
+    children.push(spacer())
+    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via bereken.uwbeslagvrijevoet.nl/calculate.', { color: '666666', size: 16 }))
   }
   // Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
   if (beslagData.length > 0) {
+    children.push(spacer())
     children.push(h4('Signalering bij beslag op inkomen'))
     children.push(para(`Er ligt beslag op het inkomen van deze inwoner. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Is de beslagvrije voet gecontroleerd?`, { color: '666666', size: 18 }))
     const bvStatus = state.bv_gecontroleerd

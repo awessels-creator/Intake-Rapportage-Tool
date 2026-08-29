@@ -191,9 +191,9 @@ describe('Page4Inkomen', () => {
       bijstandsnorm: '1000',
       inkomenData: [ink('1000')],
     })
-    expect(screen.getByText('Beslagvrije Voet (indicatie basis, jul 2026)')).toBeInTheDocument()
-    // knop naar uwbeslagvrijevoet.nl aanwezig
-    expect(screen.getByText(/Controleer de volledige beslagvrije voet via uwbeslagvrijevoet\.nl/i)).toBeInTheDocument()
+    expect(screen.getByText('Beslagvrije Voet (indicatie basis, model 2026-2)')).toBeInTheDocument()
+    // knop naar bereken.uwbeslagvrijevoet.nl aanwezig
+    expect(screen.getByText(/Controleer de volledige beslagvrije voet via bereken\.uwbeslagvrijevoet\.nl/i)).toBeInTheDocument()
   })
 
   test('hides BVV section when income is missing', () => {

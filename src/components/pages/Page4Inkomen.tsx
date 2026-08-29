@@ -1,6 +1,6 @@
 import { useForm } from '../../context'
 import { useNormen } from '../../context/NormContext'
-import { BIJSTAND_LABELS } from '../../constants'
+import { BIJSTAND_LABELS, MODEL } from '../../constants'
 import { getTotaalInkomen, getBeslagTotaal, getBeschikbaarInkomen, nl, updArr, rmArr, mkInk, mkBeslag, yearsSince, isJeugdOfInstelling, lftdN } from '../../utils'
 import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
@@ -254,7 +254,7 @@ export default function Page4Inkomen() {
                   Bij een jeugdige &lt;21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via uwbeslagvrijevoet.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.
                 </Alert>
                 <a
-                  href="https://www.uwbeslagvrijevoet.nl/"
+                  href="https://bereken.uwbeslagvrijevoet.nl/calculate"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
@@ -264,7 +264,7 @@ export default function Page4Inkomen() {
               </div>
             ) : bvv && (
               <div className="mt-3 bg-white rounded-xl border border-rule shadow-sm p-4">
-                <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, jul 2026)</div>
+                <div className="font-semibold text-[0.9rem] text-accent mb-3">Beslagvrije Voet (indicatie basis, model {MODEL})</div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                     { label: 'Berekende BVV', value: bvv.bvv_ber },
@@ -284,12 +284,12 @@ export default function Page4Inkomen() {
                   Dit is de basis-beslagvrije voet: 95% van de bijstandsnorm, begrenst op het inkomen. Opslagen zoals heffingskorting, kindgebonden budget en woonkosten zijn niet meegeteld.
                 </div>
                 <a
-                  href="https://www.uwbeslagvrijevoet.nl/"
+                  href="https://bereken.uwbeslagvrijevoet.nl/calculate"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-accent text-white text-[0.78rem] font-medium hover:opacity-90"
                 >
-                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via uwbeslagvrijevoet.nl
+                  <HiArrowTopRightOnSquare className="inline-block" /> Controleer de volledige beslagvrije voet via bereken.uwbeslagvrijevoet.nl
                 </a>
               </div>
             )}
