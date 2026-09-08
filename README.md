@@ -1,4 +1,6 @@
-# Intakerapportage Geldzorgen Meppel
+# Intake- en rapportagetool Geldzorgen
+Ontwikkeld vanuit de praktijk van gemeentelijke schuldhulpverlening. 
+De huidige versie bevat normen en regelingen die aansluiten bij de werkwijze en lokale regelingen van gemeente Meppel.
 
 > **Let op:** Dit is een persoonlijk project van Annika Wessels, gemaakt op eigen titel. De tool is niet gemaakt in opdracht van de Gemeente Meppel, en de gemeente is niet verantwoordelijk voor de inhoud of werking van deze tool. Alle gegevens in de tool zijn publiek toegankelijke normen en tarieven.
 
@@ -6,7 +8,7 @@ Een professionele, interactieve tool voor de intake van schuldhulpverlening en g
 
 ## Direct Gebruiken
 
-De tool is direct toegankelijke via de browser op:
+De tool is direct toegankelijk via de browser op:
 👉 [https://awessels-creator.github.io/Intake-Rapportage-Tool/juli-2026/](https://awessels-creator.github.io/Intake-Rapportage-Tool/juli-2026/) *(normen 2e helft 2026)*
 
 ## Over het project
@@ -24,9 +26,9 @@ Dit instrument is ontworpen om consulenten geldzorgen te ondersteunen bij het sy
 
 Veiligheid en privacy zijn cruciaal bij het werken met financiële cliëntgegevens.
 
-- **Geen gegevensverzameling:** Deze applicatie verzamelt, bewaart of verstuurt *geen enkele* vorm van data
-- **Lokale verwerking:** Alle berekeningen en ingevoerde informatie blijven uitsluitend binnen je eigen webbrowser. Zodra je de pagina sluit of ververst, zijn alle ingevoerde gegevens verdwenen
-- **Client-side:** De tool werkt volledig lokaal; er is geen database of externe server bij betrokken
+- **Geen gegevensverzameling:** De applicatie heeft geen functionaliteit voor het centraal verzamelen of opslaan van cliëntgegevens.
+- **Lokale verwerking:** Ingevoerde gegevens worden lokaal in de browser verwerkt. De tool beschikt niet over een database voor cliëntgegevens.
+- **Tijdelijke gegevens:** Ingevoerde gegevens worden in de huidige versie niet persistent opgeslagen en verdwijnen bij het vernieuwen of sluiten van de pagina.
 
 ## Auteurs
 
@@ -40,4 +42,4 @@ Het is toegestaan om deze tool te gebruiken voor het uitvoeren van intakes binne
 
 ## Disclaimer
 
-Dit instrument is specifiek afgestemd op de werkwijze en lokale regelingen van de **Gemeente Meppel**. Deze applicatie is momenteel een **experiment**; aan de berekeningen en resultaten kunnen geen rechten worden ontleend.
+De huidige versie bevat normen en regelingen die aansluiten bij de werkwijze en lokale regelingen van de **Gemeente Meppel**. Deze applicatie is momenteel een **experiment**; aan de berekeningen en resultaten kunnen geen rechten worden ontleend.
