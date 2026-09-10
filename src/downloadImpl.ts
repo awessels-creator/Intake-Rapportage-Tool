@@ -80,6 +80,7 @@ function simpleTable(headers: string[], rows: string[][]): Table {
 function simpleTableWithWidths(headers: string[], rows: string[][], colWidths: number[]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    columnWidths: colWidths,
     rows: [
       new TableRow({ children: headers.map((h, i) => headerCell(h, colWidths[i])) }),
       ...rows.map((row, i) => new TableRow({ children: row.map((c, j) => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined, width: colWidths[j] })) })),
