@@ -62,6 +62,33 @@ jobs:
           destination_dir: juli-2026
           keep_files: true
 
+  deploy-v2:
+    if: github.ref == 'refs/heads/v2'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          VITE_BASE_URL: /Intake-Rapportage-Tool/v2/
+
+      - name: Deploy v2 to /v2
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: v2
+          keep_files: true
+
   deploy-snelvragenlijst:
     if: github.ref == 'refs/heads/feat/snelvragenlijst'
     runs-on: ubuntu-latest
