@@ -67,13 +67,22 @@ function mergedQuick(manual: string, generated: string[]): string {
   return parts.join('\n\n')
 }
 
-function simpleTable(headers: string[], rows: string[][], colWidths?: number[]): Table {
+function simpleTable(headers: string[], rows: string[][]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    columnWidths: colWidths,
     rows: [
-      new TableRow({ children: headers.map((h, i) => headerCell(h, colWidths ? colWidths[i] : undefined)) }),
-      ...rows.map((row, i) => new TableRow({ children: row.map((c, j) => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined, width: colWidths ? colWidths[j] : undefined })) })),
+      new TableRow({ children: headers.map(h => headerCell(h)) }),
+      ...rows.map((row, i) => new TableRow({ children: row.map(c => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined })) })),
+    ],
+  })
+}
+
+function simpleTableWithWidths(headers: string[], rows: string[][], colWidths: number[]): Table {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({ children: headers.map((h, i) => headerCell(h, colWidths[i])) }),
+      ...rows.map((row, i) => new TableRow({ children: row.map((c, j) => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined, width: colWidths[j] })) })),
     ],
   })
 }
@@ -250,10 +259,10 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(h2('10. Schulden'))
   const schuldenData = state.schuldenData.filter(s => s.s || s.b)
   if (schuldenData.length > 0) {
-    children.push(simpleTable(
+    children.push(simpleTableWithWidths(
       ['Schuldeiser', 'Incassobureau/Deurwaarder', 'Dossier/Referentie', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'],
       schuldenData.map(s => [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—']),
-      [18, 18, 14, 12, 10, 10, 10, 8, 8]
+      [18, 16, 12, 10, 10, 10, 10, 8, 6]
     ));
     children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true }));
     children.push(para('* Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.', { color: '666666' }));
