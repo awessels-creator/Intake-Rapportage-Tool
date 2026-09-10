@@ -137,59 +137,56 @@ export interface SchuldInfo {
   pref: string;      // Preferent / Concurrent / Bijzonder / Afhankelijk
   lei: string;       // Schone lei: Ja / Nee / Bijzonder / Afhankelijk
   toelichting: string; // Korte toelichting
+  bron: string;      // Wettelijke bron / bronverwijzing
 }
 
 export const SCHULD_INFO: Record<string, SchuldInfo> = {
   // ── Woonlasten ──
-  huur: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
-  energie: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Afsluitdreiging maakt schuld niet preferent' },
-  water: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
+  huur: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie', bron: 'Bureau Wsnp Preferentielijst / NVVK-convenant Aedes' },
+  energie: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Afsluitdreiging maakt schuld niet preferent', bron: 'Bureau Wsnp Preferentielijst / NVVK-convenant Energie-Nederland' },
   
   // ── Zorg ──
-  zorg: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Gewone premie-/zorgschuld' },
-  cak: { pref: 'Bijzonder', lei: 'Bijzonder', toelichting: 'Eigen wettelijke regeling' },
+  zorg: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Gewone premie-/zorgschuld', bron: 'Bureau Wsnp Preferentielijst' },
+  cak: { pref: 'Bijzonder', lei: 'Bijzonder', toelichting: 'Eigen wettelijke regeling', bron: 'Bureau Wsnp Preferentielijst / CAK/NVVK' },
   
   // ── Fiscaal ──
-  belasting: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Fiscale preferentie (Belastingdienst)' },
-  toeslag: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke regels kunnen gelden' },
-  waterschap: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke fiscale regels' },
+  belasting: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Fiscale preferentie (Belastingdienst)', bron: 'Bureau Wsnp Preferentielijst / Belastingdienst + Eén overheidsconvenant' },
+  toeslag: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke regels kunnen gelden', bron: 'Bureau Wsnp Preferentielijst / Dienst Toeslagen + Eén overheidsconvenant' },
+  waterschap: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke fiscale regels', bron: 'Bureau Wsnp Preferentielijst / NVVK Lokale Overheid' },
   
   // ── Gemeente ──
-  gemeente_belasting: { pref: 'Concurrent', lei: 'Ja', toelichting: 'OZB, afvalstoffen-, rioolheffing e.d.' },
-  gemeente_bijstand: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
-  gemeente_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete zelf is niet preferent' },
-  gemeente_overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering' },
+  gemeente_belasting: { pref: 'Concurrent', lei: 'Ja', toelichting: 'OZB, afvalstoffen-, rioolheffing e.d.', bron: 'Bureau Wsnp + NVVK Lokale Overheid / lokale invorderingsregels' },
+  gemeente_bijstand: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie', bron: 'Participatiewet art. 60 lid 7 / Preferentielijst / NVVK' },
+  gemeente_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete zelf is niet preferent', bron: 'Participatiewet + Preferentielijst / NVVK' },
+  gemeente_overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering', bron: 'Bureau Wsnp Preferentielijst' },
   
   // ── UWV / SVB ──
-  uwv: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
-  uwv_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent' },
-  svb: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
-  svb_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent' },
+  uwv: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie', bron: 'Bureau Wsnp Preferentielijst / UWV/NVVK' },
+  uwv_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent', bron: 'Bureau Wsnp Preferentielijst / UWV/NVVK' },
+  svb: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie', bron: 'Bureau Wsnp Preferentielijst / SVB/NVVK' },
+  svb_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent', bron: 'Bureau Wsnp Preferentielijst / SVB/NVVK' },
   
   // ── DUO ──
-  studie: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Bijzondere regels rond DUO' },
+  studie: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Bijzondere regels rond DUO', bron: 'Bureau Wsnp Preferentielijst / DUO/NVVK' },
   
   // ── Privaat ──
-  krediet: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
-  incasso: { pref: 'Afhankelijk van oorspronkelijke schuld', lei: 'Afhankelijk', toelichting: 'Incasso verandert de rang niet' },
-  deurw: { pref: 'Afhankelijk van oorspronkelijke schuld', lei: 'Afhankelijk', toelichting: 'Onderliggende schuld bepaalt de rang' },
+  krediet: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie', bron: 'Bureau Wsnp Preferentielijst / NVVK/NVB' },
   
   // ── CJIB ──
-  boete_mulder: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen CJIB-regels' },
-  boete_terwee: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering' },
-  boete_rechterlijk: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering' },
-  boete_schade: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Belang slachtoffer speelt mee' },
-  boete_ontneming: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen regeling' },
+  boete_mulder: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen CJIB-regels', bron: 'Bureau Wsnp Preferentielijst / CJIB zelf' },
+  boete_terwee: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering', bron: 'Bureau Wsnp Preferentielijst / CJIB zelf' },
+  boete_rechterlijk: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering', bron: 'Bureau Wsnp Preferentielijst / CJIB zelf' },
+  boete_schade: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Belang slachtoffer speelt mee', bron: 'Bureau Wsnp Preferentielijst / CJIB zelf' },
+  boete_ontneming: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen regeling', bron: 'Bureau Wsnp Preferentielijst / CJIB zelf' },
   
   // ── Alimentatie ──
-  alimentatie_kind: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Sinds 1 juli 2025 preferent' },
-  alimentatie_partner: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Alimentatievordering' },
-  alimentatie_overig: { pref: 'Preferent / nader te bepalen', lei: 'Ja*', toelichting: 'Exacte grondslag kan van belang zijn' },
+  alimentatie_kind: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Sinds 1 juli 2025 preferent', bron: 'Bureau Wsnp Preferentielijst + wet / NVVK' },
+  alimentatie_partner: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Alimentatievordering', bron: 'Bureau Wsnp Preferentielijst + wet / NVVK' },
   
   // ── Overig ──
-  overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering' },
-  schade: { pref: 'Afhankelijk', lei: 'Afhankelijk', toelichting: 'Soort schade/vordering bepaalt behandeling' },
-  strafboete: { pref: 'Bijzonder', lei: 'Nee / bijzonder', toelichting: 'Niet als gewone schuld behandelen' },
+  overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering', bron: 'Bureau Wsnp Preferentielijst' },
+  schade: { pref: 'Afhankelijk', lei: 'Afhankelijk', toelichting: 'Soort schade/vordering bepaalt behandeling', bron: 'Bureau Wsnp Preferentielijst' },
+  strafboete: { pref: 'Bijzonder', lei: 'Nee / bijzonder', toelichting: 'Niet als gewone schuld behandelen', bron: 'Bureau Wsnp Preferentielijst' },
 }
 
 export interface LastenDef {

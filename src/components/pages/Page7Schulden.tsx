@@ -48,7 +48,6 @@ export default function Page7Schulden() {
                         <optgroup label="Woonlasten">
                           <option value="huur">Huurachterstand</option>
                           <option value="energie">Energieschuld</option>
-                          <option value="water">Waterschapschuld</option>
                         </optgroup>
                         <optgroup label="Zorg">
                           <option value="zorg">Zorgverzekeraar</option>
@@ -70,8 +69,6 @@ export default function Page7Schulden() {
                         </optgroup>
                         <optgroup label="Privaat">
                           <option value="krediet">Krediet / lening</option>
-                          <option value="incasso">Incassoschuld</option>
-                          <option value="deurw">Deurwaardersschuld</option>
                         </optgroup>
                         <optgroup label="CJIB">
                           <option value="boete_mulder">CJIB – Mulderboete</option>
@@ -83,7 +80,6 @@ export default function Page7Schulden() {
                         <optgroup label="Alimentatie">
                           <option value="alimentatie_kind">Kinderalimentatie</option>
                           <option value="alimentatie_partner">Partneralimentatie</option>
-                          <option value="alimentatie_overig">Overige alimentatie</option>
                         </optgroup>
                         <optgroup label="Overig">
                           <option value="overig">Overig</option>
