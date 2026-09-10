@@ -133,21 +133,63 @@ export const VERMOGEN_LABELS: { key: string; label: string }[] = [
   { key: 'pensioen_alleen', label: 'Pensioengerechtigde — alleenstaand / paar' },
 ]
 
-export interface SchuldInfo { pref: string; lei: string }
+export interface SchuldInfo {
+  pref: string;      // Preferent / Concurrent / Bijzonder / Afhankelijk
+  lei: string;       // Schone lei: Ja / Nee / Bijzonder / Afhankelijk
+  toelichting: string; // Korte toelichting
+}
 
 export const SCHULD_INFO: Record<string, SchuldInfo> = {
-  huur: { pref: 'Ja', lei: 'Ja — preferent, valt mee in traject' },
-  energie: { pref: 'Ja (bij afsluiting dreiging)', lei: 'Ja — in principe' },
-  belasting: { pref: 'Ja — Belastingdienst is preferente crediteur', lei: 'Deels — CJIB-boetes vallen hier buiten' },
-  zorg: { pref: 'Nee', lei: 'Ja' },
-  krediet: { pref: 'Nee', lei: 'Ja' },
-  incasso: { pref: 'Nee', lei: 'Ja' },
-  deurw: { pref: 'Afhankelijk van soort', lei: 'Afhankelijk van onderliggende schuld' },
-  boete_mulder: { pref: 'Ja — CJIB is preferent', lei: 'Nee — CJIB blijft doorlopen na schone lei' },
-  boete_terwee: { pref: 'Ja — CJIB is preferent', lei: 'Nee — CJIB blijft doorlopen na schone lei' },
-  studie: { pref: 'Nee', lei: 'Nee — DUO loopt na afloop schuldentraject door (hervatten)' },
-  alimentatie: { pref: 'Ja — onderhoudsplicht is preferent', lei: 'Nee — lopende en achterstallige alimentatie door na traject' },
-  overig: { pref: 'Nee', lei: 'Ja (tenzij specifieke uitzondering)' },
+  // ── Woonlasten ──
+  huur: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
+  energie: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Afsluitdreiging maakt schuld niet preferent' },
+  water: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
+  
+  // ── Zorg ──
+  zorg: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Gewone premie-/zorgschuld' },
+  cak: { pref: 'Bijzonder', lei: 'Bijzonder', toelichting: 'Eigen wettelijke regeling' },
+  
+  // ── Fiscaal ──
+  belasting: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Fiscale preferentie (Belastingdienst)' },
+  toeslag: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke regels kunnen gelden' },
+  waterschap: { pref: 'Preferent / bijzonder', lei: 'Ja*', toelichting: 'Specifieke fiscale regels' },
+  
+  // ── Gemeente ──
+  gemeente_belasting: { pref: 'Concurrent', lei: 'Ja', toelichting: 'OZB, afvalstoffen-, rioolheffing e.d.' },
+  gemeente_bijstand: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
+  gemeente_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete zelf is niet preferent' },
+  gemeente_overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering' },
+  
+  // ── UWV / SVB ──
+  uwv: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
+  uwv_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent' },
+  svb: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Wettelijke preferentie' },
+  svb_boete: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Boete is niet preferent' },
+  
+  // ── DUO ──
+  studie: { pref: 'Concurrent', lei: 'Ja*', toelichting: 'Bijzondere regels rond DUO' },
+  
+  // ── Privaat ──
+  krediet: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Geen wettelijke preferentie' },
+  incasso: { pref: 'Afhankelijk van oorspronkelijke schuld', lei: 'Afhankelijk', toelichting: 'Incasso verandert de rang niet' },
+  deurw: { pref: 'Afhankelijk van oorspronkelijke schuld', lei: 'Afhankelijk', toelichting: 'Onderliggende schuld bepaalt de rang' },
+  
+  // ── CJIB ──
+  boete_mulder: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen CJIB-regels' },
+  boete_terwee: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering' },
+  boete_rechterlijk: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Strafrechtelijke vordering' },
+  boete_schade: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Belang slachtoffer speelt mee' },
+  boete_ontneming: { pref: 'Bijzonder', lei: 'Nee', toelichting: 'Eigen regeling' },
+  
+  // ── Alimentatie ──
+  alimentatie_kind: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Sinds 1 juli 2025 preferent' },
+  alimentatie_partner: { pref: 'Preferent', lei: 'Ja*', toelichting: 'Alimentatievordering' },
+  alimentatie_overig: { pref: 'Preferent / nader te bepalen', lei: 'Ja*', toelichting: 'Exacte grondslag kan van belang zijn' },
+  
+  // ── Overig ──
+  overig: { pref: 'Concurrent', lei: 'Ja', toelichting: 'Tenzij specifieke uitzondering' },
+  schade: { pref: 'Afhankelijk', lei: 'Afhankelijk', toelichting: 'Soort schade/vordering bepaalt behandeling' },
+  strafboete: { pref: 'Bijzonder', lei: 'Nee / bijzonder', toelichting: 'Niet als gewone schuld behandelen' },
 }
 
 export interface LastenDef {
