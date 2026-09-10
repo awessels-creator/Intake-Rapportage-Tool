@@ -8,7 +8,7 @@ export const today = () => new Date().toISOString().split('T')[0]
 
 export const mkBank = (): BankItem => ({ iban: '', naam: '', type: 'betaal', saldo: '', rood: false, nieuw: '', opm: '' })
 export const mkInk = (): InkomenItem => ({ bron: '', type: '', netto: '', uren: '', beslag: false, invoerPer: 'mnd', inclVak: false, weekBedrag: '' })
-export const mkSchuld = (): SchuldItem => ({ s: '', t: '', subt: '', b: '', afl: '', st: '' })
+export const mkSchuld = (): SchuldItem => ({ s: '', t: '', subt: '', b: '', afl: '', st: '', incasso: '', dossier: '' })
 export const mkBeslag = (): BeslagItem => ({ wie: '', soort: '', bedrag: '' })
 export const mkVoertuig = (): VoertuigItem => ({ kenteken: '', merk: '', bouwjaar: '', waarde: '', reden: '', behoud: '' })
 

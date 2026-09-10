@@ -47,6 +47,8 @@ export interface SchuldItem {
   b: string
   afl: string
   st: string
+  incasso: string  // '' = nee, anders naam incassobureau/deurwaarder
+  dossier: string  // omschrijving / klantnummer / dossiernummer
 }
 
 export interface AdviesItem {

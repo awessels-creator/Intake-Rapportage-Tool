@@ -22,7 +22,7 @@ export default function Page7Schulden() {
               <tr>
                 <th>Schuldeiser</th><th>Soort</th><th>Openstaand</th>
                 <th>Aflospl./mnd</th><th>Preferent</th><th>Schone lei?</th>
-                <th>Status</th><th></th>
+                <th>Incassobureau/Deurwaarder</th><th>Dossier/Referentie</th><th>Status</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -77,6 +77,14 @@ export default function Page7Schulden() {
                     </td>
                     <td className="text-[0.72rem] text-inkl" style={{ minWidth: 90 }}>{info.pref}</td>
                     <td className="text-[0.72rem] text-inkl" style={{ minWidth: 110 }}>{info.lei}</td>
+                    <td>
+                      <input className="inp" style={{ minWidth: 120 }} value={s.incasso} placeholder="Incassobureau/Deurwaarder"
+                        onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { incasso: e.target.value }) })} />
+                    </td>
+                    <td>
+                      <input className="inp" style={{ minWidth: 120 }} value={s.dossier} placeholder="Klantnummer / dossier"
+                        onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { dossier: e.target.value }) })} />
+                    </td>
                     <td>
                       <select className="inp" style={{ minWidth: 95 }} value={s.st}
                         onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { st: e.target.value }) })}>

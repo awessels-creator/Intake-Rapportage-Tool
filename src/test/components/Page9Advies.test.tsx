@@ -53,7 +53,7 @@ describe('Page9Advies', () => {
 
   test('shows total schulden in summary', () => {
     renderWithState(<Page9Advies />, {
-      schuldenData: [{ s: 'Creditcard', t: 'krediet', subt: '', b: '5000', afl: '', st: '' }],
+      schuldenData: [{ s: 'Creditcard', t: 'krediet', subt: '', b: '5000', afl: '', st: '', incasso: '', dossier: '' }],
     })
     expect(screen.getByText('Totaal schulden')).toBeInTheDocument()
     const schuldenCell = screen.getByText('Totaal schulden').closest('div')?.parentElement
