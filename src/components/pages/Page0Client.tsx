@@ -5,9 +5,10 @@ import Card from '../shared/Card'
 import NavRow from '../shared/NavRow'
 import RadioGroup from '../shared/RadioGroup'
 import Alert from '../shared/Alert'
-import { HiUser, HiExclamationTriangle, HiOutlineBanknotes, HiXMark, HiArrowRight, HiOutlineAcademicCap, HiPlus } from 'react-icons/hi2'
+import { HiUser, HiExclamationTriangle, HiOutlineBanknotes, HiXMark, HiArrowRight, HiOutlineAcademicCap, HiPlus, HiArrowUpTray } from 'react-icons/hi2'
 import { MdOutlineElderly, MdChildCare } from 'react-icons/md'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useDocxUpload } from '../../hooks/useDocxUpload'
 
 const L = 'block text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em]'
 const SL = 'text-[.69rem] font-semibold text-inkl uppercase tracking-[.05em] mt-[3px] mb-[7px] pb-[3px] border-b border-rule'
@@ -16,26 +17,163 @@ const row3 = 'grid grid-cols-3 gap-[11px] mb-[11px]'
 const row4 = 'grid grid-cols-4 gap-[11px] mb-[11px]'
 
 export default function Page0Client() {
-  const { state, set, goTo } = useForm()
+  const { state, set, goTo, resetKey } = useForm()
   const { NORM, NORMPERIODE } = useNormen()
 
-  // Automatische leefsituatie-berekening op basis van leeftijden
+  const { openFilePicker, uploadState, resetUploadState } = useDocxUpload()
+  const [plakTekst, setPlakTekst] = useState('')
+  const [plakFout, setPlakFout] = useState<string | null>(null)
+  const [plakSucces, setPlakSucces] = useState(false)
+  const [toonJeugdModal, setToonJeugdModal] = useState(false)
+  const [toonPensioenModal, setToonPensioenModal] = useState(false)
+
+  // Reset modals bij sessie-wissen
+  useEffect(() => {
+    setToonJeugdModal(false)
+    setToonPensioenModal(false)
+  }, [resetKey])
+
+  const verwerkPlakTekst = () => {
+    setPlakFout(null)
+    setPlakSucces(false)
+    if (!plakTekst.trim()) {
+      setPlakFout('Plak eerst je tekst hierboven.')
+      return
+    }
+    const tekst = plakTekst
+    const result: Record<string, string> = {}
+
+    // Split in regels en verwijder lege regels
+    const regels = tekst.split(/[\n\r]+/).map((r: string) => r.trim()).filter(Boolean)
+
+    // Bekende labels in het rapport (alleen echte labels, geen waarden)
+    const labels = new Set([
+      'cliëntnr', 'cliënt nr', 'clientnr',
+      'naam', 'voornaam', 'geb. datum', 'geboortedatum',
+      'adres/postcode', 'adres', 'postcode',
+      'woonplaats', 'burg. staat', 'burgerlijke staat',
+      'nationaliteit', 'bsn',
+      'telefoonnummer(s)', 'telefoonnummer', 'telefoon',
+      'e-mail', 'email',
+      'contactgegevens', 'contactgegevens:'
+    ])
+
+    const isLabel = (regel: string) => {
+      const r = regel.toLowerCase().trim()
+      for (const label of labels) {
+        if (r === label || r.startsWith(label)) return true
+      }
+      return false
+    }
+
+    // Zoek naar label-waarde paren
+    for (let i = 0; i < regels.length; i++) {
+      const regel = regels[i]
+      const regelLower = regel.toLowerCase()
+
+      // Cliëntnummer
+      if (regelLower.startsWith('cliëntnr') || regelLower.startsWith('cliënt nr') || regelLower.startsWith('clientnr')) {
+        const val = regel.replace(/^[^\d]*/, '').trim()
+        if (val) {
+          result.clientnr = val
+        } else if (i + 1 < regels.length && !isLabel(regels[i + 1])) {
+          result.clientnr = regels[i + 1].trim()
+        }
+      }
+      // Naam (voorletters + achternaam)
+      else if (regelLower === 'naam' && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.achternaam = regels[i + 1].trim()
+      }
+      // Voornamen
+      else if (regelLower === 'voornaam' && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.voornaam = regels[i + 1].trim()
+      }
+      // Geboortedatum - meerdere formaten ondersteunen
+      else if ((regelLower.startsWith('geb') || regelLower.includes('geboorte')) && (regelLower.includes('datum') || regelLower.includes('date')) && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        const rawDate = regels[i + 1].trim()
+        // Converteer DD-MM-YYYY naar YYYY-MM-DD voor <input type="date">
+        const parts = rawDate.split(/[./-]/)
+        if (parts.length === 3) {
+          const [d, m, y] = parts
+          result.geboortedatum = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+        } else {
+          result.geboortedatum = rawDate
+        }
+      }
+      // Adres/postcode
+      else if (regelLower.startsWith('adres') && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.adres = regels[i + 1].trim()
+      }
+      // Woonplaats
+      else if (regelLower === 'woonplaats' && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.woonplaats = regels[i + 1].trim()
+      }
+      // Burgerlijke staat
+      else if (regelLower.startsWith('burg') && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        const val = regels[i + 1].trim().toLowerCase()
+        if (val.includes('ongehuwd')) result.burgstaat = 'ongehuwd'
+        else if (val.includes('gehuwd')) {
+          result.burgstaat = 'gehuwd'
+          if (val.includes('gemeenschap van goederen') || val.includes('gvg')) result.huwelijksvoorwaarden = 'gvg'
+          else if (val.includes('huwelijksvoorwaarden') || val.includes('huw.vw')) result.huwelijksvoorwaarden = 'huw.vw'
+        }
+        else if (val.includes('geregistreerd')) {
+          result.burgstaat = 'geregistreerd'
+          if (val.includes('partnerschapsvoorwaarden')) result.huwelijksvoorwaarden = 'partnerschapsvoorwaarden'
+        }
+        else if (val.includes('gescheiden')) result.burgstaat = 'gescheiden'
+        else if (val.includes('samenwonend')) result.burgstaat = 'samenwonend'
+        else if (val.includes('weduwe') || val.includes('weduwnaar')) result.burgstaat = 'weduwe'
+        else result.burgstaat = regels[i + 1].trim()
+      }
+      // Nationaliteit
+      else if (regelLower === 'nationaliteit' && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.nationaliteit = regels[i + 1].trim()
+      }
+      // BSN
+      else if (regelLower === 'bsn' && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.bsn = regels[i + 1].trim().replace(/\D/g, '')
+      }
+      // Telefoonnummer(s)
+      else if (regelLower.startsWith('telefoon') && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.telefoon = regels[i + 1].trim()
+      }
+      // E-mail
+      else if (regelLower.includes('mail') && i + 1 < regels.length && !isLabel(regels[i + 1])) {
+        result.email = regels[i + 1].trim()
+      }
+    }
+
+    const veldenGevuld = Object.keys(result).length
+    if (veldenGevuld === 0) {
+      setPlakFout('Geen herkenbare velden gevonden. Controleer of je het hele rapport hebt gekopieerd.')
+      return
+    }
+
+    set(result)
+    setPlakSucces(true)
+    setPlakTekst('')
+  }
+
+
+  // Automatische leefsituatie-berekening op basis van leeftijden en burgstaat
   useEffect(() => {
     const clientAge = lftdN(state.geboortedatum)
     const partnerAge = lftdN(state.partner_geb)
     const hasPartner = state.heeft_partner === 'ja'
-    // Jeugdige <21 met een partner van 21+ is wettelijk zelfstandig (samenwonend/gehuwd):
-    // de tool vult dan gewoon de 21+-norm in. Alleen zónder meerderjarige partner
-    // (of geen partner) geldt de jeugd-/kostendelersregeling en kiest de cliënt zelf.
-    const jeugdMetMeerderjarigePartner = clientAge >= 0 && clientAge < 21 && hasPartner && partnerAge >= 21
-
-    if (clientAge >= 0 && clientAge < 21 && !jeugdMetMeerderjarigePartner) return // jonger dan 21 zonder 21+ partner: geen automatische 21+-norm
-
-    let newLeefsituatie = ''
+    const isGehuwdOfGeregistreerd = state.burgstaat === 'gehuwd' || state.burgstaat === 'geregistreerd'
     const aowAge = 67
 
-    if (hasPartner && partnerAge >= 21) {
-      // Samenwonend
+    let newLeefsituatie = ''
+
+    if (clientAge >= 0 && clientAge < 21 && !(hasPartner && partnerAge >= 21)) {
+      // Jeugdige <21 zonder meerderjarige partner - toon modal
+      if (state.leefsituatie !== 'jeugd_thuis' && state.leefsituatie !== 'jeugd_zelfstandig' && state.leefsituatie !== 'instelling') {
+        setToonJeugdModal(true)
+      }
+      return
+    } else if (hasPartner || isGehuwdOfGeregistreerd) {
+      // Samenwonend / Gehuwd / Geregistreerd partnerschap
       if (clientAge >= aowAge && partnerAge >= aowAge) {
         newLeefsituatie = 'pensioen_paar'
       } else if (clientAge >= aowAge) {
@@ -43,29 +181,22 @@ export default function Page0Client() {
       } else {
         newLeefsituatie = 'samenwonend'
       }
-    } else if (hasPartner && partnerAge > 0 && partnerAge < 21) {
-      // Partner jonger dan 21
-      newLeefsituatie = 'alleenstaand'
-    } else if (!hasPartner) {
+    } else {
       // Alleenstaand
-      if (clientAge >= aowAge) {
-        newLeefsituatie = 'pensioen_alleen'
-      } else {
-        newLeefsituatie = 'alleenstaand'
-      }
+      newLeefsituatie = clientAge >= aowAge ? 'pensioen_alleen' : 'alleenstaand'
     }
 
-    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie && (!isJeugdOfInstelling(state.leefsituatie) || jeugdMetMeerderjarigePartner)) {
+    if (newLeefsituatie && newLeefsituatie !== state.leefsituatie) {
+      // Toon pensioen-modal bij gehuwd/geregistreerd met AOW-gerechtigde
+      if ((state.burgstaat === 'gehuwd' || state.burgstaat === 'geregistreerd') && 
+          (newLeefsituatie === 'pensioen_gemengd' || newLeefsituatie === 'pensioen_paar')) {
+        setToonPensioenModal(true)
+        return
+      }
       const norm = NORM[newLeefsituatie]
       set({ leefsituatie: newLeefsituatie, ...(norm ? { bijstandsnorm: String(norm) } : {}) })
     }
-
-    // Bij jeugd/instelling bepaalt de leefsituatie al waar de cliënt woont:
-    // koppel woont_bij automatisch zodat het niet dubbel hoeft te worden ingevuld.
-    if (state.leefsituatie === 'jeugd_thuis') set({ woont_bij: 'ouders' })
-    else if (state.leefsituatie === 'jeugd_zelfstandig') set({ woont_bij: 'zelf' })
-    else if (state.leefsituatie === 'instelling') set({ woont_bij: 'instelling' })
-  }, [state.geboortedatum, state.partner_geb, state.heeft_partner, state.leefsituatie, set])
+  }, [state.geboortedatum, state.partner_geb, state.heeft_partner, state.burgstaat, state.woont_bij, set])
 
   const isPensioen = state.leefsituatie.startsWith('pensioen')
   const age = lftdN(state.geboortedatum)
@@ -92,12 +223,89 @@ export default function Page0Client() {
 
   return (
     <div>
+      {/* Plak-sectie */}
+      <Card icon={<HiArrowUpTray />} title="Plak cliëntgegevens uit je rapport">
+        <p className="text-[0.75rem] text-inkl mb-2">Kopieer het cliëntgegevens-blok uit je rapport/notities Geldzorgen en plak het hier. De tool vult alles automatisch in.</p>
+        <textarea
+          value={plakTekst}
+          onChange={e => { setPlakTekst(e.target.value); setPlakSucces(false); setPlakFout(null); }}
+          placeholder=""
+          className="w-full h-32 p-3 border border-rule rounded-[8px] text-[0.8rem] resize-y"
+        />
+        <button
+          type="button"
+          onClick={verwerkPlakTekst}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 text-[0.77rem] font-medium rounded-md border border-rule text-inkl bg-transparent hover:bg-accents transition-all duration-150 cursor-pointer"
+        >
+          <HiArrowUpTray className="text-[0.9rem]" />
+          Verwerk gegevens
+        </button>
+        {plakFout && (
+          <p className="text-[0.75rem] text-warn mt-2 flex items-center gap-1"><HiExclamationTriangle /> {plakFout}</p>
+        )}
+        {plakSucces && (
+          <p className="text-[0.75rem] text-ok mt-2">✓ Gegevens verwerkt! Klik op 'Cliëntgegevens' om te controleren.</p>
+        )}
+      </Card>
+
+      {/* Jeugd-melding */}
+      {toonJeugdModal && (
+        <Alert variant="warn" icon={<HiExclamationTriangle />} title="Jeugdige &lt;21 — waar woont deze persoon?">
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            <button type="button" className="bg-warns border border-warn-border rounded-[6px] px-3 py-2 text-sm font-medium text-warn-dark cursor-pointer hover:bg-warn-border transition-colors" onClick={() => { set({ leefsituatie: 'jeugd_thuis', woont_bij: 'ouders' }); setToonJeugdModal(false) }}>
+              Thuis bij ouders
+            </button>
+            <button type="button" className="bg-warns border border-warn-border rounded-[6px] px-3 py-2 text-sm font-medium text-warn-dark cursor-pointer hover:bg-warn-border transition-colors" onClick={() => { set({ leefsituatie: 'jeugd_zelfstandig', woont_bij: 'zelf' }); setToonJeugdModal(false) }}>
+              Zelfstandig wonend
+            </button>
+            <button type="button" className="bg-warns border border-warn-border rounded-[6px] px-3 py-2 text-sm font-medium text-warn-dark cursor-pointer hover:bg-warn-border transition-colors" onClick={() => { set({ leefsituatie: 'instelling', woont_bij: 'instelling' }); setToonJeugdModal(false) }}>
+              Instelling
+            </button>
+          </div>
+        </Alert>
+      )}
+
+      {/* Pensioen-modal */}
+      {toonPensioenModal && (
+        <Alert variant="info" icon={<MdOutlineElderly />} title="Pensioengerechtigde met partner">
+          <p className="text-sm mb-3">De cliënt is pensioengerechtigd en heeft een partner. Is de partner ook pensioengerechtigd (AOW-leeftijd) of jonger?</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" className="bg-infos border border-info-border rounded-[6px] px-3 py-2 text-sm font-medium text-info-text cursor-pointer hover:bg-info-border transition-colors" onClick={() => { set({ leefsituatie: 'pensioen_paar', bijstandsnorm: String(NORM['pensioen_paar'] || '') }); setToonPensioenModal(false) }}>
+              Partner is ook AOW-gerechtigd
+            </button>
+            <button type="button" className="bg-infos border border-info-border rounded-[6px] px-3 py-2 text-sm font-medium text-info-text cursor-pointer hover:bg-info-border transition-colors" onClick={() => { set({ leefsituatie: 'pensioen_gemengd', bijstandsnorm: String(NORM['pensioen_gemengd'] || '') }); setToonPensioenModal(false) }}>
+              Partner is jonger dan AOW-leeftijd
+            </button>
+          </div>
+        </Alert>
+      )}
+
+      {/* Upload-sectie */}
+      <Card icon={<HiArrowUpTray />} title="Eerder gewerkt?">
+        <p className="text-[0.75rem] text-inkl mb-2">Heb je al eerder een rapport gedownload? Laad het hier om verder te werken waar je gebleven was.</p>
+        <button
+          type="button"
+          onClick={() => { openFilePicker(); resetUploadState(); }}
+          disabled={uploadState.loading}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 text-[0.77rem] font-medium rounded-md border border-rule text-inkl bg-transparent hover:bg-accents transition-all duration-150 cursor-pointer disabled:opacity-50"
+        >
+          <HiArrowUpTray className="text-[0.9rem]" />
+          {uploadState.loading ? 'Bezig met lezen...' : 'Laad eerder rapport (.docx)'}
+        </button>
+        {uploadState.error && (
+          <p className="text-[0.75rem] text-warn mt-2 flex items-center gap-1"><HiExclamationTriangle /> {uploadState.error}</p>
+        )}
+        {uploadState.success && (
+          <p className="text-[0.75rem] text-ok mt-2">✓ Rapport geladen! Je kunt nu verder werken.</p>
+        )}
+      </Card>
+
       <Card icon={<HiUser />} title="Cliëntgegevens">
         <div className={SL}>Persoonsgegevens</div>
         <div className={row4}>
           <div><label className={L}>Cliëntnummer</label><input className="inp" value={state.clientnr} onChange={e => set({ clientnr: e.target.value })} placeholder="GZ-2026-..." /></div>
-          <div><label className={L}>Voornaam</label><input className="inp" value={state.voornaam} onChange={e => set({ voornaam: e.target.value })} /></div>
-          <div><label className={L}>Achternaam</label><input className="inp" value={state.achternaam} onChange={e => set({ achternaam: e.target.value })} /></div>
+          <div><label className={L}>Voornamen</label><input className="inp" value={state.voornaam} onChange={e => set({ voornaam: e.target.value })} /></div>
+          <div><label className={L}>Voorletters + achternaam</label><input className="inp" value={state.achternaam} onChange={e => set({ achternaam: e.target.value })} /></div>
           <div><label className={L}>Geboortedatum</label><input type="date" className="inp" value={state.geboortedatum} onChange={e => set({ geboortedatum: e.target.value })} /></div>
         </div>
         <div className={row3}>
@@ -110,7 +318,7 @@ export default function Page0Client() {
           </div>
           <div>
             <label className={L}>Burgerlijke staat</label>
-            <select className="inp" value={state.burgstaat} onChange={e => set({ burgstaat: e.target.value })}>
+            <select className="inp" value={state.burgstaat} onChange={e => set({ burgstaat: e.target.value, huwelijksvoorwaarden: '' })}>
               <option value="">— Selecteer —</option>
               <option value="ongehuwd">Ongehuwd</option>
               <option value="gehuwd">Gehuwd</option>
@@ -119,6 +327,30 @@ export default function Page0Client() {
               <option value="weduwe">Weduwe/weduwnaar</option>
               <option value="samenwonend">Samenwonend (niet geregistreerd)</option>
             </select>
+            {(state.burgstaat === 'gehuwd' || state.burgstaat === 'geregistreerd') && (
+              <div className="mt-2">
+                <label className={L}>Huwelijksvoorwaarden</label>
+                <div className="flex gap-4 mt-1">
+                  {state.burgstaat === 'gehuwd' ? (
+                    <>
+                      <label className="flex items-center gap-1 text-sm cursor-pointer">
+                        <input type="checkbox" checked={state.huwelijksvoorwaarden === 'gvg'} onChange={e => set({ huwelijksvoorwaarden: e.target.checked ? 'gvg' : '' })} />
+                        Gemeenschap van goederen (gvg)
+                      </label>
+                      <label className="flex items-center gap-1 text-sm cursor-pointer">
+                        <input type="checkbox" checked={state.huwelijksvoorwaarden === 'huw.vw'} onChange={e => set({ huwelijksvoorwaarden: e.target.checked ? 'huw.vw' : '' })} />
+                        Huwelijksvoorwaarden (huw.vw)
+                      </label>
+                    </>
+                  ) : (
+                    <label className="flex items-center gap-1 text-sm cursor-pointer">
+                      <input type="checkbox" checked={state.huwelijksvoorwaarden === 'partnerschapsvoorwaarden'} onChange={e => set({ huwelijksvoorwaarden: e.target.checked ? 'partnerschapsvoorwaarden' : '' })} />
+                      Partnerschapsvoorwaarden
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <div><label className={L}>Nationaliteit</label><input className="inp" value={state.nationaliteit} onChange={e => set({ nationaliteit: e.target.value })} placeholder="Bijv. Nederlands" /></div>
         </div>
@@ -240,6 +472,13 @@ export default function Page0Client() {
                 <div><label className={L}>Reden partner niet in regeling</label><input className="inp" value={state.partner_niet_reden} onChange={e => set({ partner_niet_reden: e.target.value })} placeholder="Bijv. partner heeft eigen traject..." /></div>
               )}
             </div>
+          </div>
+        )}
+
+        {state.heeft_partner === 'nee' && (
+          <div className="mb-[11px]">
+            <label className={L}>Toelichting: waarom is de partner niet in de regeling?</label>
+            <textarea className="inp" rows={2} value={state.partner_niet_reden} onChange={e => set({ partner_niet_reden: e.target.value })} placeholder="Bijv. partner wil niet meedoen, partner heeft eigen regeling, etc." />
           </div>
         )}
 

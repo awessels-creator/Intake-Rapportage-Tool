@@ -33,7 +33,7 @@ export function mkInitial(): FormState {
   return {
     currentPage: 0,
     clientnr: '', voornaam: '', achternaam: '', geboortedatum: '', bsn: '',
-    burgstaat: '', nationaliteit: '', geslacht: '', aanspreektitel: '', aanspreek_vorm: '', adres: '', woonplaats: '', telefoon: '',
+    burgstaat: '', huwelijksvoorwaarden: '', nationaliteit: '', geslacht: '', aanspreektitel: '', aanspreek_vorm: '', adres: '', woonplaats: '', telefoon: '',
     email: '', leefsituatie: '', datum_intake: d,
     heeft_partner: '', partner_vnaam: '', partner_anaam: '', partner_geb: '',
     partner_bsn: '', partner_reg: '', partner_niet_reden: '',

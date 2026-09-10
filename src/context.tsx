@@ -10,6 +10,7 @@ interface Ctx {
   goTo: (n: number) => void
   resetForm: () => void
   wissen: () => void
+  resetKey: number
   herstelVraag: boolean
   herstelSessie: () => void
   negeerHerstel: () => void
@@ -40,6 +41,7 @@ const FormCtx = createContext<Ctx | null>(null)
 export function FormProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<FormState>(mkInitial)
   const [herstelVraag, setHerstelVraag] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
 
   // Bij opstart: check of er een niet-afgeronde sessie is
   useEffect(() => {
@@ -79,12 +81,14 @@ export function FormProvider({ children }: { children: ReactNode }) {
     if (!confirm('Nieuw formulier starten? Alle gegevens worden gewist.')) return
     wisSessie()
     setState(mkInitial())
+    setResetKey(k => k + 1)
   }
 
   const wissen = () => {
     wisSessie()
     setState(mkInitial())
     setHerstelVraag(false)
+    setResetKey(k => k + 1)
   }
 
   const herstelSessie = () => {
@@ -99,7 +103,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <FormCtx.Provider value={{ state, set, goTo, resetForm, wissen, herstelVraag, herstelSessie, negeerHerstel }}>
+    <FormCtx.Provider value={{ state, set, goTo, resetForm, wissen, herstelVraag, herstelSessie, negeerHerstel, resetKey }}>
       {children}
     </FormCtx.Provider>
   )

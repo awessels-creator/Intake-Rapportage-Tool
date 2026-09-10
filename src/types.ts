@@ -74,6 +74,7 @@ export interface FormState {
   geboortedatum: string
   bsn: string
   burgstaat: string
+  huwelijksvoorwaarden: string  // '' | 'gvg' | 'huw.vw' (bij gehuwd) | 'partnerschapsvoorwaarden' (bij geregistreerd)
   nationaliteit: string
   geslacht: string          // 'man' | 'vrouw' | 'non-binair' | ''
   aanspreektitel: string    // 'voornaam' | 'meneer' | 'mevrouw' | 'hen' | ''

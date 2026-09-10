@@ -3,6 +3,7 @@
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
+import { addSessionDataToDocxBlob } from './docxSession'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText, aanspreekVorm } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
@@ -309,8 +310,10 @@ export async function buildAndSaveWord(state: FormState) {
     }],
   })
 
-  const blob = await Packer.toBlob(doc)
-  const url = URL.createObjectURL(blob)
+  const arrayBuffer = await Packer.toArrayBuffer(doc)
+  // Voeg sessie-data toe als verborgen custom property
+  const blobWithSession = await addSessionDataToDocxBlob(arrayBuffer, state)
+  const url = URL.createObjectURL(blobWithSession)
   const a = document.createElement('a')
   a.href = url
   a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_model_${MODEL}_${datum}.docx`

@@ -1,10 +1,12 @@
 import { useForm } from '../context'
 import { downloadWord } from '../download'
+import { useDocxUpload } from '../hooks/useDocxUpload'
 import ModelPreviewSwitch from './ModelPreviewSwitch'
-import { HiArrowPath, HiArrowDownTray } from 'react-icons/hi2'
+import { HiArrowPath, HiArrowDownTray, HiArrowUpTray } from 'react-icons/hi2'
 
 export default function TopBar() {
   const { state, resetForm } = useForm()
+  const { openFilePicker, uploadState, resetUploadState } = useDocxUpload()
 
   return (
     <div className="sticky top-0 z-200 flex items-center justify-between px-[22px] py-[10px] bg-accent text-white">
@@ -15,6 +17,15 @@ export default function TopBar() {
         <ModelPreviewSwitch />
       </div>
       <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={() => { openFilePicker(); resetUploadState(); }}
+          disabled={uploadState.loading}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 text-[0.77rem] font-medium rounded-md border border-white/30 text-white/80 bg-transparent hover:bg-white/10 transition-all duration-150 cursor-pointer disabled:opacity-50"
+        >
+          <HiArrowUpTray className="text-[0.9rem]" />
+          {uploadState.loading ? 'Bezig...' : 'Laad rapport'}
+        </button>
         <button
           type="button"
           onClick={resetForm}
