@@ -27,9 +27,10 @@ function cell(text: string, opts?: { bold?: boolean; color?: string; shading?: s
   })
 }
 
-function headerCell(text: string): TableCell {
+function headerCell(text: string, width?: number): TableCell {
   return new TableCell({
     children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: 'FFFFFF', font: 'Arial', size: 19 })] })],
+    width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
     shading: { fill: ORANGE, type: ShadingType.CLEAR },
     borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
   })
@@ -66,12 +67,13 @@ function mergedQuick(manual: string, generated: string[]): string {
   return parts.join('\n\n')
 }
 
-function simpleTable(headers: string[], rows: string[][]): Table {
+function simpleTable(headers: string[], rows: string[][], colWidths?: number[]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    columnWidths: colWidths,
     rows: [
-      new TableRow({ children: headers.map(h => headerCell(h)) }),
-      ...rows.map((row, i) => new TableRow({ children: row.map(c => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined })) })),
+      new TableRow({ children: headers.map((h, i) => headerCell(h, colWidths ? colWidths[i] : undefined)) }),
+      ...rows.map((row, i) => new TableRow({ children: row.map((c, j) => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined, width: colWidths ? colWidths[j] : undefined })) })),
     ],
   })
 }
@@ -250,10 +252,12 @@ export async function buildAndSaveWord(state: FormState) {
   if (schuldenData.length > 0) {
     children.push(simpleTable(
       ['Schuldeiser', 'Incassobureau/Deurwaarder', 'Dossier/Referentie', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'],
-      schuldenData.map(s => [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—'])
+      schuldenData.map(s => [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—']),
+      [18, 18, 14, 12, 10, 10, 10, 8, 8]
     ));
     children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true }));
     children.push(para('* Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.', { color: '666666' }));
+    children.push(spacer());
   }
   else children.push(para('Geen schulden geregistreerd.'))
   children.push(para(`Gezamenlijke schulden ex-partner: ${state.sch_exparter || '—'} | Voedselbank: ${state.voedselbank || '—'}`))
