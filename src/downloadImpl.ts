@@ -246,7 +246,14 @@ export async function buildAndSaveWord(state: FormState) {
   // 10. Schulden
   children.push(h2('10. Schulden'))
   const schuldenData = state.schuldenData.filter(s => s.s || s.b)
-  if (schuldenData.length > 0) { children.push(simpleTable(['Schuldeiser', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'], schuldenData.map(s => [s.s || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—']))); children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true })) }
+  if (schuldenData.length > 0) {
+    children.push(simpleTable(
+      ['Schuldeiser', 'Incassobureau/Deurwaarder', 'Dossier/Referentie', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'],
+      schuldenData.map(s => [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—'])
+    ));
+    children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true }));
+    children.push(para('* Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.', { color: '666666' }));
+  }
   else children.push(para('Geen schulden geregistreerd.'))
   children.push(para(`Gezamenlijke schulden ex-partner: ${state.sch_exparter || '—'} | Voedselbank: ${state.voedselbank || '—'}`))
   if (state.schulden_opm) children.push(para(state.schulden_opm, { color: '666666' }))
