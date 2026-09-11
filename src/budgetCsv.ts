@@ -119,9 +119,10 @@ export function bouwBudgetWerkboek(
   // goud (C+D) wordt automatisch toegepast als de periode niet 'maand' is.
   // B (de formule) is altijd vergrendeld (locked) zodat de cliënt hem niet per
   // ongeluk overschrijft en de doorrekening breekt. C en D blijven bewerkbaar.
-  const zetFormule = (a: string, formule: string, result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean } = {}) => {
+  const zetFormule = (a: string, formule: string, result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean; color?: string } = {}) => {
     ws.getCell(rij, 1).value = a
     if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
+    if (opties.color) ws.getCell(rij, 1).font = { ...ws.getCell(rij, 1).font, color: { argb: 'FF' + opties.color } }
     // FORMULE MET LEADING '=': ExcelJS schrijft die correct weg als <f>=...<f>,
     // en Excel rekent hem door bij bewerken door de inwoner. ZONDER '=' leest
     // Excel de cel niet als formule en blijft de waarde statisch staan.
@@ -130,6 +131,7 @@ export function bouwBudgetWerkboek(
     bCell.value = { formula: formuleStr, result: Number(result.toFixed(2)) }
     bCell.protection = { locked: true } // B vergrendeld (geen effect zonder ws.protect)
     if (opties.bold) bCell.font = { bold: true }
+    if (opties.color) bCell.font = { ...bCell.font, color: { argb: 'FF' + opties.color } }
     if (c !== undefined) {
       const cc = ws.getCell(rij, 3)
       cc.value = c
@@ -184,6 +186,7 @@ export function bouwBudgetWerkboek(
   // Inkomsten: alle bronnen uit de tool (ook als bedrag 0 is, zodat de cliënt
   // ze in Excel kan invullen) + toeslagen + 2 lege template-rijen.
   const inkomsten: WerkboekRij[] = []
+  const overigeToeslagen: WerkboekRij[] = [] // Kinderbijslag etc. - zichtbaar maar telt niet mee als inkomen
   state.inkomenData.forEach(d => {
     const bedrag = parseFloat(d.netto) || 0
     inkomsten.push({ naam: d.bron || 'Inkomstenbron', bedrag, code: naarCode(d.invoerPer || 'mnd') })
@@ -191,7 +194,13 @@ export function bouwBudgetWerkboek(
   Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
     if (actief) {
       const bedrag = parseFloat((state.toeslagenBedrag as Record<string, string>)[id] || '0') || 0
-      inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'maand' })
+      if (id === 'kinderbijslag') {
+        // Kinderbijslag: zichtbaar als rij, maar niet als inkomen meegerekend.
+        // Is per kwartaal, dus code 'kwartaal' voor juiste maandberekening.
+        overigeToeslagen.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'kwartaal' })
+      } else {
+        inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'maand' })
+      }
     }
   })
   // Alimentatie (partner + kind) als aparte inkomstenrijen — alleen als de cliënt
@@ -215,6 +224,24 @@ export function bouwBudgetWerkboek(
   const inkEnd = rij - 1
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
+
+  // Overige toeslagen (kinderbijslag etc.) — zichtbaar als aparte rijen,
+  // maar tellen NIET mee als inkomen (alleen informatief).
+  if (overigeToeslagen.length > 0) {
+    rij++ // lege rij
+    zet('OVERIGE TOESLagen (INFORMATIEF, TELLEN NIET MEE)')
+    const overigeStart = rij
+    const overigeWaarden: number[] = []
+    overigeToeslagen.forEach(r => {
+      const formule = maandFormule(rij)
+      const w = r.bedrag * factorVanCode(r.code)
+      overigeWaarden.push(w)
+      zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
+    })
+    const overigeEnd = rij - 1
+    const totOverige = overigeWaarden.reduce((a, b) => a + b, 0)
+    zetFormule('Totaal overige toeslagen', `=SUM(B${overigeStart}:B${overigeEnd})`, totOverige, undefined, undefined, { bold: true, color: '888888' })
+  }
 
   // Beslag op inkomen (−): trekt het totaal gelegde beslag af van het inkomen,
   // zodat het budgetplan het DAADWERKELIJK beschikbare bedrag laat zien.
