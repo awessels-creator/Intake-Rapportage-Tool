@@ -7,7 +7,7 @@ import { addSessionDataToDocxBlob } from './docxSession'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText, aanspreekVorm } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  WidthType, AlignmentType, BorderStyle, ShadingType,
+  WidthType, AlignmentType, BorderStyle, ShadingType, TableLayoutType,
   Header, Footer, PageNumber
 } from 'docx'
 
@@ -77,16 +77,7 @@ function simpleTable(headers: string[], rows: string[][]): Table {
   })
 }
 
-function simpleTableWithWidths(headers: string[], rows: string[][], colWidths: number[]): Table {
-  return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    columnWidths: colWidths,
-    rows: [
-      new TableRow({ children: headers.map((h, i) => headerCell(h, colWidths[i])) }),
-      ...rows.map((row, i) => new TableRow({ children: row.map((c, j) => cell(c, { shading: i % 2 === 1 ? LIGHT_GRAY : undefined, width: colWidths[j] })) })),
-    ],
-  })
-}
+
 
 function ntRow(label: string, value: string, valueColor?: string): TableRow {
   return new TableRow({
@@ -260,11 +251,25 @@ export async function buildAndSaveWord(state: FormState) {
   children.push(h2('10. Schulden'))
   const schuldenData = state.schuldenData.filter(s => s.s || s.b)
   if (schuldenData.length > 0) {
-    children.push(simpleTableWithWidths(
-      ['Schuldeiser', 'Incassobureau/Deurwaarder', 'Dossier/Referentie', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'],
-      schuldenData.map(s => [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—']),
-      [18, 16, 12, 10, 10, 10, 10, 8, 6]
-    ));
+    children.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
+      columnWidths: [1384, 1586, 1134, 992, 845, 793, 915, 851],
+      rows: [
+        new TableRow({ children: ['Schuldeiser', 'Incassobureau/\nDeurwaarder', 'Referentie', 'Soort', 'Open-\nstaand', 'Bet.reg.', 'Preferent', 'Schone lei?'].map(h => new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, color: 'FFFFFF', font: 'Arial', size: 19 })] })],
+          shading: { fill: ORANGE, type: ShadingType.CLEAR },
+          borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
+          margins: { top: 30, bottom: 30, left: 60, right: 60 },
+        })) }),
+        ...schuldenData.map((s, i) => new TableRow({ children: [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—'].map(c => new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: c, font: 'Arial', size: 19 })] })],
+          shading: i % 2 === 1 ? { fill: LIGHT_GRAY, type: ShadingType.CLEAR } : undefined,
+          borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
+          margins: { top: 30, bottom: 30, left: 60, right: 60 },
+        })) })),
+      ],
+    }));
     children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true }));
     children.push(para('* Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.', { color: '666666' }));
     children.push(spacer());
