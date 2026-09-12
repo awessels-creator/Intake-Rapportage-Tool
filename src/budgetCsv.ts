@@ -106,7 +106,7 @@ export function bouwBudgetWerkboek(
     // Excel de cel niet als formule en blijft de waarde statisch staan.
     const bCell = ws.getCell(rij, 2)
     const formuleStr = formule.startsWith('=') ? formule : `=${formule}`
-    bCell.value = { formula: formuleStr, result: Number(result.toFixed(2)) }
+    bCell.value = { formula: formuleStr }
     bCell.protection = { locked: true } // B vergrendeld (geen effect zonder ws.protect)
     if (opties.bold) bCell.font = { bold: true }
     if (opties.color) bCell.font = { ...bCell.font, color: { argb: 'FF' + opties.color } }
@@ -210,11 +210,11 @@ export function bouwBudgetWerkboek(
     dc.protection = { locked: false }
     rij++
   })
-  // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
-  for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
+  // 8 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
+  for (let i = 0; i < 8; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   const totInkRij = rij
-  zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
+  zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${rij - 1})`, totInk, undefined, undefined, { bold: true })
 
   // Beslag op inkomen (−): trekt het totaal gelegde beslag af van het inkomen,
   // zodat het budgetplan het DAADWERKELIJK beschikbare bedrag laat zien.
@@ -261,7 +261,7 @@ export function bouwBudgetWerkboek(
     lastWaarden.push(w)
     zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
-  for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
+  for (let i = 0; i < 8; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
   const lastEnd = rij - 1
   const totLast = lastWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast, undefined, undefined, { bold: true })
@@ -272,6 +272,7 @@ export function bouwBudgetWerkboek(
   const saldoFormule = beslagRij > 0 ? `=B${totInkRij}-B${beslagRij}-B${totLastRij}` : `=B${totInkRij}-B${totLastRij}`
   zetFormule('SALDO (inkomen − beslag − uitgaven)', saldoFormule, totInk - beslagTotaalX - totLast, undefined, undefined, { bold: true })
   const saldoCell = ws.getCell(saldoRij, 2)
+  saldoCell.value = { formula: saldoFormule }
 
   // Nummerformaat 2 decimalen op B (maandbedrag) en C (invoer)
   for (let r = 1; r <= saldoRij; r++) {
