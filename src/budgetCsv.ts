@@ -52,19 +52,14 @@ function factorVanCode(code: PerCode): number {
 // Maandbedrag-formule: verwijst naar C (invoer) én D (periode). De cliënt kan
 // beide wijzigen en B volgt automatisch. Geen '=' — ExcelJS schrijft de
 // formule anders niet-conform en Excel breekt de berekening bij bewerken.
-// VLOOKUP naar een verborgen hulptabel (periode -> maandfactor): robuust in
-// alle Excel-versies én compatibel met formule-validators (geen array-constante).
-const PER_TABEL = 'Bureau!G1:H5' // verborgen hulptabel op het Bureau-blad
-// IFERROR zodat een lege/verkeerde periode (D) nooit #WAARDE/#N/A geeft maar 0.
-// De formule MOET met '=' beginnen, anders schrijft ExcelJS hem niet als echte
-// formule weg en rekent Excel niet door bij bewerken door de inwoner.
+// Simpele formule zonder VLOOKUP: Excel herberekent deze automatisch.
 function maandFormule(rij: number): string {
-  return `=IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0)`
+  return `=C${rij}*IF(D${rij}="week",52/12,IF(D${rij}="kwartaal",1/3,IF(D${rij}="jaar",1/12,IF(D${rij}="10-termijn",10/12,1))))`
 }
 // Variant voor lege template-rijen: toont "" (leeg) zolang C leeg is, en vult
 // automatisch als de cliënt C invult. Voorkomt "0,00" in ongebruikte rijen.
 function maandFormuleLeeg(rij: number): string {
-  return `=IF(C${rij}="","",IFERROR(C${rij}*VLOOKUP(D${rij},${PER_TABEL},2,0),0))`
+  return `=IF(C${rij}="","",C${rij}*IF(D${rij}="week",52/12,IF(D${rij}="kwartaal",1/3,IF(D${rij}="jaar",1/12,IF(D${rij}="10-termijn",10/12,1)))))`
 }
 
 // Betaalverkeer: maximaal 2 cijfers achter de komma
@@ -86,23 +81,6 @@ export function bouwBudgetWerkboek(
 ): import('exceljs').Workbook {
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet('Budgetoverzicht')
-
-  // Verborgen hulptabel: periode -> maandfactor. De VLOOKUP in kolom B
-  // leest hieruit. Exact dezelfde strings als de dropdown in kolom D, anders
-  // geeft VLOOKUP #N/A.
-  const bureau = wb.addWorksheet('Bureau')
-  bureau.state = 'hidden'
-  const perTabel: [PerCode, number][] = [
-    ['maand', 1],
-    ['week', 52 / 12],
-    ['kwartaal', 1 / 3],
-    ['jaar', 1 / 12],
-    ['10-termijn', 10 / 12],
-  ]
-  perTabel.forEach(([code, fac], i) => {
-    bureau.getCell(i + 1, 7).value = code // G
-    bureau.getCell(i + 1, 8).value = fac  // H
-  })
 
   let rij = 1
   // zet een tekstregel (A, optioneel B/C/D)
@@ -219,7 +197,7 @@ export function bouwBudgetWerkboek(
     inkomstWaarden.push(w)
     zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
-  const inkEndBeforeExtra = rij - 1 // einde van echte inkomsten (voor extra toeslagen)
+  const inkEnd = rij - 1 // laatste echte inkomstenrij
   // Extra toeslagen (kinderbijslag) — rijen in dezelfde sectie, maar NIET meegeteld in totaal
   // Kolom B (Maandbedrag) blijft leeg, alleen C (Invoer) en D (Periode) worden getoond
   extraToeslagen.forEach(r => {
@@ -234,8 +212,8 @@ export function bouwBudgetWerkboek(
   })
   // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
   for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
-  const inkEnd = inkEndBeforeExtra // totaal inkomen tot hier (zonder extra toeslagen)
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
+  const totInkRij = rij
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
 
   // Beslag op inkomen (−): trekt het totaal gelegde beslag af van het inkomen,
@@ -289,7 +267,6 @@ export function bouwBudgetWerkboek(
   zetFormule('Totaal uitgaven', `=SUM(B${lastStart}:B${lastEnd})`, totLast, undefined, undefined, { bold: true })
 
   rij++ // lege rij
-  const totInkRij = inkEnd + 1
   const totLastRij = lastEnd + 1
   const saldoRij = rij
   const saldoFormule = beslagRij > 0 ? `=B${totInkRij}-B${beslagRij}-B${totLastRij}` : `=B${totInkRij}-B${totLastRij}`
