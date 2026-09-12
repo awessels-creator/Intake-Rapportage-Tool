@@ -186,7 +186,7 @@ export function bouwBudgetWerkboek(
   // Inkomsten: alle bronnen uit de tool (ook als bedrag 0 is, zodat de cliënt
   // ze in Excel kan invullen) + toeslagen + 2 lege template-rijen.
   const inkomsten: WerkboekRij[] = []
-  const overigeToeslagen: WerkboekRij[] = [] // Kinderbijslag etc. - zichtbaar maar telt niet mee als inkomen
+  const extraToeslagen: WerkboekRij[] = [] // Kinderbijslag etc. - rij maar niet meegeteld
   state.inkomenData.forEach(d => {
     const bedrag = parseFloat(d.netto) || 0
     inkomsten.push({ naam: d.bron || 'Inkomstenbron', bedrag, code: naarCode(d.invoerPer || 'mnd') })
@@ -195,9 +195,9 @@ export function bouwBudgetWerkboek(
     if (actief) {
       const bedrag = parseFloat((state.toeslagenBedrag as Record<string, string>)[id] || '0') || 0
       if (id === 'kinderbijslag') {
-        // Kinderbijslag: zichtbaar als rij, maar niet als inkomen meegerekend.
-        // Is per kwartaal, dus code 'kwartaal' voor juiste maandberekening.
-        overigeToeslagen.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'kwartaal' })
+        // Kinderbijslag: rij in dezelfde sectie, maar NIET meegeteld in totaal inkomen.
+        // Is per kwartaal, dus code 'kwartaal' voor juiste maandberekening (delen door 3).
+        extraToeslagen.push({ naam: 'Kinderbijslag (extra, telt niet mee voor inkomen)', bedrag, code: 'kwartaal' })
       } else {
         inkomsten.push({ naam: TOESLAG_NAMEN[id] || id, bedrag, code: 'maand' })
       }
@@ -219,29 +219,18 @@ export function bouwBudgetWerkboek(
     inkomstWaarden.push(w)
     zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
   })
+  const inkEndBeforeExtra = rij - 1 // einde van echte inkomsten (voor extra toeslagen)
+  // Extra toeslagen (kinderbijslag) — rijen in dezelfde sectie, maar NIET meegeteld in totaal
+  extraToeslagen.forEach(r => {
+    const formule = maandFormule(rij)
+    const w = r.bedrag * factorVanCode(r.code)
+    zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
+  })
   // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
   for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
-  const inkEnd = rij - 1
+  const inkEnd = inkEndBeforeExtra // totaal inkomen tot hier (zonder extra toeslagen)
   const totInk = inkomstWaarden.reduce((a, b) => a + b, 0)
   zetFormule('Totaal inkomen', `=SUM(B${inkStart}:B${inkEnd})`, totInk, undefined, undefined, { bold: true })
-
-  // Overige toeslagen (kinderbijslag etc.) — zichtbaar als aparte rijen,
-  // maar tellen NIET mee als inkomen (alleen informatief).
-  if (overigeToeslagen.length > 0) {
-    rij++ // lege rij
-    zet('OVERIGE TOESLagen (INFORMATIEF, TELLEN NIET MEE)')
-    const overigeStart = rij
-    const overigeWaarden: number[] = []
-    overigeToeslagen.forEach(r => {
-      const formule = maandFormule(rij)
-      const w = r.bedrag * factorVanCode(r.code)
-      overigeWaarden.push(w)
-      zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
-    })
-    const overigeEnd = rij - 1
-    const totOverige = overigeWaarden.reduce((a, b) => a + b, 0)
-    zetFormule('Totaal overige toeslagen', `=SUM(B${overigeStart}:B${overigeEnd})`, totOverige, undefined, undefined, { bold: true, color: '888888' })
-  }
 
   // Beslag op inkomen (−): trekt het totaal gelegde beslag af van het inkomen,
   // zodat het budgetplan het DAADWERKELIJK beschikbare bedrag laat zien.
