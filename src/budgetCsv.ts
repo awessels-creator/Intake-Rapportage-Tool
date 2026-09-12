@@ -119,7 +119,7 @@ export function bouwBudgetWerkboek(
   // goud (C+D) wordt automatisch toegepast als de periode niet 'maand' is.
   // B (de formule) is altijd vergrendeld (locked) zodat de cliënt hem niet per
   // ongeluk overschrijft en de doorrekening breekt. C en D blijven bewerkbaar.
-  const zetFormule = (a: string, formule: string, result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean; color?: string } = {}) => {
+  const zetFormule = (a: string, formule: string, _result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean; color?: string } = {}) => {
     ws.getCell(rij, 1).value = a
     if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
     if (opties.color) ws.getCell(rij, 1).font = { ...ws.getCell(rij, 1).font, color: { argb: 'FF' + opties.color } }
