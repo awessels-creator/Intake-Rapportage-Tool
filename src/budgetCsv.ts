@@ -221,10 +221,16 @@ export function bouwBudgetWerkboek(
   })
   const inkEndBeforeExtra = rij - 1 // einde van echte inkomsten (voor extra toeslagen)
   // Extra toeslagen (kinderbijslag) — rijen in dezelfde sectie, maar NIET meegeteld in totaal
+  // Kolom B (Maandbedrag) blijft leeg, alleen C (Invoer) en D (Periode) worden getoond
   extraToeslagen.forEach(r => {
-    const formule = maandFormule(rij)
-    const w = r.bedrag * factorVanCode(r.code)
-    zetFormule(r.naam, formule, w, r.bedrag ? fmt(r.bedrag) : '', r.code)
+    ws.getCell(rij, 1).value = r.naam
+    const cc = ws.getCell(rij, 3)
+    cc.value = r.bedrag ? fmt(r.bedrag) : ''
+    cc.protection = { locked: false }
+    const dc = ws.getCell(rij, 4)
+    dc.value = r.code
+    dc.protection = { locked: false }
+    rij++
   })
   // 2 lege template-rijen zodat de cliënt extra inkomen kan toevoegen
   for (let i = 0; i < 2; i++) zetFormule('', maandFormuleLeeg(rij), 0, '', undefined)
