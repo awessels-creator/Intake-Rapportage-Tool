@@ -119,7 +119,7 @@ export function bouwBudgetWerkboek(
   // goud (C+D) wordt automatisch toegepast als de periode niet 'maand' is.
   // B (de formule) is altijd vergrendeld (locked) zodat de cliënt hem niet per
   // ongeluk overschrijft en de doorrekening breekt. C en D blijven bewerkbaar.
-  const zetFormule = (a: string, formule: string, _result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean; color?: string } = {}) => {
+  const zetFormule = (a: string, formule: string, result: number, c?: string | number, d?: PerCode, opties: { bold?: boolean; color?: string } = {}) => {
     ws.getCell(rij, 1).value = a
     if (opties.bold) ws.getCell(rij, 1).font = { bold: true }
     if (opties.color) ws.getCell(rij, 1).font = { ...ws.getCell(rij, 1).font, color: { argb: 'FF' + opties.color } }
@@ -128,7 +128,7 @@ export function bouwBudgetWerkboek(
     // Excel de cel niet als formule en blijft de waarde statisch staan.
     const bCell = ws.getCell(rij, 2)
     const formuleStr = formule.startsWith('=') ? formule : `=${formule}`
-    bCell.value = { formula: formuleStr }
+    bCell.value = { formula: formuleStr, result: Number(result.toFixed(2)) }
     bCell.protection = { locked: true } // B vergrendeld (geen effect zonder ws.protect)
     if (opties.bold) bCell.font = { bold: true }
     if (opties.color) bCell.font = { ...bCell.font, color: { argb: 'FF' + opties.color } }
@@ -313,9 +313,8 @@ export function bouwBudgetWerkboek(
   // groep inklappen zodat alleen Post + Maandbedrag overblijft.
   ;[3, 4].forEach(c => { ws.getColumn(c).outlineLevel = 1 })
 
-  // Automatische kolombreedte: elke kolom krijgt de breedte van de langste
-  // inhoud (+ marge), zodat alles net leesbaar is. ExcelJS heeft geen echte
-  // auto-fit, dus meten we de langste waarde per kolom en zetten die als breedte.
+  // Bereken formules bij openen: Excel toont dan de actuele waarden
+  wb.calcProperties = { fullCalcOnLoad: true }
   const colMax: Record<number, number> = {}
   const meet = (c: number, v: unknown) => {
     let len = 0
