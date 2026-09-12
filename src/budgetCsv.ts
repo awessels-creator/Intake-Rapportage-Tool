@@ -128,7 +128,7 @@ export function bouwBudgetWerkboek(
     // Excel de cel niet als formule en blijft de waarde statisch staan.
     const bCell = ws.getCell(rij, 2)
     const formuleStr = formule.startsWith('=') ? formule : `=${formule}`
-    bCell.value = { formula: formuleStr, result: Number(result.toFixed(2)) }
+    bCell.value = { formula: formuleStr }
     bCell.protection = { locked: true } // B vergrendeld (geen effect zonder ws.protect)
     if (opties.bold) bCell.font = { bold: true }
     if (opties.color) bCell.font = { ...bCell.font, color: { argb: 'FF' + opties.color } }
