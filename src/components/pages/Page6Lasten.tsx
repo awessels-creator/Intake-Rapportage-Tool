@@ -42,7 +42,11 @@ export default function Page6Lasten() {
   Object.entries(state.toeslagenActief).forEach(([id, actief]) => {
     if (actief) {
       const b = parseFloat((state.toeslagenBedrag as Record<string, string>)[id] || '0') || 0
-      if (b > 0) inkDetailRegels.push({ naam: (TOESLAG_NAMEN as Record<string, string>)[id] || id, bedrag: b })
+      if (b > 0) {
+        let naam = (TOESLAG_NAMEN as Record<string, string>)[id] || id
+        if (id === 'kinderbijslag') naam += ' (wordt niet meegerekend als inkomen)'
+        inkDetailRegels.push({ naam, bedrag: b })
+      }
     }
   })
   if (state.alim_ontvangen === 'ja') {
