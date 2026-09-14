@@ -20,7 +20,7 @@ describe('budget saldo doorrekenen', () => {
     return s
   }
 
-  test('formule in B moet Excel Formula type zijn, geen string', async () => {
+  test('formule in B moet Excel Formula type zijn', async () => {
     const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
     const ws = wb.getWorksheet('Budgetoverzicht')!
     
@@ -34,33 +34,32 @@ describe('budget saldo doorrekenen', () => {
     }
     
     const bCell = ws.getCell(werkRij, 2)
-    console.log(`Werk rij ${werkRij}: B type=${bCell.type}, formula=${(bCell as any).formula}, value=${JSON.stringify(bCell.value)}`)
     
     // B moet een formule-cel zijn
     expect(bCell.type).toBe(ExcelJS.ValueType.Formula)
   })
 
-  test('saldo formule moet bestaan en wijzen naar totaal rijen', async () => {
+  test('saldo (TE BESTEDEN) formule moet bestaan en wijzen naar totaal rijen', async () => {
     const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
     const ws = wb.getWorksheet('Budgetoverzicht')!
     
+    // Zoek naar TE BESTEDEN (niet SALDO)
     let saldoRij = -1
     for (let r = 1; r <= ws.rowCount; r++) {
-      if (/SALDO/i.test(String(ws.getCell(r, 1).value || ''))) {
+      if (/TE BESTEDEN/i.test(String(ws.getCell(r, 1).value || ''))) {
         saldoRij = r
         break
       }
     }
     
-    const bCell = ws.getCell(saldoRij, 2)
-    console.log(`Saldo rij ${saldoRij}: formula=${(bCell as any).formula}, result=${bCell.result}`)
+    expect(saldoRij).toBeGreaterThan(-1)
     
-    // Saldo moet formule zijn
+    const bCell = ws.getCell(saldoRij, 2)
     expect(bCell.type).toBe(ExcelJS.ValueType.Formula)
     
-    // Formule moet verwijzen naar totaal-rijen (niet naar individuele bedragen)
+    // Formule moet verwijzen naar B
     const formula = (bCell as any).formula || ''
-    expect(formula).toContain('B') // verwijst naar kolom B
+    expect(formula).toContain('B')
   })
 
   test('formule wijst naar C en D', async () => {
@@ -83,7 +82,7 @@ describe('budget saldo doorrekenen', () => {
     // Moet verwijzen naar C en D van dezelfde rij
     expect(formula).toContain(`C${eersteFormuleRij}`)
     expect(formula).toContain(`D${eersteFormuleRij}`)
-    // Formule moet IFERROR bevatten
-    expect(formula).toMatch(/IFERROR/)
+    // Formule moet IF bevatten (niet IFERROR)
+    expect(formula).toMatch(/IF\(/)
   })
 })

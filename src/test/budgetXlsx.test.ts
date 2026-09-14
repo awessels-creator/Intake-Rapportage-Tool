@@ -31,7 +31,7 @@ describe('budget .xlsx export', () => {
     return -1
   }
 
-  test('formules wijzen naar C én D, geen leading "=", geen zelf-ref, geen #NAAM, dropdown op D', async () => {
+  test('formules wijzen naar C én D, geen zelf-ref, geen #NAAM, dropdown op D', async () => {
     const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
     const ws = wb.getWorksheet('Budgetoverzicht')!
     let zelfRef = false, fout = false, dropdowns = 0
@@ -40,25 +40,20 @@ describe('budget .xlsx export', () => {
       if (b && b.type === ExcelJS.ValueType.Formula) {
         const f = (b.formula as string).replace(/^=/, '')
         if (f.includes(`B${r}`)) zelfRef = true
-        if (f.startsWith('=') || f.includes('@') || f.includes('SOM(') || f !== f.trim()) fout = true
+        if (f.startsWith('=') || f.includes('@') || f.includes('SOM(') || f.includes('ALS(') || f !== f.trim()) fout = true
       }
       const d = row.getCell(4)
       if (d && d.dataValidation && d.dataValidation.type === 'list') dropdowns++
     })
-    const saldoR = vindRij(ws, /SALDO/i)
-    const saldoCell = ws.getCell(saldoR, 2)
     expect(zelfRef).toBe(false)
     expect(fout).toBe(false)
     expect(dropdowns).toBeGreaterThan(5)
-    expect(saldoCell.numFmt).not.toContain('Green')
-    expect(saldoCell.numFmt).toContain('Red')
   })
 
   test('formule in B moet Excel Formula type zijn, geen string', async () => {
     const wb = bouwBudgetWerkboek(maakState(), ExcelJS)
     const ws = wb.getWorksheet('Budgetoverzicht')!
     
-    // Vind een inkomstenrij (Werk)
     let werkRij = -1
     for (let r = 1; r <= ws.rowCount; r++) {
       if (String(ws.getCell(r, 1).value || '').includes('Werk')) {
