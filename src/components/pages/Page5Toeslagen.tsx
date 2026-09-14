@@ -116,6 +116,7 @@ export default function Page5Toeslagen() {
                     onChange={e => toggle(naam, e.target.checked)}
                   />
                   <span className="text-[0.82rem] font-medium text-ink">{TOESLAG_NAMEN[naam]}</span>
+                  {naam === 'kinderbijslag' && <span className="text-[0.7rem] text-inkl ml-1">(wordt niet meegerekend als inkomen)</span>}
                 </label>
 
                 {actief && (
