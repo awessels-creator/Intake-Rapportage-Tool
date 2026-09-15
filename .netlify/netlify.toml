@@ -1,0 +1,29 @@
+plugins = []
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "C:\\Users\\wwess\\Intake-Rapportage-Tool\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build"
+ignore = "git diff --quiet HEAD^ HEAD -- :!netlify.toml"
+
+[build.environment]
+NODE_VERSION = "18"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]

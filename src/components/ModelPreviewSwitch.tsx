@@ -29,7 +29,6 @@ export default function ModelPreviewSwitch() {
       title="Toekomstige normen alvast bekijken (preview). Bij een echte intake staat dit op het actuele model."
     >
       <span className="opacity-70">model</span>
-      <span className="font-semibold">{active}</span>
       <select
         aria-label="Model preview"
         value={active}
