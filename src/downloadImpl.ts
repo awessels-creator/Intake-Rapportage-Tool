@@ -3,10 +3,11 @@
 // op "Rapport downloaden" klikt (zie download.ts, dat deze module lazy importeert).
 import type { FormState } from './types'
 import { SCHULD_INFO, LASTEN_DEF, PER_OPTIES, TOESLAGEN, TOESLAG_NAMEN, BVV_MAX, MODEL, NORMPERIODE, REGELING_URLS } from './constants'
+import { addSessionDataToDocxBlob } from './docxSession'
 import { getTotaalInkomen, getTotaalLasten, lftd, nl, evaluateRegelingen, isJeugdOfInstelling, buildQuickText, aanspreekVorm } from './utils'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  WidthType, AlignmentType, BorderStyle, ShadingType,
+  WidthType, AlignmentType, BorderStyle, ShadingType, TableLayoutType,
   Header, Footer, PageNumber
 } from 'docx'
 
@@ -26,9 +27,10 @@ function cell(text: string, opts?: { bold?: boolean; color?: string; shading?: s
   })
 }
 
-function headerCell(text: string): TableCell {
+function headerCell(text: string, width?: number): TableCell {
   return new TableCell({
     children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: 'FFFFFF', font: 'Arial', size: 19 })] })],
+    width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
     shading: { fill: ORANGE, type: ShadingType.CLEAR },
     borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
   })
@@ -74,6 +76,8 @@ function simpleTable(headers: string[], rows: string[][]): Table {
     ],
   })
 }
+
+
 
 function ntRow(label: string, value: string, valueColor?: string): TableRow {
   return new TableRow({
@@ -203,15 +207,18 @@ export async function buildAndSaveWord(state: FormState) {
   // Beslagvrije Voet — direct onder Inkomen, zodat beslag en BVV bij elkaar staan
   children.push(h3(`Beslagvrije Voet${isJeugdOfInstelling(ls) ? ' — NIET geautomatiseerd' : ` (indicatie basis, model ${MODEL})`}`))
   if (isJeugdOfInstelling(ls)) {
-    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via uwbeslagvrijevoet.nl aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
+    children.push(para('Bij een jeugdige <21 of verblijf in een instelling geldt een verlaagde norm (kostendelersnorm / zak- en kleedgeldnorm). De tool berekent de beslagvrije voet hier niet zelf uit. Controleer de beslagvrije voet altijd via bereken.uwbeslagvrijevoet.nl/calculate aan de hand van de ingevulde (verlaagde) norm en de feitelijke woonsituatie.', { color: '9D3D1D', size: 18 }))
   } else {
     children.push(ntTable([['Toe te passen BVV (basis: 95% norm, begrenst op inkomen)', `€ ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`], ['Max. voor beslag beschikbaar', `€ ${(ink - bvv).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`]]))
-    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via uwbeslagvrijevoet.nl.', { color: '666666', size: 16 }))
+    children.push(spacer())
+    children.push(para('Let op: dit is de basis-beslagvrije voet. Opslagen (heffingskorting, kindgebonden budget, woonkosten, zorg) zijn niet meegeteld. Controleer de volledige berekening via bereken.uwbeslagvrijevoet.nl/calculate.', { color: '666666', size: 16 }))
   }
   // Signalering bij beslag — ALLEEN wanneer er daadwerkelijk beslag ligt
   if (beslagData.length > 0) {
+    children.push(spacer())
     children.push(h4('Signalering bij beslag op inkomen'))
     children.push(para(`Er ligt beslag op het inkomen van deze inwoner. De indicatie basis-beslagvrije voet is € ${bvv.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}/mnd (95% van de norm, begrenst op inkomen). Is de beslagvrije voet gecontroleerd?`, { color: '666666', size: 18 }))
+    children.push(spacer())
     const bvStatus = state.bv_gecontroleerd
     const bvLabel = bvStatus === 'ja' ? 'Ja' : bvStatus === 'nee' ? 'Nee' : bvStatus === 'fout' ? 'Ja, maar niet correct toegepast' : '— (niet ingevuld)'
     children.push(ntTable([['Beslagvrije voet gecontroleerd?', bvLabel]]))
@@ -243,7 +250,30 @@ export async function buildAndSaveWord(state: FormState) {
   // 10. Schulden
   children.push(h2('10. Schulden'))
   const schuldenData = state.schuldenData.filter(s => s.s || s.b)
-  if (schuldenData.length > 0) { children.push(simpleTable(['Schuldeiser', 'Soort', 'Openstaand', 'Aflossing', 'Preferent', 'Schone lei?', 'Status'], schuldenData.map(s => [s.s || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—', s.st || '—']))); children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true })) }
+  if (schuldenData.length > 0) {
+    children.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
+      columnWidths: [1384, 1586, 1134, 992, 845, 793, 915, 851],
+      rows: [
+        new TableRow({ children: ['Schuldeiser', 'Incassobureau/\nDeurwaarder', 'Referentie', 'Soort', 'Open-\nstaand', 'Bet.reg.', 'Preferent', 'Schone lei?'].map(h => new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, color: 'FFFFFF', font: 'Arial', size: 19 })] })],
+          shading: { fill: ORANGE, type: ShadingType.CLEAR },
+          borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
+          margins: { top: 30, bottom: 30, left: 60, right: 60 },
+        })) }),
+        ...schuldenData.map((s, i) => new TableRow({ children: [s.s || '—', s.incasso || '—', s.dossier || '—', (s.t || '—') + (s.subt ? ` (${s.subt})` : ''), `€ ${nl(parseFloat(s.b) || 0)}`, s.afl ? `€ ${s.afl}/mnd` : '—', (SCHULD_INFO[s.t] || {}).pref || '—', (SCHULD_INFO[s.t] || {}).lei || '—'].map(c => new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: c, font: 'Arial', size: 19 })] })],
+          shading: i % 2 === 1 ? { fill: LIGHT_GRAY, type: ShadingType.CLEAR } : undefined,
+          borders: { top: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, bottom: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, left: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR }, right: { style: BorderStyle.SINGLE, size: 6, color: BORDER_COLOR } },
+          margins: { top: 30, bottom: 30, left: 60, right: 60 },
+        })) })),
+      ],
+    }));
+    children.push(para(`Geschatte schuldenlast: € ${nl(schulden)}`, { bold: true }));
+    children.push(para('* Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.', { color: '666666' }));
+    children.push(spacer());
+  }
   else children.push(para('Geen schulden geregistreerd.'))
   children.push(para(`Gezamenlijke schulden ex-partner: ${state.sch_exparter || '—'} | Voedselbank: ${state.voedselbank || '—'}`))
   if (state.schulden_opm) children.push(para(state.schulden_opm, { color: '666666' }))
@@ -306,8 +336,10 @@ export async function buildAndSaveWord(state: FormState) {
     }],
   })
 
-  const blob = await Packer.toBlob(doc)
-  const url = URL.createObjectURL(blob)
+  const arrayBuffer = await Packer.toArrayBuffer(doc)
+  // Voeg sessie-data toe als verborgen custom property
+  const blobWithSession = await addSessionDataToDocxBlob(arrayBuffer, state)
+  const url = URL.createObjectURL(blobWithSession)
   const a = document.createElement('a')
   a.href = url
   a.download = `Intakerapportage_${naam.replace(/\s+/g, '_')}_model_${MODEL}_${datum}.docx`

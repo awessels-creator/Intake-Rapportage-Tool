@@ -47,6 +47,8 @@ export interface SchuldItem {
   b: string
   afl: string
   st: string
+  incasso: string
+  dossier: string
 }
 
 export interface AdviesItem {

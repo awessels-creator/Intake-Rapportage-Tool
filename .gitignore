@@ -51,3 +51,6 @@ verify_budget.xlsx
 
 # Vite build cache
 .vite/
+
+# Local Netlify folder
+.netlify

@@ -20,9 +20,8 @@ export default function Page7Schulden() {
           <table className="tbl">
             <thead>
               <tr>
-                <th>Schuldeiser</th><th>Soort</th><th>Openstaand</th>
-                <th>Aflospl./mnd</th><th>Preferent</th><th>Schone lei?</th>
-                <th>Status</th><th></th>
+                <th>Schuldeiser</th><th>Incassobureau/Deurwaarder</th><th>Dossier/Referentie</th><th>Soort</th><th>Openstaand</th>
+                <th>Aflospl./mnd</th><th>Preferent</th><th>Schone lei?</th><th>Toelichting</th><th>Status</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -35,21 +34,58 @@ export default function Page7Schulden() {
                         onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { s: e.target.value }) })} />
                     </td>
                     <td>
+                      <input className="inp" style={{ minWidth: 120 }} value={s.incasso} placeholder="Incassobureau/Deurwaarder"
+                        onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { incasso: e.target.value }) })} />
+                    </td>
+                    <td>
+                      <input className="inp" style={{ minWidth: 120 }} value={s.dossier} placeholder="Klantnummer / dossier"
+                        onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { dossier: e.target.value }) })} />
+                    </td>
+                    <td>
                       <select className="inp" style={{ minWidth: 120 }} value={s.t}
                         onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { t: e.target.value, subt: '' }) })}>
                         <option value="">—</option>
-                        <option value="huur">Huurachterstand</option>
-                        <option value="energie">Energieschuld</option>
-                        <option value="belasting">Belastingschuld</option>
-                        <option value="zorg">Zorgverzekeraar</option>
-                        <option value="krediet">Krediet/lening</option>
-                        <option value="incasso">Incasso</option>
-                        <option value="deurw">Deurwaarder</option>
-                        <option value="boete_mulder">Boete (Mulder/CJIB)</option>
-                        <option value="boete_terwee">Boete (Terwee/slachtoffer)</option>
-                        <option value="studie">Studieschuld (DUO)</option>
-                        <option value="alimentatie">Alimentatieschuld</option>
-                        <option value="overig">Overig</option>
+                        <optgroup label="Woonlasten">
+                          <option value="huur">Huurachterstand</option>
+                          <option value="energie">Energieschuld</option>
+                        </optgroup>
+                        <optgroup label="Zorg">
+                          <option value="zorg">Zorgverzekeraar</option>
+                          <option value="cak">CAK (bestuursrechtelijke premie)</option>
+                        </optgroup>
+                        <optgroup label="Overheid">
+                          <option value="belasting">Belastingdienst – belastingen</option>
+                          <option value="toeslag">Belastingdienst – toeslagschuld</option>
+                          <option value="waterschap">Waterschapsbelasting</option>
+                          <option value="gemeente_belasting">Gemeente – belastingen</option>
+                          <option value="gemeente_bijstand">Gemeente – terugvordering bijstand</option>
+                          <option value="gemeente_boete">Gemeente – boete</option>
+                          <option value="gemeente_overig">Gemeente – overig</option>
+                          <option value="uwv">UWV – terugvordering uitkering</option>
+                          <option value="uwv_boete">UWV – boete</option>
+                          <option value="svb">SVB – terugvordering uitkering</option>
+                          <option value="svb_boete">SVB – boete</option>
+                          <option value="studie">DUO – studieschuld</option>
+                        </optgroup>
+                        <optgroup label="Privaat">
+                          <option value="krediet">Krediet / lening</option>
+                        </optgroup>
+                        <optgroup label="CJIB">
+                          <option value="boete_mulder">CJIB – Mulderboete</option>
+                          <option value="boete_terwee">CJIB – Terwee</option>
+                          <option value="boete_rechterlijk">CJIB – rechterlijke boete</option>
+                          <option value="boete_schade">CJIB – schadevergoedingsmaatregel</option>
+                          <option value="boete_ontneming">CJIB – ontnemingsmaatregel</option>
+                        </optgroup>
+                        <optgroup label="Alimentatie">
+                          <option value="alimentatie_kind">Kinderalimentatie</option>
+                          <option value="alimentatie_partner">Partneralimentatie</option>
+                        </optgroup>
+                        <optgroup label="Overig">
+                          <option value="overig">Overig</option>
+                          <option value="schade">Schadevergoeding</option>
+                          <option value="strafboete">Strafrechtelijke boete</option>
+                        </optgroup>
                       </select>
                       {s.t === 'studie' && (
                         <select className="inp mt-1 text-[0.74rem]" value={s.subt}
@@ -77,6 +113,7 @@ export default function Page7Schulden() {
                     </td>
                     <td className="text-[0.72rem] text-inkl" style={{ minWidth: 90 }}>{info.pref}</td>
                     <td className="text-[0.72rem] text-inkl" style={{ minWidth: 110 }}>{info.lei}</td>
+                    <td className="text-[0.65rem] text-inkl" style={{ minWidth: 130 }}>{info.toelichting}</td>
                     <td>
                       <select className="inp" style={{ minWidth: 95 }} value={s.st}
                         onChange={e => set({ schuldenData: updArr(state.schuldenData, i, { st: e.target.value }) })}>
@@ -98,6 +135,12 @@ export default function Page7Schulden() {
             </tbody>
           </table>
         </div>
+
+        <p className="text-[0.67rem] text-inkl mt-2 italic">
+          * Onder voorbehoud van de voorwaarden van de betreffende schuldregeling. 
+          Let op: dit overzicht geeft een algemeen beeld. De precieze behandeling van een schuld kan afhangen van het soort vordering, de schuldeiser en de gekozen schuldregeling. 
+          De schuldregelaar beoordeelt dit bij het daadwerkelijk schuldregelingsvoorstel.
+        </p>
 
         <button
           type="button"

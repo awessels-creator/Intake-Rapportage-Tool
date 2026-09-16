@@ -133,7 +133,7 @@ export const VERMOGEN_LABELS: { key: string; label: string }[] = [
   { key: 'pensioen_alleen', label: 'Pensioengerechtigde — alleenstaand / paar' },
 ]
 
-export interface SchuldInfo { pref: string; lei: string }
+export interface SchuldInfo { pref: string; lei: string; toelichting?: string }
 
 export const SCHULD_INFO: Record<string, SchuldInfo> = {
   huur: { pref: 'Ja', lei: 'Ja — preferent, valt mee in traject' },
