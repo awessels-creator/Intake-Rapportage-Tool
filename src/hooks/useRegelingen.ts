@@ -5,21 +5,15 @@ import { useState, useEffect, useMemo } from 'react';
 import type { FormState } from '../types';
 import { initWasm } from '../wasm/loader';
 import { getFallbackResult } from '../wasm/fallback';
-import { getTotaalInkomen, getTotaalLasten, lftdN, geenEigenAanslag as geenEigenAanslagJS } from '../utils';
+import { getTotaalInkomen, getTotaalLasten, lftdN, geenEigenAanslag } from '../utils';
 import { VGRENS } from '../constants';
 
 export interface RegelingenResult {
-  fdma: number;           // 0 = nee, 1 = ja, 2 = check
-  iit: number;            // 0 = nvt, 1 = nee, 2 = check
-  kwijtschelding: number; // 0 = nee, 1 = ja, 2 = nvt
-  kindsupport: number;    // 0 = nvt, 1 = ja
-  voedselbank: number;    // 0 = nee, 1 = ja
-}
-
-export interface UseRegelingenResult {
-  result: RegelingenResult | null;
-  usingWasm: boolean;
-  error: string | null;
+  fdma: number;
+  iit: number;
+  kwijtschelding: number;
+  kindsupport: number;
+  voedselbank: number;
 }
 
 function huishoudenGrootte(state: FormState): number {
@@ -39,19 +33,23 @@ function berekenVermogen(state: FormState): number {
   );
 }
 
-export function useRegelingen(state: FormState | null): UseRegelingenResult {
-  const [wasmState, setWasmState] = useState<{ wasm: any; error: string | null } | null>(null);
+export function useRegelingen(state: FormState | null): RegelingenResult | null {
+  const [wasm, setWasm] = useState<{
+    checkFDMA(pct: number, vermogen: number, grens: number): number;
+    checkIIT(pct: number, leeftijd: number, isPensioen: boolean, isJeugd: boolean): number;
+    checkKwijtschelding(pct: number, geenAanslag: boolean): number;
+    checkKindsupport(heeftKinderen: boolean): number;
+    checkVoedselbank(besteedbaar: number, huishoudenGrootte: number): number;
+  } | null>(null);
 
-  // Init Wasm bij mount
   useEffect(() => {
     let cancelled = false;
-    initWasm().then(({ wasm, error }) => {
-      if (!cancelled) setWasmState({ wasm, error });
+    initWasm().then(({ wasm }) => {
+      if (!cancelled) setWasm(wasm);
     });
     return () => { cancelled = true; };
   }, []);
 
-  // Berek input uit state
   const input = useMemo(() => {
     if (!state) return null;
 
@@ -59,68 +57,38 @@ export function useRegelingen(state: FormState | null): UseRegelingenResult {
     const ink = getTotaalInkomen(state);
     const pct = norm && ink ? (ink / norm) * 100 : 0;
     const ls = state.leefsituatie;
-    const isPensioen = ls.startsWith('pensioen');
     const leeftijd = lftdN(state.geboortedatum);
-    const isJeugd = leeftijd >= 0 && leeftijd < 21;
-    const geenAanslag = geenEigenAanslagJS(state);
-    const tot = getTotaalLasten(state);
-    const best = ink - tot;
-    const vermogen = berekenVermogen(state);
-    const grens = VGRENS[ls] || 8000;
-    const hK = state.kinderen === 'ja';
-    const huishouden = huishoudenGrootte(state);
 
     return {
       pct,
-      vermogen,
-      vermogenGrens: grens,
+      vermogen: berekenVermogen(state),
+      vermogenGrens: VGRENS[ls] || 8000,
       leeftijd: leeftijd > 0 ? leeftijd : 0,
-      isPensioen,
-      isJeugd,
-      geenAanslag,
-      heeftKinderen: hK,
-      besteedbaar: best,
-      huishoudenGrootte: huishouden,
+      isPensioen: ls.startsWith('pensioen'),
+      isJeugd: leeftijd >= 0 && leeftijd < 21,
+      geenAanslag: geenEigenAanslag(state),
+      heeftKinderen: state.kinderen === 'ja',
+      besteedbaar: ink - getTotaalLasten(state),
+      huishoudenGrootte: huishoudenGrootte(state),
     };
   }, [state]);
 
-  // Bereken result
-  const result = useMemo(() => {
+  return useMemo(() => {
     if (!input) return null;
 
-    if (wasmState?.wasm) {
+    if (wasm) {
       try {
         return {
-          fdma: wasmState.wasm.checkFDMA(input.pct, input.vermogen, input.vermogenGrens),
-          iit: wasmState.wasm.checkIIT(input.pct, input.leeftijd, input.isPensioen, input.isJeugd),
-          kwijtschelding: wasmState.wasm.checkKwijtschelding(input.pct, input.geenAanslag),
-          kindsupport: wasmState.wasm.checkKindsupport(input.heeftKinderen),
-          voedselbank: wasmState.wasm.checkVoedselbank(input.besteedbaar, input.huishoudenGrootte),
+          fdma: wasm.checkFDMA(input.pct, input.vermogen, input.vermogenGrens),
+          iit: wasm.checkIIT(input.pct, input.leeftijd, input.isPensioen, input.isJeugd),
+          kwijtschelding: wasm.checkKwijtschelding(input.pct, input.geenAanslag),
+          kindsupport: wasm.checkKindsupport(input.heeftKinderen),
+          voedselbank: wasm.checkVoedselbank(input.besteedbaar, input.huishoudenGrootte),
         };
-      } catch (e) {
-        // Wasm-fout → fallback
-        return getFallbackResult(
-          input.pct, input.vermogen, input.vermogenGrens,
-          input.leeftijd, input.isPensioen, input.isJeugd,
-          input.geenAanslag, input.heeftKinderen,
-          input.besteedbaar, input.huishoudenGrootte
-        );
+      } catch {
+        return getFallbackResult(input);
       }
-    } else if (wasmState) {
-      // Geen Wasm → fallback
-      return getFallbackResult(
-        input.pct, input.vermogen, input.vermogenGrens,
-        input.leeftijd, input.isPensioen, input.isJeugd,
-        input.geenAanslag, input.heeftKinderen,
-        input.besteedbaar, input.huishoudenGrootte
-      );
     }
-    return null;
-  }, [input, wasmState]);
-
-  return {
-    result,
-    usingWasm: wasmState?.wasm != null,
-    error: wasmState?.error || null,
-  };
+    return getFallbackResult(input);
+  }, [input, wasm]);
 }

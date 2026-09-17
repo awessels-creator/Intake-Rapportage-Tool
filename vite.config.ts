@@ -11,4 +11,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
   ],
+  define: {
+    __VITE_BASE_URL__: JSON.stringify(process.env.VITE_BASE_URL || '/'),
+  },
 })

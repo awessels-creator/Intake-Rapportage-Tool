@@ -72,8 +72,8 @@ export default function Page8Regelcheck() {
   const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (ls === 'samenwonend' || ls === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
   const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
 
-  // WASM-integratie: asynchrone berekening met fallback
-  const { result } = useRegelingen(state)
+  // WASM-integratie
+  const result = useRegelingen(state)
 
   // Map naar display-formaat
   const beoordeling = result

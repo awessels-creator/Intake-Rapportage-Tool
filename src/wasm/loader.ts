@@ -1,21 +1,27 @@
 // src/wasm/loader.ts
-// Laadt de Wasm-module en geeft een typed object terug
+// Laadt de Wasm-module
 
-import type { WasmModule, WasmLoaderResult } from './types';
+declare const __VITE_BASE_URL__: string
 
-let wasmModule: WasmModule | null = null;
+let wasmModule: {
+  checkFDMA(pct: number, vermogen: number, grens: number): number;
+  checkIIT(pct: number, leeftijd: number, isPensioen: boolean, isJeugd: boolean): number;
+  checkKwijtschelding(pct: number, geenAanslag: boolean): number;
+  checkKindsupport(heeftKinderen: boolean): number;
+  checkVoedselbank(besteedbaar: number, huishoudenGrootte: number): number;
+} | null = null;
+
 let wasmError: string | null = null;
-let wasmLoading: Promise<WasmLoaderResult> | null = null;
+let wasmLoading: Promise<{ wasm: typeof wasmModule; error: string | null }> | null = null;
 
-export async function initWasm(): Promise<WasmLoaderResult> {
+export async function initWasm() {
   if (wasmModule) return { wasm: wasmModule, error: null };
   if (wasmError) return { wasm: null, error: wasmError };
   if (wasmLoading) return wasmLoading;
 
   wasmLoading = (async () => {
     try {
-      // Gebruik Vite base URL (werkt lokaal en op GitHub Pages)
-      const base = import.meta.env.BASE_URL || '/';
+      const base = typeof __VITE_BASE_URL__ !== 'undefined' ? __VITE_BASE_URL__ : '/';
       const wasmUrl = `${base}wasm/index.wasm`;
       
       const response = await fetch(wasmUrl);
@@ -23,21 +29,15 @@ export async function initWasm(): Promise<WasmLoaderResult> {
       const module = await WebAssembly.instantiate(bytes);
       const exports = module.instance.exports;
 
-      // Wrapper object met getypeerde functies
       wasmModule = {
-        checkFDMA: (pct: number, vermogen: number, grens: number) => 
-          (exports.checkFDMA as Function)(pct, vermogen, grens) as number,
-        checkIIT: (pct: number, leeftijd: number, isPensioen: boolean, isJeugd: boolean) => 
-          (exports.checkIIT as Function)(pct, leeftijd, isPensioen ? 1 : 0, isJeugd ? 1 : 0) as number,
-        checkKwijtschelding: (pct: number, geenAanslag: boolean) => 
-          (exports.checkKwijtschelding as Function)(pct, geenAanslag ? 1 : 0) as number,
-        checkKindsupport: (heeftKinderen: boolean) => 
-          (exports.checkKindsupport as Function)(heeftKinderen ? 1 : 0) as number,
-        checkVoedselbank: (besteedbaar: number, huishoudenGrootte: number) => 
-          (exports.checkVoedselbank as Function)(besteedbaar, huishoudenGrootte) as number,
+        checkFDMA: (exports.checkFDMA as Function) as any,
+        checkIIT: (exports.checkIIT as Function) as any,
+        checkKwijtschelding: (exports.checkKwijtschelding as Function) as any,
+        checkKindsupport: (exports.checkKindsupport as Function) as any,
+        checkVoedselbank: (exports.checkVoedselbank as Function) as any,
       };
 
-      return { wasm: wasmModule, error: null };
+      return { wasm: wasmModule as any, error: null };
     } catch (error) {
       wasmError = error instanceof Error ? error.message : 'Wasm laden mislukt';
       return { wasm: null, error: wasmError };
@@ -45,16 +45,4 @@ export async function initWasm(): Promise<WasmLoaderResult> {
   })();
 
   return wasmLoading;
-}
-
-export function getWasm(): WasmModule | null {
-  return wasmModule;
-}
-
-export function getWasmError(): string | null {
-  return wasmError;
-}
-
-export function isWasmLoaded(): boolean {
-  return wasmModule !== null;
 }
