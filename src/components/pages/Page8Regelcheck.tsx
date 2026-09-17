@@ -7,8 +7,9 @@ import NavRow from '../shared/NavRow'
 import Alert from '../shared/Alert'
 import { HiOutlineMagnifyingGlass, HiArrowLeft, HiArrowRight, HiXMark, HiCheck, HiQuestionMarkCircle, HiMiniXCircle, HiOutlineFaceSmile } from 'react-icons/hi2'
 import { MdOutlineHandshake } from 'react-icons/md'
-import { evaluateRegelingen, geenEigenAanslag, isJeugdOfInstelling, lftdN } from '../../utils'
+import { geenEigenAanslag, isJeugdOfInstelling, lftdN } from '../../utils'
 import type { RegelingVoorstel } from '../../utils'
+import { useRegelingen } from '../../hooks/useRegelingen'
 
 const L = 'block text-[.76rem] text-inkl mb-0.5 font-medium'
 const row2 = 'grid grid-cols-2 gap-3 mb-3'
@@ -38,6 +39,18 @@ interface Regel {
   t: string | React.ReactNode
 }
 
+// Map Wasm numerieke output naar RegelingVoorstel object
+function mapToVoorstel(value: number, type: 'fdma' | 'iit' | 'kwijt' | 'kind' | 'voedsel'): { recht: 'ja' | 'nee' | 'check' | 'nvt'; reden: string } {
+  const voorstellen: Record<string, Record<number, { recht: 'ja' | 'nee' | 'check' | 'nvt'; reden: string }>> = {
+    fdma: { 0: { recht: 'nee', reden: 'Inkomen boven 110% of vermogen boven grens.' }, 1: { recht: 'ja', reden: 'Inkomen ≤110%, vermogen binnen grens.' }, 2: { recht: 'check', reden: 'Nog onvoldoende gegevens (inkomen/norm).' } },
+    iit: { 0: { recht: 'nvt', reden: 'Niet van toepassing (pensioengerechtigd of jonger dan 21).' }, 1: { recht: 'nee', reden: 'Inkomen boven 105%.' }, 2: { recht: 'check', reden: 'Inkomen ≤105% — controleer 3-jaars-termijn.' } },
+    kwijt: { 0: { recht: 'nee', reden: 'Inkomen ≥120% norm.' }, 1: { recht: 'ja', reden: 'Inkomen <120% — aanvragen bij GBLT/gemeente.' }, 2: { recht: 'nvt', reden: 'Geen eigen belastingaanslag.' } },
+    kind: { 0: { recht: 'nvt', reden: 'Geen kinderen geregistreerd.' }, 1: { recht: 'ja', reden: 'Kinderen in gezin — altijd bespreken.' } },
+    voedsel: { 0: { recht: 'nee', reden: 'Besteedbaar inkomen boven VB-norm.' }, 1: { recht: 'ja', reden: 'Besteedbaar inkomen onder VB-norm of negatief.' } },
+  }
+  return voorstellen[type]?.[value] ?? { recht: 'check', reden: 'Onbekende beoordeling.' }
+}
+
 export default function Page8Regelcheck() {
   const { state, set, goTo } = useForm()
   const { VGRENS } = useNormen()
@@ -58,7 +71,22 @@ export default function Page8Regelcheck() {
   const best = ink - tot
   const jaarGrensHuur = TOESLAG_GRENZEN_2026['huur'] ? (ls === 'samenwonend' || ls === 'alleenstaande_ouder' ? TOESLAG_GRENZEN_2026['huur'].samen : TOESLAG_GRENZEN_2026['huur'].alleen) : 0
   const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
-  const beoordeling = evaluateRegelingen(state)
+
+  // WASM-integratie: asynchrone berekening met fallback
+  const { result, usingWasm, error } = useRegelingen(state)
+  console.log('Wasm status:', usingWasm, error)
+
+  // Map naar display-formaat
+  const beoordeling = result
+    ? {
+        fdma: mapToVoorstel(result.fdma, 'fdma'),
+        iit: mapToVoorstel(result.iit, 'iit'),
+        kwijtschelding_gblt: mapToVoorstel(result.kwijtschelding, 'kwijt'),
+        kwijtschelding_gemeente: mapToVoorstel(result.kwijtschelding, 'kwijt'),
+        kindsupport: mapToVoorstel(result.kindsupport, 'kind'),
+        voedselbank: mapToVoorstel(result.voedselbank, 'voedsel'),
+      }
+    : null
 
   const iitJr = yearsSince(state.iit_datum)
   const iitDatumOntbreekt = iitJr === null
@@ -178,72 +206,80 @@ export default function Page8Regelcheck() {
 
         {fdmaAlert && <Alert variant={fdmaAlert.variant} icon={fdmaAlert.icon} className="mb-3">{fdmaAlert.msg} <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Meer over FDMA →</a></Alert>}
 
-        <div className={row2}>
-          <div>
-            <VoorstelBadge v={beoordeling.fdma} />
-            <label className={L}>FDMA aangevraagd?</label>
-            <select className="inp" value={state.fdma} onChange={e => set({ fdma: e.target.value })}>
-              <option value="">— Onbekend —</option>
-              <option value="ja">Ja, actief</option>
-              <option value="nee">Nee</option>
-              <option value="nvt">N.v.t.</option>
-            </select>
-            <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm. <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria &amp; aanvraag</a></div>
-          </div>
-          <div>
-            <VoorstelBadge v={beoordeling.kwijtschelding_gblt} />
-            <label className={L}>Kwijtschelding GBLT?</label>
-            <select className="inp" value={state.kwgt} onChange={e => set({ kwgt: e.target.value })}>
-              <option value="">— Onbekend —</option>
-              <option value="ja">Aangevraagd</option>
-              <option value="ok">Gehonoreerd</option>
-              <option value="af">Afgewezen</option>
-              <option value="nee">Niet aangevraagd</option>
-            </select>
-          </div>
-        </div>
-        <div className={row2}>
-          <div>
-            <VoorstelBadge v={beoordeling.kwijtschelding_gemeente} />
-            <label className={L}>Kwijtschelding gemeentelijke belastingen?</label>
-            <select className="inp" value={state.kwgm} onChange={e => set({ kwgm: e.target.value })}>
-              <option value="">— Onbekend —</option>
-              <option value="ja">Aangevraagd</option>
-              <option value="ok">Gehonoreerd</option>
-              <option value="af">Afgewezen</option>
-              <option value="nee">Niet aangevraagd</option>
-            </select>
-          </div>
-          <div>
-            <VoorstelBadge v={beoordeling.kindsupport} />
-            <label className={L}>Kindsupport Meppel</label>
-            <select className="inp" value={state.kindsupport} onChange={e => set({ kindsupport: e.target.value })}>
-              <option value="">— Onbekend —</option>
-              <option value="ja">Ja, actief gebruik</option>
-              <option value="aanvragen">Aanvragen aanbevolen</option>
-              <option value="nee">Niet van toepassing</option>
-            </select>
-            <div className="text-[0.7rem] text-inkl mt-0.5">Ondersteuning gezinnen met kinderen Meppel. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">kindsupportmeppel.nl</a></div>
-          </div>
-        </div>
+        {!beoordeling && (
+          <Alert variant="info" icon={<HiQuestionMarkCircle />} className="mb-3">Beoordeling wordt geladen...</Alert>
+        )}
 
-        <Alert variant="purp" icon={<MdOutlineHandshake />} title="Kindsupport Meppel — altijd bespreken!" className="mb-3">
-          Ondersteuning voor gezinnen met kinderen in Meppel. Vraag altijd na of cliënt hier gebruik van (kan) maken en leg vast. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">Meer info →</a>
-        </Alert>
+        {beoordeling && (
+          <>
+            <div className={row2}>
+              <div>
+                <VoorstelBadge v={beoordeling.fdma} />
+                <label className={L}>FDMA aangevraagd?</label>
+                <select className="inp" value={state.fdma} onChange={e => set({ fdma: e.target.value })}>
+                  <option value="">— Onbekend —</option>
+                  <option value="ja">Ja, actief</option>
+                  <option value="nee">Nee</option>
+                  <option value="nvt">N.v.t.</option>
+                </select>
+                <div className="text-[0.7rem] text-inkl mt-0.5">Fonds Deelname Maatschappelijke Activiteiten — &lt;110% norm. <a href="https://www.meppel.nl/direct-regelen/ondersteuning-jeugd-en-inkomen/fonds-deelname-maatschappelijke-activiteiten/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria &amp; aanvraag</a></div>
+              </div>
+              <div>
+                <VoorstelBadge v={beoordeling.kwijtschelding_gblt} />
+                <label className={L}>Kwijtschelding GBLT?</label>
+                <select className="inp" value={state.kwgt} onChange={e => set({ kwgt: e.target.value })}>
+                  <option value="">— Onbekend —</option>
+                  <option value="ja">Aangevraagd</option>
+                  <option value="ok">Gehonoreerd</option>
+                  <option value="af">Afgewezen</option>
+                  <option value="nee">Niet aangevraagd</option>
+                </select>
+              </div>
+            </div>
+            <div className={row2}>
+              <div>
+                <VoorstelBadge v={beoordeling.kwijtschelding_gemeente} />
+                <label className={L}>Kwijtschelding gemeentelijke belastingen?</label>
+                <select className="inp" value={state.kwgm} onChange={e => set({ kwgm: e.target.value })}>
+                  <option value="">— Onbekend —</option>
+                  <option value="ja">Aangevraagd</option>
+                  <option value="ok">Gehonoreerd</option>
+                  <option value="af">Afgewezen</option>
+                  <option value="nee">Niet aangevraagd</option>
+                </select>
+              </div>
+              <div>
+                <VoorstelBadge v={beoordeling.kindsupport} />
+                <label className={L}>Kindsupport Meppel</label>
+                <select className="inp" value={state.kindsupport} onChange={e => set({ kindsupport: e.target.value })}>
+                  <option value="">— Onbekend —</option>
+                  <option value="ja">Ja, actief gebruik</option>
+                  <option value="aanvragen">Aanvragen aanbevolen</option>
+                  <option value="nee">Niet van toepassing</option>
+                </select>
+                <div className="text-[0.7rem] text-inkl mt-0.5">Ondersteuning gezinnen met kinderen Meppel. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">kindsupportmeppel.nl</a></div>
+              </div>
+            </div>
 
-        <div className={row2}>
-          <div>
-            <VoorstelBadge v={beoordeling.voedselbank} />
-            <label className={L}>Voedselbank?</label>
-            <select className="inp" value={state.voedselbank} onChange={e => set({ voedselbank: e.target.value })}>
-              <option value="">— Onbekend —</option>
-              <option value="ja">Ja, actief gebruik</option>
-              <option value="aanvragen">Aanvragen aanbevolen</option>
-              <option value="nee">Nee</option>
-            </select>
-            <div className="text-[0.7rem] text-inkl mt-0.5">Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). <a href="https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria voedselhulp</a></div>
-          </div>
-        </div>
+            <Alert variant="purp" icon={<MdOutlineHandshake />} title="Kindsupport Meppel — altijd bespreken!" className="mb-3">
+              Ondersteuning voor gezinnen met kinderen in Meppel. Vraag altijd na of cliënt hier gebruik van (kan) maken en leg vast. <a href="https://kindsupportmeppel.nl/" target="_blank" rel="noreferrer" className="underline text-accent">Meer info →</a>
+            </Alert>
+
+            <div className={row2}>
+              <div>
+                <VoorstelBadge v={beoordeling.voedselbank} />
+                <label className={L}>Voedselbank?</label>
+                <select className="inp" value={state.voedselbank} onChange={e => set({ voedselbank: e.target.value })}>
+                  <option value="">— Onbekend —</option>
+                  <option value="ja">Ja, actief gebruik</option>
+                  <option value="aanvragen">Aanvragen aanbevolen</option>
+                  <option value="nee">Nee</option>
+                </select>
+                <div className="text-[0.7rem] text-inkl mt-0.5">Criteria: besteedbaar inkomen voor voeding+kleding onder norm (1-persoon €400, +€120 p.p.). <a href="https://voedselbankzuidwestdrenthe.nl/voedselhulp-aanvragen/criteria-voedselhulp/" target="_blank" rel="noreferrer" className="underline text-accent">Criteria voedselhulp</a></div>
+              </div>
+            </div>
+          </>
+        )}
       </Card>
 
       <NavRow
