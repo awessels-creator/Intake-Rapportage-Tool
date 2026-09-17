@@ -14,7 +14,11 @@ export async function initWasm(): Promise<WasmLoaderResult> {
 
   wasmLoading = (async () => {
     try {
-      const response = await fetch('/wasm/index.wasm');
+      // Gebruik Vite base URL (werkt lokaal en op GitHub Pages)
+      const base = import.meta.env.BASE_URL || '/';
+      const wasmUrl = `${base}wasm/index.wasm`;
+      
+      const response = await fetch(wasmUrl);
       const bytes = await response.arrayBuffer();
       const module = await WebAssembly.instantiate(bytes);
       const exports = module.instance.exports;
