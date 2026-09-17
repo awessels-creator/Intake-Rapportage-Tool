@@ -74,7 +74,6 @@ export default function Page8Regelcheck() {
 
   // WASM-integratie: asynchrone berekening met fallback
   const { result, usingWasm, error } = useRegelingen(state)
-  console.log('Wasm status:', usingWasm, error)
 
   // Map naar display-formaat
   const beoordeling = result
