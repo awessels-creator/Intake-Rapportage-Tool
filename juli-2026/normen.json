@@ -1,0 +1,30 @@
+{
+  "perioden": [
+    {
+      "vanaf": "2026-07-01",
+      "model": "2026-2",
+      "label": "2e helft 2026 (per 1 juli 2026)",
+      "bijstand": {
+        "alleenstaand": 1348.49,
+        "alleenstaande_ouder": 1348.49,
+        "samenwonend": 1926.40,
+        "pensioen_alleen": 1450.99,
+        "pensioen_paar": 2071.51,
+        "pensioen_gemengd": 1926.40
+      },
+      "vermogen": {
+        "alleenstaand": 8000,
+        "alleenstaande_ouder": 16000,
+        "samenwonend": 16000,
+        "pensioen_alleen": 8000,
+        "pensioen_paar": 16000,
+        "pensioen_gemengd": 16000
+      },
+      "vrijstellingOverwaarde": 67500
+    }
+  ],
+  "voedselbank": {
+    "eenpers": 400,
+    "per_pers": 120
+  }
+}
