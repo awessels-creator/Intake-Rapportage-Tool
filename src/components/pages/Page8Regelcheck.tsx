@@ -73,7 +73,7 @@ export default function Page8Regelcheck() {
   const huurBdr = parseFloat(state.lastenWaarden['huur']?.bedrag || '0') || 0
 
   // WASM-integratie: asynchrone berekening met fallback
-  const { result, usingWasm, error } = useRegelingen(state)
+  const { result } = useRegelingen(state)
 
   // Map naar display-formaat
   const beoordeling = result
